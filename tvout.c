@@ -40,7 +40,11 @@ uint8_t video_buffer[VRES*HRES*BPP/8];
 // output PORT A8.
 void tvout_init(){
     config_pin(SYNC_PORT,SYNC_PIN,OUTPUT_PP_FAST);
-
+    TMR1->ARR=(uint16_t)(FCLK/HFREQ-1);
+    TMR1->CCR1=(uint16_t)(HPULSE*(float)FCLK);
+    TMR1->CCMR1=(1<<TMR_CCMR1_OC1M_POS);
+    TMR1->CR1=TMR_CR1_ARPE+TMR_CR1_CEN;
+    TMR1->CCER=TMR_CCER_CC1E;
 }
 
 
