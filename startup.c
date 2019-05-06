@@ -174,9 +174,9 @@ __attribute__ ((section("vectors")))= {
     (unsigned int *)  reset_mcu, // 22 CAN_SCE
     (unsigned int *)  EXTI9_5_handler, // 23 EXTI9_5
     (unsigned int *)  reset_mcu, // 24 TIM1_BRK
-    (unsigned int *)  reset_mcu, // 25 TIM1_UP
+    (unsigned int *)  TV_SYNC_handler, // 25 TIM1_UP
     (unsigned int *)  reset_mcu, // 26 TIM1_TRG_COM
-    (unsigned int *)  TV_SYNC_handler, // 27 TIM1_CC
+    (unsigned int *)  reset_mcu, // 27 TIM1_CC
     (unsigned int *)  TIM2_handler, // 28 TIM2
     (unsigned int *)  TIM3_handler, // 29 TIM3
     (unsigned int *)  TIM4_handler, // 30 TIM4

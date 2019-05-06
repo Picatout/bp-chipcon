@@ -61,7 +61,7 @@ void clear_pending(int irq){
 	ICPR[irq>>5]=(1<<(irq&0x1f));
 }
 
-
+// priority: 0-15  0=highest, 15=lowest
 void set_int_priority(int irq, unsigned priority){
 	if ((irq>=0) && (irq<=LAST_IRQ)){
 		IPR[irq]=(uint8_t)((priority&15)<<4);
