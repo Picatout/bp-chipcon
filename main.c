@@ -70,6 +70,44 @@ static void set_sysclock(){
 
 extern void print_fault(const char *msg, sfrp_t adr);
 
+void plot (int x,int y,uint8_t color){
+	int idx;
+	uint8_t byte,mask;
+	if (x<0 || x>=HRES || y<0 || y>=VRES ) return;
+	idx=y*BPR+x/8;
+	mask=1<<(7-(x%8));
+	byte=video_buffer[idx];
+	if (color)byte|=mask;else byte&=~mask;
+	video_buffer[idx]=byte;
+}
+
+
+void rectangle(int x0,int y0, int x1,int y1){
+	int tmp;
+	if (x0>x1){
+		tmp=x0;
+		x0=x1;
+		x1=tmp;
+	}
+	if (y0>y1){
+		tmp=y0;
+		y0=y1;
+		y1=tmp;
+	}
+	for (tmp=x0;tmp<=x1;tmp++){
+		plot(tmp,y0,1);
+		plot(tmp,y1,1);
+	}
+	for (++y0;y0<y1;y0++){
+		plot(x0,y0,1);
+		plot(x1,y0,1);
+	}
+}
+
+void graphic_clear(){
+	int x;
+	for (x=0;x<VRES*BPR;x++) video_buffer[x]=0;
+}
 
 void main(void){
 	set_sysclock();
@@ -83,6 +121,13 @@ void main(void){
 	vt100_init();
 	console_init(SERIAL);
 	tvout_init();
+	graphic_clear();
+	rectangle(0,0,HRES-1,VRES-1);
+	int x,y;
+	for (x=26,y=1;x<(HRES-26);x++,y++)
+		{
+			plot(x,y,1);
+		}
 	//if (!vt_ready()){con_select(LOCAL);}
 	write_pin(PORTC,LED_PIN,1);
 	while(1){

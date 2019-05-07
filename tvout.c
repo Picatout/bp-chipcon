@@ -35,7 +35,7 @@ static volatile uint16_t flags; // boolean flags.
 static volatile uint16_t slice=0; //  task slice
 static volatile uint16_t scan_line=0; // scan line counter
 
-uint8_t video_buffer[VRES*HRES*BPP/8];
+uint8_t video_buffer[VRES*BPR];
 
 // use TIMER1 CH1  to generate video synchronization
 // output PORT A8.
@@ -58,7 +58,7 @@ void tvout_init(){
 
 
 
-void __attribute__((__interrupt__)) TV_SYNC_handler(){
+void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
 #define next_task(n)  ({slice++; if (slice==n){slice=0;task++;}})
     scan_line++;
     switch (task){
@@ -105,7 +105,7 @@ void __attribute__((__interrupt__)) TV_SYNC_handler(){
         task++;
         break;
     case WAIT_FIRST_VIDEO:
-        if (scan_line==24){
+        if (scan_line==20){
             task++;
             slice=0;
         }
@@ -114,20 +114,20 @@ void __attribute__((__interrupt__)) TV_SYNC_handler(){
         {
             int i,r;
             uint8_t s,b,byte;
-            while(TMR1->CNT<(uint16_t)(11e-6*(float)FCLK));
-            PORTA->ODR|=BIT9;
-            r=slice/3*32;
-            for (i=0;i<7;i++){
+            while(TMR1->CNT<(uint16_t)(15e-6*(float)FCLK));
+            r=slice/3*BPR;
+            for (i=0;i<BPR;i++){
                 byte=video_buffer[r+i];
                 for(s=128;s;s>>=1){
                     b=byte&s;
                     if (b)PORTA->ODR|=BIT9;else PORTA->ODR&=~BIT9;
+                    asm("nop\nnop\nnop\n");
                 }
             }
         }
         //while(TMR1->CNT<(uint16_t)(40e-6*(float)FCLK));
         PORTA->ODR&=~BIT9;
-        next_task(222);
+        next_task(228);
         break;
     case WAIT_FIELD_END:
         if (scan_line==263){
