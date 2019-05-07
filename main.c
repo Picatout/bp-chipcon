@@ -48,7 +48,6 @@ static void set_sysclock(){
    while (!(RCC->CR&RCC_CR_HSERDY));
      // sélection PREDIV1 pour la source du PLL
      // multiplie la fréquence HSE par 5 
-     // pour une fréquence  Fsysclk de 64 Mhz
     RCC->CFGR|=RCC_CFGR_PLLSRC_HSE|(PLLMUL<<RCC_CFGR_PLLMUL_POS);
     // active le PLL
     RCC->CR|=RCC_CR_PLLON;
@@ -64,16 +63,13 @@ static void set_sysclock(){
 }
 
 
-//#define _wait_svc_completion() while (ICSR & (1<<PENDSVSET)|(1<<);
-#define _wait_timeout() ({while (timer);})
-
 
 extern void print_fault(const char *msg, sfrp_t adr);
 
 void plot (int x,int y,uint8_t color){
 	int idx;
 	uint8_t byte,mask;
-	if (x<0 || x>=HRES || y<0 || y>=VRES ) return;
+	if ((x<0) || (x>=HRES) || (y<0) || (y>=VRES) ) return;
 	idx=y*BPR+x/8;
 	mask=1<<(7-(x%8));
 	byte=video_buffer[idx];
@@ -111,8 +107,8 @@ void graphic_clear(){
 
 void main(void){
 	set_sysclock();
-//	set_int_priority(IRQ_SVC,15);
 	config_systicks();
+//	set_int_priority(IRQ_SVC,15);
 //	rtc_init(1000,RTC_SECIE|RTC_ALRIE);
 	RCC->APB2ENR=RCC_APB2ENR_IOPAEN|RCC_APB2ENR_IOPBEN|RCC_APB2ENR_IOPCEN|RCC_APB2ENR_AFIOEN|RCC_APB2ENR_TIM1EN;
 //	RCC->APB1ENR=RCC_APB1ENR_SPI2EN;
@@ -128,10 +124,12 @@ void main(void){
 		{
 			plot(x,y,1);
 		}
-	//if (!vt_ready()){con_select(LOCAL);}
-	write_pin(PORTC,LED_PIN,1);
 	while(1){
-		conout(conin());
-		toggle_pin(PORTC,LED_PIN);
+		//conout(conin());
+		x=0;
+		timer=1000;
+		while(timer)x++;
+		print_int(x,10);
 	};
+
 }
