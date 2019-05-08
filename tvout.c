@@ -15,7 +15,10 @@
 #define HPULSE ((uint16_t)(4.7e-6*(float)FCLK))
 #define SERRATION ((uint16_t)(2.3e-6*(float)FCLK))
 #define SYNC_PULSE ((uint16_t)(27.1E-6*(float)FCLK))
-
+#define CHROMA_START ((uint16_t)(5.1e-6*(float)FCLK))
+#define LEFT_MARGIN ((uint16_t)(15e-6*(float)FCLK))
+#define FIRST_VIDEO_LINE (20)
+#define VIDEO_LINES (228)
 
 enum TASK_ENUM{
     PRE_SYNC,
@@ -23,12 +26,13 @@ enum TASK_ENUM{
     POST_SYNC,
     VSYNC_END,
     WAIT_FIRST_VIDEO,
-    VIDEO_OUT,
+    WAIT_VIDEO_END,
     WAIT_FIELD_END,
 };
 
 #define F_EVEN_MASK BIT0
 #define F_VSYNC_MASK BIT1
+#define F_VIDEO BIT2
 
 static volatile uint16_t task=0; // active task number
 static volatile uint16_t flags; // boolean flags.
@@ -38,25 +42,72 @@ static volatile uint16_t scan_line=0; // scan line counter
 uint8_t video_buffer[VRES*BPR];
 
 // use TIMER1 CH1  to generate video synchronization
+// use TIMER1 CH2 for video_out delay
+// use TIMER2 CH1 for chroma reference signal
 // output PORT A8.
 void tvout_init(){
     config_pin(SYNC_PORT,SYNC_PIN,OUTPUT_ALT_PP_SLOW);
     config_pin(SYNC_PORT,9,OUTPUT_PP_SLOW);
+    RCC->APB2ENR|=RCC_APB2ENR_TIM1EN;
     TMR1->CCMR1=(7<<TMR_CCMR1_OC1M_POS)|TMR_CCMR1_OC1PE;
     TMR1->CCER=TMR_CCER_CC1E;
     TMR1->CR1=TMR_CR1_ARPE|TMR_CR1_URS;
     TMR1->ARR=HPERIOD;
     TMR1->CCR1=HPULSE;
+    TMR1->CCR2=CHROMA_START;
     TMR1->EGR|=TMR_EGR_UG;
     TMR1->BDTR=TMR_BDTR_MOE;
     TMR1->SR=0;
     TMR1->DIER|=TMR_DIER_UIE;
-    set_int_priority(IRQ_TIM1_UP,1);    
+    set_int_priority(IRQ_TIM1_UP,1);
+    set_int_priority(IRQ_TIM1_CC,1);
+    enable_interrupt(IRQ_TIM1_CC);    
     enable_interrupt(IRQ_TIM1_UP);
     TMR1->CR1|=TMR_CR1_CEN; 
+    // chroma signal generation
+    config_pin(PORTA,0,OUTPUT_ALT_PP_SLOW);
+    config_pin(PORTA,1,OUTPUT_ALT_PP_SLOW);
+	RCC->APB1ENR|=RCC_APB1ENR_TIM2EN;
+    TMR2->CCMR1=(7<<TMR_CCMR1_OC1M_POS)|(6<<TMR_CCMR1_OC2M_POS)|TMR_CCMR1_OC1PE;
+    TMR2->CCER=TMR_CCER_CC1E;
+    TMR2->CR1=TMR_CR1_ARPE|TMR_CR1_URS;
+    TMR2->ARR=19; 
+    TMR2->CCR1=10;
+    TMR2->CCR2=10;
+    TMR2->BDTR|=TMR_BDTR_MOE;
+    TMR2->EGR|=TMR_EGR_UG;
+    TMR2->SR=0;
+    TMR2->CR1|=TMR_CR1_CEN; 
 }
 
 
+void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
+    TMR2->CCER=TMR_CCER_CC2E;
+    while(TMR1->CNT<(uint16_t)(8.0e-6*(float)FCLK));
+    TMR2->CCER&=~TMR_CCER_CC2E;
+    if (flags&F_VIDEO){
+            int i,r;
+            uint8_t s,b,byte;
+            while(TMR1->CNT<LEFT_MARGIN);
+            r=slice/3*BPR;
+            TMR2->CCER=TMR_CCER_CC1E;
+            for (i=0;i<(BPR);i++){
+                byte=video_buffer[r+i];
+                for(s=128;s;s>>=1){
+                    b=byte&s;
+                    if (b){
+                        PORTA->ODR|=BIT9;
+                    }else{
+                        PORTA->ODR&=~BIT9;
+                    }
+                    asm("nop\nnop\nnop\n");
+                }
+            }
+        PORTA->ODR&=~BIT9;
+        TMR2->CCER&=~TMR_CCER_CC1E;
+    }
+    TMR1->SR&=~TMR_SR_CC2IF;
+}
 
 void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
 #define next_task(n)  ({slice++; if (slice==n){slice=0;task++;}})
@@ -103,13 +154,24 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
         flags&=~F_VSYNC_MASK;
         scan_line>>=2;
         task++;
+        TMR1->SR&=~TMR_SR_CC2IF;
+        TMR1->DIER|=TMR_DIER_CC2IE;
         break;
     case WAIT_FIRST_VIDEO:
-        if (scan_line==20){
+        if (scan_line==FIRST_VIDEO_LINE){
             task++;
             slice=0;
+            flags |= F_VIDEO;
         }
         break;
+    case WAIT_VIDEO_END:
+        slice++;
+        if (scan_line==(FIRST_VIDEO_LINE+VIDEO_LINES)){
+            task++;
+            flags &=~F_VIDEO;
+        }
+        break;  
+    /*      
     case VIDEO_OUT:
         {
             int i,r;
@@ -129,6 +191,7 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
         PORTA->ODR&=~BIT9;
         next_task(228);
         break;
+    */    
     case WAIT_FIELD_END:
         if (scan_line==263){
             if (flags&F_EVEN_MASK){ // half length
@@ -139,9 +202,10 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
             scan_line=0;
             slice=0;
             task=0;
+            TMR1->DIER&=~TMR_DIER_CC2IE;
         }
         break;
     }//switch slice
-    TMR1->SR =0;
+    TMR1->SR&=~TMR_SR_UIF;
 }
 

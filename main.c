@@ -28,15 +28,13 @@
  */
 
 #include "include/blue_pill.h"
-#include "include/bpos.h"
-#include "include/console.h"
-#include "include/vt100.h"
 #include "tvout.h"
+#include "graphics.h"
 
-const void* TPA_TOP=(void*)_TPA_TOP;
+//const void* TPA_TOP=(void*)_TPA_TOP;
 
-void* here;
-void* ffa;
+//void* here;
+//void* ffa;
 
 
 // configure SYSCLK à la fréquence maximale de 72 Mhz
@@ -66,70 +64,29 @@ static void set_sysclock(){
 
 extern void print_fault(const char *msg, sfrp_t adr);
 
-void plot (int x,int y,uint8_t color){
-	int idx;
-	uint8_t byte,mask;
-	if ((x<0) || (x>=HRES) || (y<0) || (y>=VRES) ) return;
-	idx=y*BPR+x/8;
-	mask=1<<(7-(x%8));
-	byte=video_buffer[idx];
-	if (color)byte|=mask;else byte&=~mask;
-	video_buffer[idx]=byte;
-}
-
-
-void rectangle(int x0,int y0, int x1,int y1){
-	int tmp;
-	if (x0>x1){
-		tmp=x0;
-		x0=x1;
-		x1=tmp;
-	}
-	if (y0>y1){
-		tmp=y0;
-		y0=y1;
-		y1=tmp;
-	}
-	for (tmp=x0;tmp<=x1;tmp++){
-		plot(tmp,y0,1);
-		plot(tmp,y1,1);
-	}
-	for (++y0;y0<y1;y0++){
-		plot(x0,y0,1);
-		plot(x1,y0,1);
-	}
-}
-
-void graphic_clear(){
-	int x;
-	for (x=0;x<VRES*BPR;x++) video_buffer[x]=0;
-}
 
 void main(void){
 	set_sysclock();
 	config_systicks();
-//	set_int_priority(IRQ_SVC,15);
 //	rtc_init(1000,RTC_SECIE|RTC_ALRIE);
 	RCC->APB2ENR=RCC_APB2ENR_IOPAEN|RCC_APB2ENR_IOPBEN|RCC_APB2ENR_IOPCEN|RCC_APB2ENR_AFIOEN|RCC_APB2ENR_TIM1EN;
-//	RCC->APB1ENR=RCC_APB1ENR_SPI2EN;
 //	RCC->AHBENR|=RCC_AHBENR_DMA1EN; // activation DMA1
 	config_pin(LED_PORT,LED_PIN,OUTPUT_OD_SLOW);
-	vt100_init();
-	console_init(SERIAL);
+	_led_off();
 	tvout_init();
-	graphic_clear();
-	rectangle(0,0,HRES-1,VRES-1);
+	gfx_cls();
+	gfx_rectangle(0,0,HRES-1,VRES-1);
 	int x,y;
 	for (x=26,y=1;x<(HRES-26);x++,y++)
 		{
-			plot(x,y,1);
+			gfx_plot(x,y,1);
 		}
+	gfx_print("Hello world!\n");	
 	while(1){
-		//conout(conin());
 		x=0;
 		timer=1000;
 		while(timer)x++;
-		print_int(x,10);
+		gfx_print_int(x,10);
 	};
 
 }

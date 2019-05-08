@@ -17,9 +17,9 @@
 */
 
 #include "include/stm32f103c8.h"
+#include "include/ascii.h"
 #include "include/nvic.h"
-#include "include/console.h"
-#include "include/bpos.h"
+#include "graphics.h"
 
 /* NOTE:
  * A la réinitialisation le µC est en mode thread privilégié
@@ -32,10 +32,18 @@
  *    2018-09-18:  Ajout de la macro _default_handler()
  */
 
+#define STACK_TOP 0x20005000
+
+extern unsigned int _BSS_START;
+extern unsigned int _BSS_END;
+extern unsigned int _DATA_ROM_START;
+extern unsigned int _DATA_RAM_START;
+extern unsigned int _DATA_RAM_END;
 
 void startup();
 void main();
 void __attribute__((__interrupt__)) TV_SYNC_handler();
+void __attribute__((__interrupt__)) TV_OUT_handler();
 
 // réinitialise le µC
 void __attribute__((naked)) reset_mcu(){
@@ -63,18 +71,18 @@ _default_handler(PENDSV_handler) // 14
 _default_handler(STK_handler) // 15
 
 void print_fault(const char *msg, uint32_t adr){
-	print(msg);
-	print("at address ");
+	gfx_print(msg);
+	gfx_print("\nat address ");
 	if (adr) {
-		print_hex(adr,0);
+		gfx_print_int(adr,16);
 	};
-	conout(CR);
-	print("UFSR=");
-	print_hex(CFSR->fsr.usageFalt,0);
-	print(", BFSR=");
-	print_hex(CFSR->fsr.busFault,0);
-	print(", MMFSR=");
-	print_hex(CFSR->fsr.mmFault,0);
+	gfx_putchar(CR);
+	gfx_print("\nUFSR=");
+	gfx_print_int(CFSR->fsr.usageFalt,16);
+	gfx_print("\nBFSR=");
+	gfx_print_int(CFSR->fsr.busFault,16);
+	gfx_print("\nMMFSR=");
+	gfx_print_int(CFSR->fsr.mmFault,16);
 	while(1);
 }
 
@@ -132,7 +140,7 @@ _default_handler(USART3_handler) // 39
 unsigned int * myvectors[76] 
 __attribute__ ((section("vectors")))= {
 	// --------- core exceptions -----------
-    (unsigned int *)    MSP_TOP,  // 0 stack pointer
+    (unsigned int *)    STACK_TOP,  // 0 stack pointer
     (unsigned int *)    startup,     // 1 reset entry point
     (unsigned int *)  NMI_handler, // 2 NMI
     (unsigned int *)  HARD_FAULT_handler, // 3 Hard fault
@@ -176,7 +184,7 @@ __attribute__ ((section("vectors")))= {
     (unsigned int *)  reset_mcu, // 24 TIM1_BRK
     (unsigned int *)  TV_SYNC_handler, // 25 TIM1_UP
     (unsigned int *)  reset_mcu, // 26 TIM1_TRG_COM
-    (unsigned int *)  reset_mcu, // 27 TIM1_CC
+    (unsigned int *)  TV_OUT_handler, // 27 TIM1_CC
     (unsigned int *)  TIM2_handler, // 28 TIM2
     (unsigned int *)  TIM3_handler, // 29 TIM3
     (unsigned int *)  TIM4_handler, // 30 TIM4
@@ -237,8 +245,8 @@ __attribute__ ((section("vectors")))= {
         data_ram_start_p++;
         data_rom_start_p++;
     }
-	here=(void*)&_TPA_START;
-	ffa=(uint16_t*)&_FLASH_FREE;
+//	here=(void*)&_TPA_START;
+//	ffa=(uint16_t*)&_FLASH_FREE;
 	// active les interruptions et les fault handler
 	//SCB_CCR->fld_ccr.unalign_trp=1;
 	//SCB_CCR->fld_ccr.div_0_trp=1;

@@ -14,7 +14,7 @@ INC =../include/
 HAL = ../hal/
 BUILD=build/
 SRC = ../*.c
-SRC += $(HAL)usart.c $(HAL)nvic.c $(HAL)gpio.c $(HAL)spi.c $(HAL)dma.c 
+SRC += $(HAL)nvic.c $(HAL)gpio.c $(HAL)spi.c $(HAL)dma.c 
 SRC += $(HAL)systick.c $(HAL)rtc.c $(HAL)bkp.c $(HAL)flash.c
 
 

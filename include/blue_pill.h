@@ -52,6 +52,8 @@
 #define LED_OFF (1)
 #define GRN_LED (1<<LED_PIN)
 
+#define _led_off() (PORTC->ODR|=GRN_LED)
+#define _led_on()  (PORTC->ODR&=~GRN_LED)
 
 #endif // BLUE_PILL_H
 
