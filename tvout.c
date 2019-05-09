@@ -20,6 +20,16 @@
 #define FIRST_VIDEO_LINE (20)
 #define VIDEO_LINES (228)
 
+int active_palette=3;
+
+static const uint16_t palette[4]={
+    0,
+    (TMR_CCER_CC3E),
+    (TMR_CCER_CC4E),
+    (TMR_CCER_CC3E|TMR_CCER_CC4E)
+};
+
+
 enum TASK_ENUM{
     PRE_SYNC,
     VSYNC,
@@ -47,7 +57,8 @@ uint8_t video_buffer[VRES*BPR];
 // output PORT A8.
 void tvout_init(){
     config_pin(SYNC_PORT,SYNC_PIN,OUTPUT_ALT_PP_SLOW);
-    config_pin(SYNC_PORT,9,OUTPUT_PP_SLOW);
+    *GPIOA_CNF_CRL=0x33333333;
+    PORTA->ODR=0;
     RCC->APB2ENR|=RCC_APB2ENR_TIM1EN;
     TMR1->CCMR1=(7<<TMR_CCMR1_OC1M_POS)|TMR_CCMR1_OC1PE;
     TMR1->CCER=TMR_CCER_CC1E;
@@ -65,46 +76,58 @@ void tvout_init(){
     enable_interrupt(IRQ_TIM1_UP);
     TMR1->CR1|=TMR_CR1_CEN; 
     // chroma signal generation
-    config_pin(PORTA,0,OUTPUT_ALT_PP_SLOW);
-    config_pin(PORTA,1,OUTPUT_ALT_PP_SLOW);
-	RCC->APB1ENR|=RCC_APB1ENR_TIM2EN;
-    TMR2->CCMR1=(7<<TMR_CCMR1_OC1M_POS)|(6<<TMR_CCMR1_OC2M_POS)|TMR_CCMR1_OC1PE;
-    TMR2->CCER=TMR_CCER_CC1E;
-    TMR2->CR1=TMR_CR1_ARPE|TMR_CR1_URS;
-    TMR2->ARR=19; 
-    TMR2->CCR1=10;
-    TMR2->CCR2=10;
-    TMR2->BDTR|=TMR_BDTR_MOE;
-    TMR2->EGR|=TMR_EGR_UG;
-    TMR2->SR=0;
-    TMR2->CR1|=TMR_CR1_CEN; 
+    config_pin(PORTB,0,OUTPUT_ALT_PP_SLOW); // TIMER3 CH3
+    config_pin(PORTB,1,OUTPUT_ALT_PP_SLOW);  // TIMER3 CH4
+	RCC->APB1ENR|=RCC_APB1ENR_TIM3EN;
+    TMR3->CCMR2=(7<<TMR_CCMR2_OC3M_POS)|(6<<TMR_CCMR2_OC4M_POS)|TMR_CCMR2_OC3PE;
+    TMR3->CCER=TMR_CCER_CC3E|TMR_CCER_CC3P;
+    TMR3->CR1=TMR_CR1_ARPE|TMR_CR1_URS;
+    TMR3->ARR=19; 
+    TMR3->CCR3=10;
+    TMR3->CCR4=10;
+    TMR3->BDTR|=TMR_BDTR_MOE;
+    TMR3->EGR|=TMR_EGR_UG;
+    TMR3->SR=0;
+    TMR3->CR1|=TMR_CR1_CEN; 
 }
 
 
 void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
-    TMR2->CCER=TMR_CCER_CC2E;
+    register uint8_t *video_data;
+    register uint16_t *video_port;
+    TMR3->CCER|=TMR_CCER_CC3E;
     while(TMR1->CNT<(uint16_t)(8.0e-6*(float)FCLK));
-    TMR2->CCER&=~TMR_CCER_CC2E;
+    TMR3->CCER&=~TMR_CCER_CC3E;
     if (flags&F_VIDEO){
             int i,r;
             uint8_t s,b,byte;
+            video_port=(uint16_t*)&PORTA->ODR;
             while(TMR1->CNT<LEFT_MARGIN);
-            r=slice/3*BPR;
-            TMR2->CCER=TMR_CCER_CC1E;
+            video_data=&video_buffer[slice/3*BPR];
+            //r=slice/3*BPR;
+            TMR3->CCER|=palette[active_palette];//TMR_CCER_CC4E+TMR_CCER_CC3E;
             for (i=0;i<(BPR);i++){
+               /*
                 byte=video_buffer[r+i];
                 for(s=128;s;s>>=1){
                     b=byte&s;
                     if (b){
-                        PORTA->ODR|=BIT9;
+                        //TMR3->CCER|=TMR_CCER_CC4E;
+                        PORTA->ODR=1;
                     }else{
-                        PORTA->ODR&=~BIT9;
-                    }
-                    asm("nop\nnop\nnop\n");
-                }
+                        //TMR3->CCER&=~TMR_CCER_CC4E;
+                        PORTA->ODR=0;
+                    } 
+                }    */
+                    //*video_port&=0xff00;
+                    *video_port=(*video_data++);
+                    //PORTA->ODR&=0xff00;
+                    //PORTA->ODR=video_buffer[r+i];
+                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+                
             }
-        PORTA->ODR&=~BIT9;
-        TMR2->CCER&=~TMR_CCER_CC1E;
+        PORTA->ODR=0;
+        TMR3->CCER&=~(TMR_CCER_CC4E+TMR_CCER_CC3E);
     }
     TMR1->SR&=~TMR_SR_CC2IF;
 }

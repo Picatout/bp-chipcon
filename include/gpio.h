@@ -147,6 +147,8 @@ typedef union{
 #define GPIOA_BASE_ADR 0x40010800
 
 #define PORTA ((gpio_t*)GPIOA_BASE_ADR)
+#define GPIOA_CNF_CRL ((uint32_t*)(GPIOA_BASE_ADR+GPIO_CRL_OFS))
+#define GPIOA_CNF_CRH ((uint32_t*)(GPIOA_BASE_ADR+GPIO_CRH_OFS))
 
 #define GPIOA_CRL  ((gpio_crl_t*)(GPIOA_BASE_ADR+GPIO_CRL_OFS))
 #define GPIOA_CRH  ((gpio_crh_t*)(GPIOA_BASE_ADR+GPIO_CRH_OFS))

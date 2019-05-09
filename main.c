@@ -75,18 +75,31 @@ void main(void){
 	_led_off();
 	tvout_init();
 	gfx_cls();
-	gfx_rectangle(0,0,HRES-1,VRES-1);
+	//gfx_rectangle(0,0,HRES-1,VRES-1);
 	int x,y;
+	uint8_t c;
+	/*
 	for (x=26,y=1;x<(HRES-26);x++,y++)
 		{
-			gfx_plot(x,y,1);
+			gfx_plot(x,y,5);
 		}
+	*/
+	c=15;
+	for (x=0;x<VRES*HRES;x++){
+		video_buffer[x]=c;
+		if (x%8==0){
+			c--;
+			c&=0xf;
+		}
+	}	
 	gfx_print("Hello world!\n");	
 	while(1){
 		x=0;
-		timer=1000;
+		timer=5000;
 		while(timer)x++;
-		gfx_print_int(x,10);
+		active_palette=(++active_palette)&3;
+
+	//	gfx_print_int(x,10);
 	};
 
 }
