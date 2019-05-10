@@ -14,4 +14,6 @@ void gfx_cls();
 void gfx_scrollup(uint8_t n);
 void gfx_print(const char* str);
 void gfx_print_int(int i,uint8_t base);
+void gfx_locate(uint8_t line,uint8_t colon);
+
 #endif

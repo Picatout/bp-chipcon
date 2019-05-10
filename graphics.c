@@ -9,6 +9,9 @@
 #include "include/ascii.h"
 #include "graphics.h"
 
+#define CPL (HRES/CHAR_WIDTH)
+#define LINES (VRES/CHAR_HEIGHT)
+
 static uint8_t cursor_x=0;
 static uint8_t cursor_y=0;
 
@@ -29,6 +32,13 @@ static void gfx_cursor_left(){
     }else{
         cursor_x=0;
     } 
+}
+
+void gfx_locate(uint8_t line,uint8_t colon){
+    if (colon>=CPL) colon=CPL-1;
+    if (line>LINES) line=LINES-1;
+    cursor_x=colon*CHAR_WIDTH;
+    cursor_y=line*CHAR_HEIGHT;
 }
 
 void gfx_putchar(char c){
@@ -93,10 +103,20 @@ void gfx_print_int(int i,uint8_t base){
 }
 
 void gfx_plot (int x,int y,uint8_t color){
-	int idx;
-	uint8_t byte,mask;
+	register int idx;
+    register uint8_t byte;
 	if ((x<0) || (x>=HRES) || (y<0) || (y>=VRES) ) return;
-    video_buffer[y*BPR+x]=color;
+    idx=y*BPR+x/2;
+    color&=0xf;
+    byte=video_buffer[idx];
+    if (x&1){
+        byte&=0xf0;
+        byte|=color;
+    }else{
+        byte&=0xf;
+        byte|=color<<4;
+    }
+    video_buffer[idx]=byte;
 /*
 	idx=y*BPR+x/8;
 	mask=1<<(7-(x%8));

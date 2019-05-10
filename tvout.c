@@ -120,10 +120,12 @@ void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
                     } 
                 }    */
                     //*video_port&=0xff00;
-                    *video_port=(*video_data++);
+                    *video_port=(*video_data)>>4;
+                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+                    *video_port=(*video_data++)&0xf;
                     //PORTA->ODR&=0xff00;
                     //PORTA->ODR=video_buffer[r+i];
-                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\n");
                 
             }
         PORTA->ODR=0;

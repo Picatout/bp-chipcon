@@ -84,21 +84,24 @@ void main(void){
 			gfx_plot(x,y,5);
 		}
 	*/
-	c=15;
-	for (x=0;x<VRES*HRES;x++){
-		video_buffer[x]=c;
-		if (x%8==0){
-			c--;
-			c&=0xf;
+	for (y=0;y<VRES;y++){
+		c=0xf;
+		for (x=0;x<HRES;x++){
+			gfx_plot(x,y,c);
+			if (x%8==0){
+				c--;
+			}
 		}
 	}	
 	gfx_print("Hello world!\n");	
+	gfx_print_int(active_palette,10);
 	while(1){
 		x=0;
 		timer=5000;
 		while(timer)x++;
 		active_palette=(++active_palette)&3;
-
+		gfx_locate(1,0);
+		gfx_print_int(active_palette,10);
 	//	gfx_print_int(x,10);
 	};
 

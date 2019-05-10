@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:bp-chipcon-cache
 EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
@@ -264,111 +265,13 @@ F 3 "" H 8675 1300 50  0001 C CNN
 	1    8675 1300
 	-1   0    0    1   
 $EndComp
-$Comp
-L device:Q_NPN_BCE Q?
-U 1 1 5CD39D35
-P 8375 2500
-F 0 "Q?" V 8703 2500 50  0000 C CNN
-F 1 "2N3904" V 8612 2500 50  0000 C CNN
-F 2 "" H 8575 2600 50  0001 C CNN
-F 3 "" H 8375 2500 50  0001 C CNN
-	1    8375 2500
-	0    -1   -1   0   
-$EndComp
-$Comp
-L device:Q_NPN_BCE Q?
-U 1 1 5CD3A00A
-P 8400 3225
-F 0 "Q?" V 8728 3225 50  0000 C CNN
-F 1 "2N3904" V 8637 3225 50  0000 C CNN
-F 2 "" H 8600 3325 50  0001 C CNN
-F 3 "" H 8400 3225 50  0001 C CNN
-	1    8400 3225
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	7775 3125 8200 3125
 Wire Wire Line
 	9125 2050 9125 2400
 Wire Wire Line
-	8600 3125 9125 3125
-Wire Wire Line
 	9125 2875 9125 3125
-Wire Wire Line
-	7775 2400 8175 2400
-Wire Wire Line
-	8575 2400 9125 2400
 Connection ~ 9125 2400
 Wire Wire Line
 	9125 2400 9125 2875
-$Comp
-L device:R R?
-U 1 1 5CD3A3F1
-P 7625 4100
-F 0 "R?" V 7418 4100 50  0000 C CNN
-F 1 "R" V 7509 4100 50  0000 C CNN
-F 2 "" V 7555 4100 50  0001 C CNN
-F 3 "" H 7625 4100 50  0001 C CNN
-	1    7625 4100
-	0    1    1    0   
-$EndComp
-$Comp
-L device:R R?
-U 1 1 5CD3A66A
-P 7625 4475
-F 0 "R?" V 7418 4475 50  0000 C CNN
-F 1 "R" V 7509 4475 50  0000 C CNN
-F 2 "" V 7555 4475 50  0001 C CNN
-F 3 "" H 7625 4475 50  0001 C CNN
-	1    7625 4475
-	0    1    1    0   
-$EndComp
-$Comp
-L device:R R?
-U 1 1 5CD3A6C6
-P 7625 4825
-F 0 "R?" V 7418 4825 50  0000 C CNN
-F 1 "R" V 7509 4825 50  0000 C CNN
-F 2 "" V 7555 4825 50  0001 C CNN
-F 3 "" H 7625 4825 50  0001 C CNN
-	1    7625 4825
-	0    1    1    0   
-$EndComp
-$Comp
-L device:R R?
-U 1 1 5CD3A750
-P 7625 5225
-F 0 "R?" V 7418 5225 50  0000 C CNN
-F 1 "R" V 7509 5225 50  0000 C CNN
-F 2 "" V 7555 5225 50  0001 C CNN
-F 3 "" H 7625 5225 50  0001 C CNN
-	1    7625 5225
-	0    1    1    0   
-$EndComp
-Wire Wire Line
-	7775 4100 7775 4475
-Wire Wire Line
-	7775 4825 7775 5225
-Wire Wire Line
-	7775 4825 8400 4825
-Wire Wire Line
-	8400 4825 8400 3425
-Connection ~ 7775 4825
-Wire Wire Line
-	7775 4100 8025 4100
-Wire Wire Line
-	8025 4100 8025 2700
-Wire Wire Line
-	8025 2700 8375 2700
-Connection ~ 7775 4100
-Text Label 7475 4100 2    50   ~ 0
-PA4
-Text Label 7475 4475 2    50   ~ 0
-PA5
-Text Label 7475 5225 2    50   ~ 0
-PA7
-Text Label 7475 4825 2    50   ~ 0
-PA6
 Text Label 3825 3300 2    50   ~ 0
 PA3
 Text Label 3825 3400 2    50   ~ 0
@@ -379,4 +282,8 @@ Text Label 3825 3600 2    50   ~ 0
 PA6
 Text Label 3825 3700 2    50   ~ 0
 PA7
+Wire Wire Line
+	7775 2400 9125 2400
+Wire Wire Line
+	7775 3125 9125 3125
 $EndSCHEMATC
