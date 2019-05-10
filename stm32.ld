@@ -48,7 +48,7 @@ SECTIONS
     }
     _BSS_END = .;     /* Indicates where BSS section ends in RAM */
 	
-	. = ALIGN(0x100) ;
+	. = ALIGN(0x10) ;
 	_TPA_START = . ;
 	
 	.transient : AT(_TPA_START)

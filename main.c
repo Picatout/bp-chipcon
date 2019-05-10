@@ -64,6 +64,8 @@ static void set_sysclock(){
 
 extern void print_fault(const char *msg, sfrp_t adr);
 
+extern uint32_t _TPA_START;
+extern uint32_t _DATA_RAM_START;
 
 void main(void){
 	set_sysclock();
@@ -84,6 +86,11 @@ void main(void){
 			gfx_plot(x,y,5);
 		}
 	*/
+	c=4;
+	for (y=0;y<VRES;y++){
+		if (y%28==0) c--;
+		sl_palette[y]=c&3;
+	}
 	for (y=0;y<VRES;y++){
 		c=0xf;
 		for (x=0;x<HRES;x++){
@@ -93,8 +100,8 @@ void main(void){
 			}
 		}
 	}	
-	gfx_print("012345678901234567890123456789");	
-	gfx_print_int(active_palette,10);
+//	gfx_print("012345678901234567890123456789");	
+	gfx_print_int((int)(&_TPA_START)-0x20000000,10);
 	while(1){
 		x=0;
 		timer=1000;
@@ -102,7 +109,7 @@ void main(void){
 //		active_palette=(++active_palette)&3;
 //		gfx_locate(1,0);
 //		gfx_print_int(active_palette,10);
-		gfx_print_int(x,10);
+//		gfx_print_int(x,10);
 	};
 
 }

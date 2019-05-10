@@ -16,11 +16,10 @@
 #define SERRATION ((uint16_t)(2.3e-6*(float)FCLK))
 #define SYNC_PULSE ((uint16_t)(27.1E-6*(float)FCLK))
 #define CHROMA_START ((uint16_t)(5.1e-6*(float)FCLK))
-#define LEFT_MARGIN ((uint16_t)(15e-6*(float)FCLK))
+#define LEFT_MARGIN ((uint16_t)(14e-6*(float)FCLK))
 #define FIRST_VIDEO_LINE (22)
 #define VIDEO_LINES (224)
 
-int active_palette=3;
 
 static const uint16_t palette[4]={
     0,
@@ -50,14 +49,18 @@ static volatile uint16_t slice=0; //  task slice
 static volatile uint16_t scan_line=0; // scan line counter
 
 uint8_t video_buffer[VRES*BPR];
+uint8_t sl_palette[VRES];
+// int active_palette=3;
 
 // use TIMER1 CH1  to generate video synchronization
 // use TIMER1 CH2 for video_out delay
 // use TIMER2 CH1 for chroma reference signal
 // output PORT A8.
 void tvout_init(){
+    uint8_t i;
+    for (i=0;i<VRES;i++) sl_palette[i]=3;
     config_pin(SYNC_PORT,SYNC_PIN,OUTPUT_ALT_PP_SLOW);
-    *GPIOA_CNF_CRL=0x33333333;
+    *GPIOA_CNF_CRL=0x44443333;
     PORTA->ODR=0;
     RCC->APB2ENR|=RCC_APB2ENR_TIM1EN;
     TMR1->CCMR1=(7<<TMR_CCMR1_OC1M_POS)|TMR_CCMR1_OC1PE;
@@ -95,6 +98,7 @@ void tvout_init(){
 void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
     register uint8_t *video_data;
     register uint16_t *video_port;
+
     TMR3->CCER|=TMR_CCER_CC3E;
     while(TMR1->CNT<(uint16_t)(8.0e-6*(float)FCLK));
     TMR3->CCER&=~TMR_CCER_CC3E;
@@ -105,28 +109,12 @@ void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
             while(TMR1->CNT<LEFT_MARGIN);
             video_data=&video_buffer[slice/2*BPR];
             //r=slice/3*BPR;
-            TMR3->CCER|=palette[active_palette];//TMR_CCER_CC4E+TMR_CCER_CC3E;
+            TMR3->CCER|=palette[sl_palette[slice>>1]];//palette[active_palette];//TMR_CCER_CC4E+TMR_CCER_CC3E;
             for (i=0;i<(BPR);i++){
-               /*
-                byte=video_buffer[r+i];
-                for(s=128;s;s>>=1){
-                    b=byte&s;
-                    if (b){
-                        //TMR3->CCER|=TMR_CCER_CC4E;
-                        PORTA->ODR=1;
-                    }else{
-                        //TMR3->CCER&=~TMR_CCER_CC4E;
-                        PORTA->ODR=0;
-                    } 
-                }    */
-                    //*video_port&=0xff00;
-                    *video_port=(*video_data)>>4;
-                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
-                    *video_port=(*video_data++)&0xf;
-                    //PORTA->ODR&=0xff00;
-                    //PORTA->ODR=video_buffer[r+i];
-                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\n");
-                
+                *video_port=(*video_data)>>4;
+                asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+                *video_port=(*video_data++)&0xf;
+                asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\n");
             }
         PORTA->ODR=0;
         TMR3->CCER&=~(TMR_CCER_CC4E+TMR_CCER_CC3E);
@@ -196,27 +184,6 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
             flags &=~F_VIDEO;
         }
         break;  
-    /*      
-    case VIDEO_OUT:
-        {
-            int i,r;
-            uint8_t s,b,byte;
-            while(TMR1->CNT<(uint16_t)(15e-6*(float)FCLK));
-            r=slice/3*BPR;
-            for (i=0;i<BPR;i++){
-                byte=video_buffer[r+i];
-                for(s=128;s;s>>=1){
-                    b=byte&s;
-                    if (b)PORTA->ODR|=BIT9;else PORTA->ODR&=~BIT9;
-                    asm("nop\nnop\nnop\n");
-                }
-            }
-        }
-        //while(TMR1->CNT<(uint16_t)(40e-6*(float)FCLK));
-        PORTA->ODR&=~BIT9;
-        next_task(228);
-        break;
-    */    
     case WAIT_FIELD_END:
         if (scan_line==263){
             if (flags&F_EVEN_MASK){ // half length

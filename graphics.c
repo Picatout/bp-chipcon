@@ -102,6 +102,39 @@ void gfx_print_int(int i,uint8_t base){
     gfx_print(&fmt[idx]);
 }
 
+void gfx_blit(int x, int y, uint8_t color, blit_op_t op){
+	register int idx;
+    register uint8_t byte,mask;
+	if ((x<0) || (x>=HRES) || (y<0) || (y>=VRES) ) return;
+    idx=y*BPR+x/2;
+    color&=0xf;
+    mask=0xf0;
+    if (!(x&1)){
+         color<<=4;
+         mask=0x0f;
+    }
+    byte=video_buffer[idx];
+    switch (op){
+    case BIT_OR:
+        byte|=color;
+        break;
+    case BIT_AND:
+        byte&=color;
+        break;
+    case BIT_XOR:
+        byte^=color;
+        break;
+    case BIT_INVERT:
+        byte^=~mask;
+        break;
+    case BIT_SET:
+        byte &=mask;
+        byte|=color;
+        break;
+    }//switch (op)
+    video_buffer[idx]=byte;
+}
+
 void gfx_plot (int x,int y,uint8_t color){
 	register int idx;
     register uint8_t byte;
@@ -117,13 +150,6 @@ void gfx_plot (int x,int y,uint8_t color){
         byte|=color<<4;
     }
     video_buffer[idx]=byte;
-/*
-	idx=y*BPR+x/8;
-	mask=1<<(7-(x%8));
-	byte=video_buffer[idx];
-	if (color)byte|=mask;else byte&=~mask;
-	video_buffer[idx]=byte;
-*/
 }
 
 
@@ -140,12 +166,12 @@ void gfx_rectangle(int x0,int y0, int x1,int y1){
 		y1=tmp;
 	}
 	for (tmp=x0;tmp<=x1;tmp++){
-		gfx_plot(tmp,y0,7);
-		gfx_plot(tmp,y1,7);
+		gfx_plot(tmp,y0,15);
+		gfx_plot(tmp,y1,15);
 	}
 	for (++y0;y0<y1;y0++){
-		gfx_plot(x0,y0,7);
-		gfx_plot(x1,y0,7);
+		gfx_plot(x0,y0,15);
+		gfx_plot(x1,y0,15);
 	}
 }
 
@@ -166,4 +192,26 @@ void gfx_scrollup(uint8_t n){
     while (size--) *dest++=*src++;
     size=BPR*n;
     while (size--) *dest++=0;
+}
+
+uint8_t gfx_get_pixel(int x, int y){
+    register uint8_t byte;
+    if (x<0 || x>=HRES || y<0 || y>=VRES) return 255;
+    byte=video_buffer[y*BPR+(x>>1)];
+    if (!(x&1)) byte>>=4;
+    return byte&0xf;
+}
+
+// put sprite on screen using BIT_XOR
+void gfx_sprite(int x, int y, uint8_t width, uint8_t height, uint8_t *sprite){
+/*
+    register uint32_t bmp_row;
+    register int x0,xbm,ybm;
+    for (ybm=0;y<(y+height);y++){
+        bmp_row=sprite[ybm*width/2];
+        for(xbm=0,x0=x;x0<(x+width));x0++){
+            gfx_blit(x0,y,bmp_bit,BIT_XOR);
+        }
+    }
+*/    
 }
