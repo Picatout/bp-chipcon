@@ -93,16 +93,16 @@ void main(void){
 			}
 		}
 	}	
-	gfx_print("Hello world!\n");	
+	gfx_print("012345678901234567890123456789");	
 	gfx_print_int(active_palette,10);
 	while(1){
 		x=0;
-		timer=5000;
+		timer=1000;
 		while(timer)x++;
-		active_palette=(++active_palette)&3;
-		gfx_locate(1,0);
-		gfx_print_int(active_palette,10);
-	//	gfx_print_int(x,10);
+//		active_palette=(++active_palette)&3;
+//		gfx_locate(1,0);
+//		gfx_print_int(active_palette,10);
+		gfx_print_int(x,10);
 	};
 
 }

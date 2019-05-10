@@ -17,8 +17,8 @@
 #define SYNC_PULSE ((uint16_t)(27.1E-6*(float)FCLK))
 #define CHROMA_START ((uint16_t)(5.1e-6*(float)FCLK))
 #define LEFT_MARGIN ((uint16_t)(15e-6*(float)FCLK))
-#define FIRST_VIDEO_LINE (20)
-#define VIDEO_LINES (228)
+#define FIRST_VIDEO_LINE (22)
+#define VIDEO_LINES (224)
 
 int active_palette=3;
 
@@ -103,7 +103,7 @@ void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
             uint8_t s,b,byte;
             video_port=(uint16_t*)&PORTA->ODR;
             while(TMR1->CNT<LEFT_MARGIN);
-            video_data=&video_buffer[slice/3*BPR];
+            video_data=&video_buffer[slice/2*BPR];
             //r=slice/3*BPR;
             TMR3->CCER|=palette[active_palette];//TMR_CCER_CC4E+TMR_CCER_CC3E;
             for (i=0;i<(BPR);i++){
