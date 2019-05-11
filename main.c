@@ -64,8 +64,20 @@ static void set_sysclock(){
 
 extern void print_fault(const char *msg, sfrp_t adr);
 
+
 extern uint32_t _TPA_START;
 extern uint32_t _DATA_RAM_START;
+
+const static uint8_t test_sprite[8*BPP]={
+	0x00,0x77,0x77,0x00,
+	0x07,0x77,0x77,0x70,
+	0x77,0x77,0x77,0x77,
+	0x77,0x77,0x77,0x77,
+	0x77,0x77,0x77,0x77,
+	0x77,0x77,0x77,0x77,
+	0x07,0x77,0x77,0x70,
+	0x00,0x77,0x77,0x00,
+};
 
 void main(void){
 	set_sysclock();
@@ -78,38 +90,60 @@ void main(void){
 	tvout_init();
 	gfx_cls();
 	//gfx_rectangle(0,0,HRES-1,VRES-1);
-	int x,y;
-	uint8_t c;
+	int x,y,sx,sy,dx,dy;
+	uint32_t t0;
+	uint8_t c,p=3;
 	/*
 	for (x=26,y=1;x<(HRES-26);x++,y++)
 		{
 			gfx_plot(x,y,5);
 		}
 	*/
+/*
 	c=4;
 	for (y=0;y<VRES;y++){
 		if (y%28==0) c--;
 		sl_palette[y]=c&3;
 	}
-	for (y=0;y<VRES;y++){
-		c=0xf;
-		for (x=0;x<HRES;x++){
-			gfx_plot(x,y,c);
+*/	
+	for (y=VRES/4*3;y<VRES;y++){
+		c=0x10;
+		for (x=0;x<128;x++){
 			if (x%8==0){
 				c--;
 			}
+			gfx_plot(x,y,c);
 		}
-	}	
+	}
+		
 //	gfx_print("012345678901234567890123456789");	
-	gfx_print_int((int)(&_TPA_START)-0x20000000,10);
+	gfx_print_int(0x20005000-(int)(&_TPA_START),10);
+	gfx_locate(0,10);
+	gfx_print("palette:");
+	gfx_print_int(sl_palette[0],10);
+	sx=sy=0;
+	dx=dy=1;
+	timer=1000;
 	while(1){
-		x=0;
-		timer=1000;
-		while(timer)x++;
-//		active_palette=(++active_palette)&3;
-//		gfx_locate(1,0);
-//		gfx_print_int(active_palette,10);
-//		gfx_print_int(x,10);
+//		x++;
+//		frame_sync();
+		gfx_sprite(sx,sy,8,8,test_sprite);
+		t0=ticks+10;
+		while (ticks<t0);
+		frame_sync();
+		gfx_sprite(sx,sy,8,8,test_sprite);
+		sx+=dx;
+		if (sx<-8|| sx>=HRES) dx=-dx;
+		sy+=dy;
+		if (sy<-8 || sy>=VRES) dy=-dy;
+		
+		if (!timer){
+			set_palette(++p);
+			gfx_locate(0,18);
+			gfx_print_int(p&3,10);
+			timer=5000;
+		}
+		
 	};
 
 }

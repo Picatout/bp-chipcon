@@ -57,8 +57,7 @@ uint8_t sl_palette[VRES];
 // use TIMER2 CH1 for chroma reference signal
 // output PORT A8.
 void tvout_init(){
-    uint8_t i;
-    for (i=0;i<VRES;i++) sl_palette[i]=3;
+    set_palette(3);
     config_pin(SYNC_PORT,SYNC_PIN,OUTPUT_ALT_PP_SLOW);
     *GPIOA_CNF_CRL=0x44443333;
     PORTA->ODR=0;
@@ -83,7 +82,7 @@ void tvout_init(){
     config_pin(PORTB,1,OUTPUT_ALT_PP_SLOW);  // TIMER3 CH4
 	RCC->APB1ENR|=RCC_APB1ENR_TIM3EN;
     TMR3->CCMR2=(7<<TMR_CCMR2_OC3M_POS)|(6<<TMR_CCMR2_OC4M_POS)|TMR_CCMR2_OC3PE;
-    TMR3->CCER=TMR_CCER_CC3E|TMR_CCER_CC3P;
+    TMR3->CCER=TMR_CCER_CC3E|TMR_CCER_CC4P;//|TMR_CCER_CC3P|TMR_CCER_CC4P;
     TMR3->CR1=TMR_CR1_ARPE|TMR_CR1_URS;
     TMR3->ARR=19; 
     TMR3->CCR3=10;
@@ -200,4 +199,15 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
     }//switch slice
     TMR1->SR&=~TMR_SR_UIF;
 }
+
+void frame_sync(){
+    while (!(flags&F_VSYNC_MASK));
+}
+
+void set_palette(uint8_t p){
+    int i;
+    p&=3;
+     for (i=0;i<VRES;i++) sl_palette[i]=p;
+}
+
 

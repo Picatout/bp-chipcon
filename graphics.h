@@ -24,4 +24,5 @@ void gfx_print_int(int i,uint8_t base);
 void gfx_locate(uint8_t line,uint8_t colon);
 void gfx_blit(int x, int t, uint8_t color, blit_op_t op);
 uint8_t gfx_get_pixel(int x, int y);
+void gfx_sprite(int x, int y, uint8_t width, uint8_t height,const uint8_t *sprite);
 #endif

@@ -15,7 +15,7 @@
 static uint8_t cursor_x=0;
 static uint8_t cursor_y=0;
 
-static uint8_t text_colors[2]={2,4};
+static uint8_t text_colors[2]={0,12};
 
 static void gfx_crlf(){
     cursor_x=0;
@@ -203,15 +203,18 @@ uint8_t gfx_get_pixel(int x, int y){
 }
 
 // put sprite on screen using BIT_XOR
-void gfx_sprite(int x, int y, uint8_t width, uint8_t height, uint8_t *sprite){
-/*
-    register uint32_t bmp_row;
-    register int x0,xbm,ybm;
-    for (ybm=0;y<(y+height);y++){
-        bmp_row=sprite[ybm*width/2];
-        for(xbm=0,x0=x;x0<(x+width));x0++){
-            gfx_blit(x0,y,bmp_bit,BIT_XOR);
+void gfx_sprite(int x, int y, uint8_t width, uint8_t height, const uint8_t *sprite){
+    register uint8_t bmp_byte;
+    register int x0,y0;
+
+    bmp_byte=*sprite++;
+    for (y0=y;y0<(y+height);y0++){
+        for(x0=x;x0<(x+width);x0++){
+            gfx_blit(x0,y0,bmp_byte>>4,BIT_XOR);
+            x0++;
+            gfx_blit(x0,y0,bmp_byte,BIT_XOR);
+            bmp_byte=*sprite++;
         }
     }
-*/    
 }
+
