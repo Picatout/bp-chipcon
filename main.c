@@ -67,6 +67,7 @@ extern void print_fault(const char *msg, sfrp_t adr);
 
 extern uint32_t _TPA_START;
 extern uint32_t _DATA_RAM_START;
+extern uint32_t _DATA_ROM_START;
 
 const static uint8_t test_sprite[8*BPP]={
 	0x00,0x77,0x77,0x00,
@@ -116,14 +117,15 @@ void main(void){
 		}
 	}
 		
-//	gfx_print("012345678901234567890123456789");	
+//	gfx_print("012345678901234567890123456789");
+    gfx_print_int((int)&_DATA_ROM_START,10);	
 	gfx_print_int(0x20005000-(int)(&_TPA_START),10);
-	gfx_locate(0,10);
+	gfx_locate(0,20);
 	gfx_print("palette:");
 	gfx_print_int(sl_palette[0],10);
 	sx=sy=0;
 	dx=dy=1;
-	timer=1000;
+	timer=100;
 	while(1){
 //		x++;
 //		frame_sync();
@@ -136,14 +138,20 @@ void main(void){
 		if (sx<-8|| sx>=HRES) dx=-dx;
 		sy+=dy;
 		if (sy<-8 || sy>=VRES) dy=-dy;
-		
+		if (!(pad&BIT15)){
+			set_palette(++p);
+			gfx_locate(0,28);
+			gfx_print_int(p&3,10);
+			while (!(pad&BIT15));
+		}
+/*		
 		if (!timer){
 			set_palette(++p);
-			gfx_locate(0,18);
+			gfx_locate(0,28);
 			gfx_print_int(p&3,10);
 			timer=5000;
 		}
-		
+*/		
 	};
 
 }

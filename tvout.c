@@ -16,7 +16,7 @@
 #define SERRATION ((uint16_t)(2.3e-6*(float)FCLK))
 #define SYNC_PULSE ((uint16_t)(27.1E-6*(float)FCLK))
 #define CHROMA_START ((uint16_t)(5.1e-6*(float)FCLK))
-#define LEFT_MARGIN ((uint16_t)(14e-6*(float)FCLK))
+#define LEFT_MARGIN ((uint16_t)(13.5e-6*(float)FCLK))
 #define FIRST_VIDEO_LINE (22)
 #define VIDEO_LINES (224)
 
@@ -34,6 +34,7 @@ enum TASK_ENUM{
     VSYNC,
     POST_SYNC,
     VSYNC_END,
+    READ_PAD,
     WAIT_FIRST_VIDEO,
     WAIT_VIDEO_END,
     WAIT_FIELD_END,
@@ -47,6 +48,7 @@ static volatile uint16_t task=0; // active task number
 static volatile uint16_t flags; // boolean flags.
 static volatile uint16_t slice=0; //  task slice
 static volatile uint16_t scan_line=0; // scan line counter
+volatile uint16_t pad;
 
 uint8_t video_buffer[VRES*BPR];
 uint8_t sl_palette[VRES];
@@ -58,8 +60,9 @@ uint8_t sl_palette[VRES];
 // output PORT A8.
 void tvout_init(){
     set_palette(3);
+    *GPIOA_CNF_CRL=0x88883333;
+    *GPIOA_CNF_CRH=0x88444444;
     config_pin(SYNC_PORT,SYNC_PIN,OUTPUT_ALT_PP_SLOW);
-    *GPIOA_CNF_CRL=0x44443333;
     PORTA->ODR=0;
     RCC->APB2ENR|=RCC_APB2ENR_TIM1EN;
     TMR1->CCMR1=(7<<TMR_CCMR1_OC1M_POS)|TMR_CCMR1_OC1PE;
@@ -169,6 +172,10 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
         TMR1->SR&=~TMR_SR_CC2IF;
         TMR1->DIER|=TMR_DIER_CC2IE;
         break;
+    case READ_PAD:
+        pad = PORTA->IDR&0xc0f0;
+        task++;
+        break;    
     case WAIT_FIRST_VIDEO:
         if (scan_line==FIRST_VIDEO_LINE){
             task++;

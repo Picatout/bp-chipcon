@@ -10,6 +10,7 @@
 #define BPP 4     // bits per pixel
 #define BPR (HRES*BPP/8)  // bytes per row
 
+extern volatile uint16_t pad;
 extern uint8_t video_buffer[VRES*BPR];
 extern uint8_t sl_palette[VRES];
 //extern int active_palette;
