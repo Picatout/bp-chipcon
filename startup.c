@@ -1,25 +1,26 @@
 /*
 * Copyright Jacques Deschênes 2018, 2019 
-* This file is part of BPOS.
+* This file is part of BP_CHIPCON.
 *
-*     BPOS is free software: you can redistribute it and/or modify
+*     BP_CHIPCON is free software: you can redistribute it and/or modify
 *     it under the terms of the GNU General Public License as published by
 *     the Free Software Foundation, either version 3 of the License, or
 *     (at your option) any later version.
 *
-*     BPOS is distributed in the hope that it will be useful,
+*     BP_CHIPCON is distributed in the hope that it will be useful,
 *     but WITHOUT ANY WARRANTY; without even the implied warranty of
 *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 *     GNU General Public License for more details.
 *
 *     You should have received a copy of the GNU General Public License
-*     along with BPOS.  If not, see <http://www.gnu.org/licenses/>.
+*     along with BP_CHIPCON.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "include/stm32f103c8.h"
 #include "include/ascii.h"
 #include "include/nvic.h"
-#include "graphics.h"
+//#include "graphics.h"
+#include "text.h"
 
 /* NOTE:
  * A la réinitialisation le µC est en mode thread privilégié
@@ -71,18 +72,18 @@ _default_handler(PENDSV_handler) // 14
 _default_handler(STK_handler) // 15
 
 void print_fault(const char *msg, uint32_t adr){
-	gfx_print(msg);
-	gfx_print("\nat address ");
+	print(msg);
+	print("\nat address ");
 	if (adr) {
-		gfx_print_int(adr,16);
+		print_int(adr,16);
 	};
-	gfx_putchar(CR);
-	gfx_print("\nUFSR=");
-	gfx_print_int(CFSR->fsr.usageFalt,16);
-	gfx_print("\nBFSR=");
-	gfx_print_int(CFSR->fsr.busFault,16);
-	gfx_print("\nMMFSR=");
-	gfx_print_int(CFSR->fsr.mmFault,16);
+	put_char(CR);
+	print("\nUFSR=");
+	print_int(CFSR->fsr.usageFalt,16);
+	print("\nBFSR=");
+	print_int(CFSR->fsr.busFault,16);
+	print("\nMMFSR=");
+	print_int(CFSR->fsr.mmFault,16);
 	while(1);
 }
 
