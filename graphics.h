@@ -46,8 +46,10 @@ typedef enum BLIT_OP{
 void gfx_plot (int x,int y,uint8_t color);
 void gfx_rectangle(int x0,int y0, int x1,int y1);
 void gfx_cls();
-void gfx_scrollup(uint8_t n);
-void gfx_scrolldown(uint8_t n);
+void gfx_scroll_up(uint8_t n);
+void gfx_scroll_down(uint8_t n);
+void gfx_scroll_left(uint8_t n);
+void gfx_scroll_right(uint8_t n);
 int gfx_blit(int x, int t, uint8_t color, blit_op_t op);
 uint8_t gfx_get_pixel(int x, int y);
 int gfx_sprite(int x, int y, uint8_t width, uint8_t height,const uint8_t *sprite);

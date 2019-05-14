@@ -60,8 +60,8 @@ enum TASK_ENUM{
     WAIT_FIELD_END,
 };
 
-#define F_EVEN_MASK BIT0
-#define F_VSYNC_MASK BIT1
+#define F_EVEN BIT0
+#define F_VSYNC BIT1
 #define F_VIDEO BIT2
 
 static volatile uint16_t task=0; // active task number
@@ -95,8 +95,8 @@ void tvout_init(){
     TMR1->BDTR=TMR_BDTR_MOE;
     TMR1->SR=0;
     TMR1->DIER|=TMR_DIER_UIE;
-    set_int_priority(IRQ_TIM1_UP,1);
-    set_int_priority(IRQ_TIM1_CC,1);
+    set_int_priority(IRQ_TIM1_UP,0);
+    set_int_priority(IRQ_TIM1_CC,0);
     enable_interrupt(IRQ_TIM1_CC);    
     enable_interrupt(IRQ_TIM1_UP);
     TMR1->CR1|=TMR_CR1_CEN; 
@@ -175,7 +175,7 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
             break;
         }else if (slice==6){
             task++;
-            if (!(flags&F_EVEN_MASK)){
+            if (!(flags&F_EVEN)){
                 break;
             }
         }else{
@@ -186,7 +186,7 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
         // set normal horizontal line pulse
         TMR1->ARR=HPERIOD;
         TMR1->CCR1=HPULSE;
-        flags&=~F_VSYNC_MASK;
+        flags&=~F_VSYNC;
         scan_line>>=2;
         task++;
         TMR1->SR&=~TMR_SR_CC2IF;
@@ -212,11 +212,11 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
         break;  
     case WAIT_FIELD_END:
         if (scan_line==263){
-            if (flags&F_EVEN_MASK){ // half length
+            if (flags&F_EVEN){ // half length
                 TMR1->ARR=SYNC_LINE;
             }
-            flags^=F_EVEN_MASK;
-            flags|=F_VSYNC_MASK;
+            flags^=F_EVEN;
+            flags|=F_VSYNC;
             scan_line=0;
             slice=0;
             task=0;
@@ -228,7 +228,7 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
 }
 
 void frame_sync(){
-    while (!(flags&F_VSYNC_MASK));
+    while (!(flags&F_VSYNC));
 }
 
 void set_palette(uint8_t p){

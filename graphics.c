@@ -116,29 +116,69 @@ void gfx_cls(){
 	for (x=0;x<VRES*BPR;x++) video_buffer[x]=0;
 }
 
-void gfx_scrollup(uint8_t n){
+static uint8_t* move_up(uint8_t* src, uint8_t* dest, int size){
+    while (size--) *--dest=*--src;
+    return dest;
+}
+
+static uint8_t* move_down(uint8_t* src, uint8_t* dest, int size){
+    while (size--) *dest++=*src++;
+    return dest;
+}
+
+
+void gfx_scroll_up(uint8_t n){
     uint8_t *src,*dest;
     int size;
 
     src=&video_buffer[n*BPR];
     dest=video_buffer;
     size = (VRES-n)*BPR;
-    while (size--) *dest++=*src++;
+    dest=move_down(src,dest,size);
     size=BPR*n;
     while (size--) *dest++=0;
 }
 
-void gfx_scrolldown(uint8_t n){
+void gfx_scroll_down(uint8_t n){
     uint8_t *src,*dest;
     int size;
 
     src=&video_buffer[(VRES-n)*BPR];
     dest=&video_buffer[VRES*BPR];
     size = (VRES-n)*BPR;
-    while (size--) *--dest=*--src;
+    dest=move_up(src,dest,size);
     size=BPR*n;
     while (size--) *--dest=0;
 }
+
+// pixels shift is 2*n
+void gfx_scroll_left(uint8_t n){
+    int y,size;
+    uint8_t *src, *dest;
+    for (y=0;y<VRES;y++){
+        dest=&video_buffer[y*BPR];
+        src=dest+n;
+        size=HRES/2-n;
+        dest=move_down(src,dest,size);
+        size=n;
+        while (size--) *dest++=0;
+    }
+}
+
+// pixels shift is 2*n
+void gfx_scroll_right(uint8_t n){
+    int y,size;
+    uint8_t *src, *dest;
+    for (y=0;y<VRES;y++){
+        dest=&video_buffer[y*BPR]+BPR;
+        src=dest-n;
+        size=HRES/2-n;
+        dest=move_up(src,dest,size);
+        size=n;
+        while (size--) *--dest=0;
+    }
+}
+
 
 uint8_t gfx_get_pixel(int x, int y){
     register uint8_t byte;

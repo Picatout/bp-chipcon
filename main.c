@@ -126,7 +126,8 @@ void main(void){
 	print_int(sl_palette[0],10);
 	sx=sy=0;
 	dx=dy=1;
-	timer=100;
+	gfx_scroll_right(3);
+	gfx_scroll_left(3);
 	while(1){
 //		x++;
 //		frame_sync();
