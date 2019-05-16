@@ -22,6 +22,7 @@
    16 colors
 */
 
+
 #include "include/blue_pill.h"
 #include "tvout.h"
 
@@ -36,10 +37,10 @@
 #define SERRATION ((uint16_t)(2.3e-6*(float)FCLK))
 #define SYNC_PULSE ((uint16_t)(27.1E-6*(float)FCLK))
 #define CHROMA_START ((uint16_t)(5.1e-6*(float)FCLK))
-#define LEFT_MARGIN ((uint16_t)(13.5e-6*(float)FCLK))
+#define LEFT_MARGIN (966) 
 #define FIRST_VIDEO_LINE (22)
 #define VIDEO_LINES (224)
-
+#define REPEAT_LINES (2)
 
 static const uint16_t palette[4]={
     0,
@@ -64,22 +65,29 @@ enum TASK_ENUM{
 #define F_VSYNC BIT1
 #define F_VIDEO BIT2
 
+
+static vmode_t video_mode=VM_HIRES;
 static volatile uint16_t task=0; // active task number
 static volatile uint16_t flags; // boolean flags.
 static volatile uint16_t slice=0; //  task slice
 static volatile uint16_t scan_line=0; // scan line counter
 volatile uint16_t pad;
 
+
+static const vmode_params_t video_params[MODES_COUNT]={
+    {FIRST_VIDEO_LINE,FIRST_VIDEO_LINE+VIDEO_LINES,LEFT_MARGIN,BPR,HRES,VRES,(TMR_CCER_CC3E|TMR_CCER_CC4E)},
+    {FIRST_VIDEO_LINE+(VRES-32),FIRST_VIDEO_LINE+(VRES-32)+32*REPEAT_LINES,LEFT_MARGIN+700,32,64,32,0},
+    {FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+500,64,128,64,0},
+    {FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+500,64,128,64,(TMR_CCER_CC3E|TMR_CCER_CC4E)}
+};
+
 uint8_t video_buffer[VRES*BPR];
-uint8_t sl_palette[VRES];
-// int active_palette=3;
 
 // use TIMER1 CH1  to generate video synchronization
 // use TIMER1 CH2 for video_out delay
 // use TIMER2 CH1 for chroma reference signal
 // output PORT A8.
 void tvout_init(){
-    set_palette(3);
     *GPIOA_CNF_CRL=0x88883333;
     *GPIOA_CNF_CRH=0x88444444;
     config_pin(SYNC_PORT,SYNC_PIN,OUTPUT_ALT_PP_SLOW);
@@ -116,23 +124,22 @@ void tvout_init(){
     TMR3->CR1|=TMR_CR1_CEN; 
 }
 
-
 void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
     register uint8_t *video_data;
     register uint16_t *video_port;
-
     TMR3->CCER|=TMR_CCER_CC3E;
-    while(TMR1->CNT<(uint16_t)(8.0e-6*(float)FCLK));
+    while(TMR1->CNT<573); //(uint16_t)(8.0e-6*(float)FCLK));
     TMR3->CCER&=~TMR_CCER_CC3E;
     if (flags&F_VIDEO){
-            int i,r;
-            uint8_t s,b,byte;
+            register uint16_t i;
+            register uint8_t bpr;
+            bpr=video_params[video_mode].bpr;
             video_port=(uint16_t*)&PORTA->ODR;
-            while(TMR1->CNT<LEFT_MARGIN);
-            video_data=&video_buffer[slice/2*BPR];
-            //r=slice/3*BPR;
-            TMR3->CCER|=palette[sl_palette[slice>>1]];//palette[active_palette];//TMR_CCER_CC4E+TMR_CCER_CC3E;
-            for (i=0;i<(BPR);i++){
+            i=video_params[video_mode].left_margin;
+            while(TMR1->CNT<i);
+            video_data=&video_buffer[slice/2*bpr];
+            TMR3->CCER|=video_params[video_mode].chroma_setting;
+            for (i=0;i<bpr;i++){
                 *video_port=(*video_data)>>4;
                 asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
                 *video_port=(*video_data++)&0xf;
@@ -197,7 +204,7 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
         task++;
         break;    
     case WAIT_FIRST_VIDEO:
-        if (scan_line==FIRST_VIDEO_LINE){
+        if (scan_line==video_params[video_mode].first_visible){
             task++;
             slice=0;
             flags |= F_VIDEO;
@@ -205,7 +212,7 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
         break;
     case WAIT_VIDEO_END:
         slice++;
-        if (scan_line==(FIRST_VIDEO_LINE+VIDEO_LINES)){
+        if (scan_line==video_params[video_mode].video_end){
             task++;
             flags &=~F_VIDEO;
         }
@@ -231,13 +238,15 @@ void frame_sync(){
     while (!(flags&F_VSYNC));
 }
 
-void set_palette(uint8_t p){
-    int i;
-    p&=3;
-     for (i=0;i<VRES;i++) sl_palette[i]=p;
-}
-
 uint16_t btn_wait_any(){
     while ((pad&ALL_BTN)==ALL_BTN);
     return ~(pad&0xffff);
+}
+
+void set_video_mode(vmode_t mode){
+    video_mode=mode;
+}
+
+vmode_params_t* get_video_params(){
+    return (vmode_params_t*)&video_params[video_mode];
 }

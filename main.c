@@ -27,6 +27,7 @@
  * 
  */
 
+#include <stdlib.h>
 #include "include/blue_pill.h"
 #include "tvout.h"
 #include "graphics.h"
@@ -70,7 +71,7 @@ extern uint32_t _TPA_START;
 extern uint32_t _DATA_RAM_START;
 extern uint32_t _DATA_ROM_START;
 
-const static uint8_t test_sprite[8*BPP]={
+const static uint8_t ball8x8[8*BPP]={
 	0x00,0x77,0x77,0x00,
 	0x07,0x77,0x77,0x70,
 	0x77,0x77,0x77,0x77,
@@ -80,6 +81,85 @@ const static uint8_t test_sprite[8*BPP]={
 	0x07,0x77,0x77,0x70,
 	0x00,0x77,0x77,0x00,
 };
+
+typedef struct ball{
+	int x;
+	int y;
+	int dx;
+	int dy;
+	const uint8_t* ball_sprite;
+}ball_t;
+
+#define BALL_COUNT 4
+ball_t balls[BALL_COUNT];
+
+void draw_balls(){
+	int i;
+	frame_sync();
+	for (i=0;i<BALL_COUNT;i++){
+		gfx_sprite(balls[i].x,balls[i].y,8,8,balls[i].ball_sprite);
+	}
+}
+
+//REF: https://en.wikipedia.org/wiki/Integer_square_root
+int isqrt(int n){
+	int small, large;
+	if (n<2) return n;
+  	small = isqrt(n >> 2) << 1;
+	large = small + 1;
+	if (large*large > n)
+		return small;
+	else
+		return large;	
+}
+
+unsigned distance(ball_t *ball1, ball_t *ball2){
+	return isqrt(abs(ball1->x*ball2->x+ball1->y*ball2->y));
+}
+
+void move_balls(){
+	int i;
+	vmode_params_t *vparams=get_video_params();
+	for (i=0;i<BALL_COUNT;i++){
+		balls[i].x+=balls[i].dx;
+		if ((balls[i].x<-7)||(balls[i].x>=vparams->hres)){
+			balls[i].dx=-balls[i].dx;
+			balls[i].x+=balls[i].dx;
+		}
+		balls[i].y+=balls[i].dy;
+		if ((balls[i].y<-7)||(balls[i].y>=vparams->vres)){
+			balls[i].dy=-balls[i].dy;
+			balls[i].y+=balls[i].dy;
+		} 
+	}
+	// collision between balls
+	if (distance(&balls[0],&balls[1])<8){
+		if (balls[0].dx!=balls[1].dx){
+			i=balls[0].dx;
+			balls[0].dx=balls[1].dx;
+			balls[1].dx=i;
+		}
+		if (balls[0].dy!=balls[1].dy){
+			i=balls[0].dy;
+			balls[0].dy=balls[1].dy;
+			balls[1].dy=i;
+		}
+	}
+}
+
+
+void init_balls(){
+	int i;
+	vmode_params_t *vparams=get_video_params();
+	srand(ticks);
+	for (i=0;i<BALL_COUNT;i++){
+		balls[i].x=rand()%vparams->hres;
+		balls[i].y=rand()%vparams->vres;
+		balls[i].dx=1;
+		balls[i].dy=1;
+		balls[i].ball_sprite=ball8x8;
+	}
+}
 
 void main(void){
 	set_sysclock();
@@ -91,24 +171,11 @@ void main(void){
 	_led_off();
 	tvout_init();
 	gfx_cls();
-	//gfx_rectangle(0,0,HRES-1,VRES-1);
 	int x,y,sx,sy,dx,dy;
 	uint32_t t0;
 	uint8_t c,p=3;
-	/*
-	for (x=26,y=1;x<(HRES-26);x++,y++)
-		{
-			gfx_plot(x,y,5);
-		}
-	*/
-/*
-	c=4;
-	for (y=0;y<VRES;y++){
-		if (y%28==0) c--;
-		sl_palette[y]=c&3;
-	}
-*/	
-	for (y=VRES/4*3;y<VRES;y++){
+	vmode_params_t* vparams=get_video_params();
+	for (y=vparams->vres/4*3;y<vparams->vres;y++){
 		c=0x10;
 		for (x=0;x<128;x++){
 			if (x%8==0){
@@ -118,42 +185,17 @@ void main(void){
 		}
 	}
 		
-//	gfx_print("012345678901234567890123456789");
     print_int((int)&_DATA_ROM_START,10);	
 	print_int(0x20005000-(int)(&_TPA_START),10);
-	set_cursor(20*CHAR_WIDTH,0);
-	print("palette:");
-	print_int(sl_palette[0],10);
-	sx=sy=0;
-	dx=dy=1;
-	gfx_scroll_right(3);
-	gfx_scroll_left(3);
+	init_balls();
 	while(1){
-//		x++;
-//		frame_sync();
-		gfx_sprite(sx,sy,8,8,test_sprite);
+		draw_balls();
 		t0=ticks+10;
 		while (ticks<t0);
-		frame_sync();
-		gfx_sprite(sx,sy,8,8,test_sprite);
-		sx+=dx;
-		if (sx<-8|| sx>=HRES) dx=-dx;
-		sy+=dy;
-		if (sy<-8 || sy>=VRES) dy=-dy;
+		draw_balls();
+		move_balls();
 		if (!(pad&BIT15)){
-			set_palette(++p);
-			set_cursor(28*CHAR_WIDTH,0);
-			print_int(p&3,10);
-			while (!(pad&BIT15));
 		}
-/*		
-		if (!timer){
-			set_palette(++p);
-			gfx_locate(0,28);
-			gfx_print_int(p&3,10);
-			timer=5000;
-		}
-*/		
 	};
 
 }

@@ -42,11 +42,29 @@
 #define _wait_btn_release(btn)  ({while (!(pad&btn));})
 #define _btn_down(btn) (!(pad&btn))
 
+typedef enum VIDEO_MODES{
+   VM_HIRES, // 180x112 16 colors (default)
+   VM_CHIP,  // 64x32 monochrome
+   VM_SCHIP, // 128x64 monochrome
+   VM_XOCHIP, // 128x64 4 colors
+
+   MODES_COUNT
+}vmode_t;
+
+typedef struct vmode_params{
+    uint16_t first_visible; // first visible scan line
+    uint16_t video_end;  // last visible scan line
+    uint16_t left_margin;   // left margin delay
+    uint8_t bpr; // bytes per row
+    uint16_t hres; // horizontal pixels
+    uint16_t vres; // vertical pixels
+    uint16_t chroma_setting;
+}vmode_params_t;
+
 extern volatile uint16_t pad;
 extern uint8_t video_buffer[VRES*BPR];
-extern uint8_t sl_palette[VRES];
-//extern int active_palette;
-void set_palette(uint8_t color);
+void set_video_mode(vmode_t mode);
+vmode_params_t* get_video_params();
 void tvout_init();
 void frame_sync();
 uint16_t btn_wait_any();

@@ -40,8 +40,9 @@ int gfx_blit(int x, int y, uint8_t color, blit_op_t op){
 	register int idx;
     int collision;
     register uint8_t byte,mask;
-	if ((x<0) || (x>=HRES) || (y<0) || (y>=VRES) ) return 0;
-    idx=y*BPR+x/2;
+    vmode_params_t *vparams=get_video_params();
+	if ((x<0) || (x>=vparams->hres) || (y<0) || (y>=vparams->vres)) return 0;
+    idx=y*vparams->bpr+x/2;
     color&=0xf;
     mask=0xf0;
     if (!(x&1)){
@@ -74,8 +75,9 @@ int gfx_blit(int x, int y, uint8_t color, blit_op_t op){
 void gfx_plot (int x,int y,uint8_t color){
 	register int idx;
     register uint8_t byte;
-	if ((x<0) || (x>=HRES) || (y<0) || (y>=VRES) ) return;
-    idx=y*BPR+x/2;
+    vmode_params_t *vparams=get_video_params();
+	if ((x<0) || (x>=vparams->hres) || (y<0) || (y>=vparams->vres) ) return;
+    idx=y*vparams->bpr+x/2;
     color&=0xf;
     byte=video_buffer[idx];
     if (x&1){
