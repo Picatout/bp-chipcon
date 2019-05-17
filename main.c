@@ -188,6 +188,7 @@ void main(void){
     print_int((int)&_DATA_ROM_START,10);	
 	print_int(0x20005000-(int)(&_TPA_START),10);
 	init_balls();
+	p=0;
 	while(1){
 		draw_balls();
 		t0=ticks+10;
@@ -195,6 +196,24 @@ void main(void){
 		draw_balls();
 		move_balls();
 		if (!(pad&BIT15)){
+			p=++p&3;
+			set_video_mode(p);
+			switch(p){
+			case VM_HIRES:
+				print("HIRES mode\n180x112 16 colors");
+				break;
+			case VM_XOCHIP:
+				print("XOCHIP mode\n128x64 4 colors");
+				break;
+			case VM_SCHIP:
+				print("SCHIP mode\n128x64 mono");
+				break;
+			case VM_CHIP8:
+				print("CHIP8 mode\n64x32 mono");
+				break;
+			}
+			init_balls();
+			while (!(pad&BIT15));
 		}
 	};
 

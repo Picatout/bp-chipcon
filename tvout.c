@@ -37,7 +37,7 @@
 #define SERRATION ((uint16_t)(2.3e-6*(float)FCLK))
 #define SYNC_PULSE ((uint16_t)(27.1E-6*(float)FCLK))
 #define CHROMA_START ((uint16_t)(5.1e-6*(float)FCLK))
-#define LEFT_MARGIN (966) 
+#define LEFT_MARGIN (1000) 
 #define FIRST_VIDEO_LINE (22)
 #define VIDEO_LINES (224)
 #define REPEAT_LINES (2)
@@ -76,9 +76,9 @@ volatile uint16_t pad;
 
 static const vmode_params_t video_params[MODES_COUNT]={
     {FIRST_VIDEO_LINE,FIRST_VIDEO_LINE+VIDEO_LINES,LEFT_MARGIN,BPR,HRES,VRES,(TMR_CCER_CC3E|TMR_CCER_CC4E)},
-    {FIRST_VIDEO_LINE+(VRES-32),FIRST_VIDEO_LINE+(VRES-32)+32*REPEAT_LINES,LEFT_MARGIN+700,32,64,32,0},
-    {FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+500,64,128,64,0},
-    {FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+500,64,128,64,(TMR_CCER_CC3E|TMR_CCER_CC4E)}
+    {FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+400,64,128,64,(TMR_CCER_CC3E|TMR_CCER_CC4E)},
+    {FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+200,32,64,32,0},
+    {FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+400,64,128,64,0}
 };
 
 uint8_t video_buffer[VRES*BPR];
@@ -124,12 +124,26 @@ void tvout_init(){
     TMR3->CR1|=TMR_CR1_CEN; 
 }
 
+static void __attribute__((optimize("O1"))) pixel_delay(uint32_t dly){
+    asm("");
+    while (dly--);
+}
+
+
+#define _pixel_delay(dly)    asm("push {r2}\n"\
+                              "mov r2,%0\n"\
+                              "1: subs r2,#1\n"\
+                              "bne.n 1b\n"\
+                              "pop {r2}\n"::"I" (dly))
+
 void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
     register uint8_t *video_data;
     register uint16_t *video_port;
-    TMR3->CCER|=TMR_CCER_CC3E;
-    while(TMR1->CNT<573); //(uint16_t)(8.0e-6*(float)FCLK));
-    TMR3->CCER&=~TMR_CCER_CC3E;
+    if (video_mode<VM_CHIP8){
+        TMR3->CCER|=TMR_CCER_CC3E;
+        while(TMR1->CNT<573); //(uint16_t)(8.0e-6*(float)FCLK));
+        TMR3->CCER&=~TMR_CCER_CC3E;
+    }
     if (flags&F_VIDEO){
             register uint16_t i;
             register uint8_t bpr;
@@ -137,13 +151,35 @@ void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
             video_port=(uint16_t*)&PORTA->ODR;
             i=video_params[video_mode].left_margin;
             while(TMR1->CNT<i);
-            video_data=&video_buffer[slice/2*bpr];
             TMR3->CCER|=video_params[video_mode].chroma_setting;
-            for (i=0;i<bpr;i++){
-                *video_port=(*video_data)>>4;
-                asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
-                *video_port=(*video_data++)&0xf;
-                asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+            if (video_mode==VM_CHIP8){
+                video_data=&video_buffer[slice/4*bpr];
+                for (i=0;i<bpr;i++){
+                    *video_port=(*video_data)>>4;
+                    _pixel_delay(4);
+                    /*
+                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+                    */
+                    *video_port=(*video_data++)&0xf;
+                    _pixel_delay(4);
+                    /*
+                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+                    */
+                }
+            }else{
+                video_data=&video_buffer[slice/2*bpr];
+                for (i=0;i<bpr;i++){
+                    *video_port=(*video_data)>>4;
+                    _pixel_delay(1);
+                    //asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+                    *video_port=(*video_data++)&0xf;
+                    _pixel_delay(1);
+                    //asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+                }
             }
         PORTA->ODR=0;
         TMR3->CCER&=~(TMR_CCER_CC4E+TMR_CCER_CC3E);
@@ -244,6 +280,8 @@ uint16_t btn_wait_any(){
 }
 
 void set_video_mode(vmode_t mode){
+    gfx_cls();
+    frame_sync();
     video_mode=mode;
 }
 

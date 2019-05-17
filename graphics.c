@@ -116,6 +116,7 @@ void gfx_rectangle(int x0,int y0, int x1,int y1){
 void gfx_cls(){
 	int x;
 	for (x=0;x<VRES*BPR;x++) video_buffer[x]=0;
+    set_cursor(0,0);
 }
 
 static uint8_t* move_up(uint8_t* src, uint8_t* dest, int size){
