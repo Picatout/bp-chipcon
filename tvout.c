@@ -38,7 +38,7 @@
 #define SERRATION ((uint16_t)(2.3e-6*(float)FCLK))
 #define SYNC_PULSE ((uint16_t)(27.1E-6*(float)FCLK))
 #define CHROMA_START ((uint16_t)(5.1e-6*(float)FCLK))
-#define LEFT_MARGIN (1000) 
+#define LEFT_MARGIN (840) 
 #define FIRST_VIDEO_LINE (22)
 #define VIDEO_LINES (224)
 #define REPEAT_LINES (2)
@@ -78,8 +78,8 @@ volatile uint16_t pad;
 static const vmode_params_t video_params[MODES_COUNT]={
     {VM_HIRES,FIRST_VIDEO_LINE,FIRST_VIDEO_LINE+VIDEO_LINES,LEFT_MARGIN,BPR,HRES,VRES,(TMR_CCER_CC3E|TMR_CCER_CC4E)},
     {VM_XOCHIP,FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+400,64,128,64,(TMR_CCER_CC3E|TMR_CCER_CC4E)},
-    {VM_SCHIP,FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+200,32,64,32,0},
-    {VM_CHIP8,FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+400,64,128,64,0}
+    {VM_SCHIP,FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+400,64,128,64,0},
+    {VM_CHIP8,FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+400,32,64,32,0}
 };
 
 uint8_t video_buffer[VRES*BPR];
@@ -132,9 +132,17 @@ static void __attribute__((optimize("O1"))) pixel_delay(uint32_t dly){
 
 #define _jitter_cancel()  asm volatile ("mov r2,%0\n\t"\
                                        "ldr r2,[r2,#0]\n\t"\
-                                       "and r2,#7\n\t"\
+                                       "and r2,#15\n\t"\
                                        "lsl r2,#1\n\t"\
                                        "add pc,pc,r2\n\t"\
+                                       "nop\n\t"\
+                                       "nop\n\t"\
+                                       "nop\n\t"\
+                                       "nop\n\t"\
+                                       "nop\n\t"\
+                                       "nop\n\t"\
+                                       "nop\n\t"\
+                                       "nop\n\t"\
                                        "nop\n\t"\
                                        "nop\n\t"\
                                        "nop\n\t"\
@@ -146,16 +154,16 @@ static void __attribute__((optimize("O1"))) pixel_delay(uint32_t dly){
                                         ::"r"(TMR1_CNT))
 
 
-#define _pixel_delay(dly)    asm volatile ("push {r2}\n"\
+#define _pixel_delay(dly)    asm volatile (\
                               "mov r2,%0\n"\
                               "1: subs r2,#1\n"\
                               "bne.n 1b\n"\
-                              "pop {r2}\n"::"I" (dly))
+                              ::"i" (dly):"r2")
 
 void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
     register uint8_t *video_data;
     register uint16_t *video_port;
-    if (video_mode<VM_CHIP8){
+    if (video_mode<VM_SCHIP){
         TMR3->CCER|=TMR_CCER_CC3E;
         while(TMR1->CNT<573); //(uint16_t)(8.0e-6*(float)FCLK));
         TMR3->CCER&=~TMR_CCER_CC3E;
@@ -172,29 +180,17 @@ void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
                 video_data=&video_buffer[slice/4*bpr];
                 for (i=0;i<bpr;i++){
                     *video_port=(*video_data)>>4;
-                    _pixel_delay(4);
-                    /*
-                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
-                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
-                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
-                    */
+                    _pixel_delay(5);
                     *video_port=(*video_data++)&0xf;
-                    _pixel_delay(4);
-                    /*
-                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
-                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
-                    asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\n");
-                    */
+                    _pixel_delay(5);
                 }
             }else{
                 video_data=&video_buffer[slice/2*bpr];
                 for (i=0;i<bpr;i++){
                     *video_port=(*video_data)>>4;
-                    _pixel_delay(1);
-                    //asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+                    _pixel_delay(2);
                     *video_port=(*video_data++)&0xf;
-                    _pixel_delay(1);
-                    //asm("nop\nnop\nnop\nnop\nnop\nnop\nnop\n");
+                    _pixel_delay(2);
                 }
             }
         PORTA->ODR=0;
