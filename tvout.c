@@ -25,6 +25,7 @@
 
 #include "include/blue_pill.h"
 #include "tvout.h"
+#include "graphics.h"
 
 #define SYNC_PORT PORTA
 #define SYNC_PIN 8
@@ -75,10 +76,10 @@ volatile uint16_t pad;
 
 
 static const vmode_params_t video_params[MODES_COUNT]={
-    {FIRST_VIDEO_LINE,FIRST_VIDEO_LINE+VIDEO_LINES,LEFT_MARGIN,BPR,HRES,VRES,(TMR_CCER_CC3E|TMR_CCER_CC4E)},
-    {FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+400,64,128,64,(TMR_CCER_CC3E|TMR_CCER_CC4E)},
-    {FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+200,32,64,32,0},
-    {FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+400,64,128,64,0}
+    {VM_HIRES,FIRST_VIDEO_LINE,FIRST_VIDEO_LINE+VIDEO_LINES,LEFT_MARGIN,BPR,HRES,VRES,(TMR_CCER_CC3E|TMR_CCER_CC4E)},
+    {VM_XOCHIP,FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+400,64,128,64,(TMR_CCER_CC3E|TMR_CCER_CC4E)},
+    {VM_SCHIP,FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+200,32,64,32,0},
+    {VM_CHIP8,FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+400,64,128,64,0}
 };
 
 uint8_t video_buffer[VRES*BPR];
@@ -129,8 +130,23 @@ static void __attribute__((optimize("O1"))) pixel_delay(uint32_t dly){
     while (dly--);
 }
 
+#define _jitter_cancel()  asm volatile ("mov r2,%0\n\t"\
+                                       "ldr r2,[r2,#0]\n\t"\
+                                       "and r2,#7\n\t"\
+                                       "lsl r2,#1\n\t"\
+                                       "add pc,pc,r2\n\t"\
+                                       "nop\n\t"\
+                                       "nop\n\t"\
+                                       "nop\n\t"\
+                                       "nop\n\t"\
+                                       "nop\n\t"\
+                                       "nop\n\t"\
+                                       "nop\n\t"\
+                                       "nop\n\t"\
+                                        ::"r"(TMR1_CNT))
 
-#define _pixel_delay(dly)    asm("push {r2}\n"\
+
+#define _pixel_delay(dly)    asm volatile ("push {r2}\n"\
                               "mov r2,%0\n"\
                               "1: subs r2,#1\n"\
                               "bne.n 1b\n"\
@@ -145,12 +161,12 @@ void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
         TMR3->CCER&=~TMR_CCER_CC3E;
     }
     if (flags&F_VIDEO){
-            register uint16_t i;
+            register uint32_t i;
             register uint8_t bpr;
             bpr=video_params[video_mode].bpr;
             video_port=(uint16_t*)&PORTA->ODR;
-            i=video_params[video_mode].left_margin;
-            while(TMR1->CNT<i);
+            while(TMR1->CNT<video_params[video_mode].left_margin);
+            _jitter_cancel();
             TMR3->CCER|=video_params[video_mode].chroma_setting;
             if (video_mode==VM_CHIP8){
                 video_data=&video_buffer[slice/4*bpr];

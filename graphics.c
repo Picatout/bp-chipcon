@@ -35,6 +35,7 @@
 #include "tvout.h"
 #include "include/ascii.h"
 #include "graphics.h"
+#include "text.h"
 
 int gfx_blit(int x, int y, uint8_t color, blit_op_t op){
 	register int idx;

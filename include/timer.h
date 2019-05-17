@@ -66,6 +66,12 @@ typedef enum{
 #define TMR_DCR_OFS 72
 #define TMR_DMAR_OFS 76
 
+#define TMR1_CNT (TIMER1_BASE_ADR+TMR_CNT_OFS)
+#define TMR2_CNT (TIMER2_BASE_ADR+TMR_CNT_OFS)
+#define TMR3_CNT (TIMER3_BASE_ADR+TMR_CNT_OFS)
+#define TMR4_CNT (TIMER4_BASE_ADR+TMR_CNT_OFS)
+
+
 typedef struct{
 	sfr_t CR1;
 	sfr_t CR2;

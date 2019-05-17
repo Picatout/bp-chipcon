@@ -66,7 +66,7 @@ static void set_sysclock(){
 
 extern void print_fault(const char *msg, sfrp_t adr);
 
-
+extern uint32_t _FLASH_FREE;
 extern uint32_t _TPA_START;
 extern uint32_t _DATA_RAM_START;
 extern uint32_t _DATA_ROM_START;
@@ -185,7 +185,7 @@ void main(void){
 		}
 	}
 		
-    print_int((int)&_DATA_ROM_START,10);	
+    print_int((int)&_FLASH_FREE,16);	
 	print_int(0x20005000-(int)(&_TPA_START),10);
 	init_balls();
 	p=0;
