@@ -57,6 +57,8 @@ typedef struct vmode_params{
     uint16_t video_end;  // last visible scan line
     uint16_t left_margin;   // left margin delay
     uint8_t bpr; // bytes per row
+    uint8_t rpt; // scan lines repeat per row
+    uint8_t pdly; // pixel delay
     uint16_t hres; // horizontal pixels
     uint16_t vres; // vertical pixels
     uint16_t chroma_setting;

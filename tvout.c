@@ -38,10 +38,53 @@
 #define SERRATION ((uint16_t)(2.3e-6*(float)FCLK))
 #define SYNC_PULSE ((uint16_t)(27.1E-6*(float)FCLK))
 #define CHROMA_START ((uint16_t)(5.1e-6*(float)FCLK))
-#define LEFT_MARGIN (840) 
+#define LEFT_MARGIN (760) 
 #define FIRST_VIDEO_LINE (22)
 #define VIDEO_LINES (224)
-#define REPEAT_LINES (2)
+
+///////////////////////////
+// video modes parameters
+///////////////////////////
+// HIRES
+#define HIRES_VRES VRES
+#define HIRES_HRES HRES
+#define HIRES_BPR (HRES/2)
+#define HIRES_RPT (VIDEO_LINES/HIRES_VRES) // 2 scan lines per row
+#define HIRES_START FIRST_VIDEO_LINE
+#define HIRES_END HIRES_START+VIDEO_LINES
+#define HIRES_LEFT LEFT_MARGIN // left margin delay
+#define HIRES_PDLY (1) // pixel delay
+#define HIRES_CHROMA (TMR_CCER_CC3E|TMR_CCER_CC4E)
+//XOCHIP
+#define XO_VRES 64
+#define XO_HRES 128
+#define XO_BPR (XO_HRES/2)
+#define XO_RPT (VIDEO_LINES/XO_VRES)  // 3 scan lines per row
+#define XO_START (FIRST_VIDEO_LINE+(VIDEO_LINES-XO_VRES*XO_RPT)/2)
+#define XO_END XO_START+XO_VRES*XO_RPT
+#define XO_LEFT LEFT_MARGIN+140
+#define XO_PDLY (2)
+#define XO_CHROMA (TMR_CCER_CC3E|TMR_CCER_CC4E)
+//SCHIP
+#define SCHIP_VRES 64
+#define SCHIP_HRES 128
+#define SCHIP_BPR (SCHIP_HRES/2)
+#define SCHIP_RPT (VIDEO_LINES/SCHIP_VRES)  // 3 scan lines per row
+#define SCHIP_START (FIRST_VIDEO_LINE+(VIDEO_LINES-SCHIP_VRES*SCHIP_RPT)/2)
+#define SCHIP_END SCHIP_START+SCHIP_VRES*SCHIP_RPT
+#define SCHIP_LEFT LEFT_MARGIN+140
+#define SCHIP_PDLY (2)
+#define SCHIP_CHROMA (0)
+//CHIP8
+#define CHIP8_VRES 32
+#define CHIP8_HRES 64
+#define CHIP8_BPR (CHIP8_HRES/2)
+#define CHIP8_RPT (VIDEO_LINES/CHIP8_VRES) // 7 scan lines per row
+#define CHIP8_START (FIRST_VIDEO_LINE+(VIDEO_LINES-CHIP8_VRES*CHIP8_RPT)/2)
+#define CHIP8_END (CHIP8_START+CHIP8_VRES*CHIP8_RPT)
+#define CHIP8_LEFT LEFT_MARGIN
+#define CHIP8_PDLY (7)
+#define CHIP8_CHROMA (0)
 
 static const uint16_t palette[4]={
     0,
@@ -76,10 +119,10 @@ volatile uint16_t pad;
 
 
 static const vmode_params_t video_params[MODES_COUNT]={
-    {VM_HIRES,FIRST_VIDEO_LINE,FIRST_VIDEO_LINE+VIDEO_LINES,LEFT_MARGIN,BPR,HRES,VRES,(TMR_CCER_CC3E|TMR_CCER_CC4E)},
-    {VM_XOCHIP,FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+400,64,128,64,(TMR_CCER_CC3E|TMR_CCER_CC4E)},
-    {VM_SCHIP,FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+400,64,128,64,0},
-    {VM_CHIP8,FIRST_VIDEO_LINE+(VRES-64),FIRST_VIDEO_LINE+(VRES-64)+64*REPEAT_LINES,LEFT_MARGIN+400,32,64,32,0}
+    {VM_HIRES,HIRES_START,HIRES_END,HIRES_LEFT,HIRES_BPR,HIRES_RPT,HIRES_PDLY,HIRES_HRES,HIRES_VRES,HIRES_CHROMA},
+    {VM_XOCHIP,XO_START,XO_END,XO_LEFT,XO_BPR,XO_RPT,XO_PDLY,XO_HRES,XO_VRES,XO_CHROMA},
+    {VM_SCHIP,SCHIP_START,SCHIP_END,SCHIP_LEFT,SCHIP_BPR,SCHIP_RPT,SCHIP_PDLY,SCHIP_HRES,SCHIP_VRES,SCHIP_CHROMA},
+    {VM_CHIP8,CHIP8_START,CHIP8_END,CHIP8_LEFT,CHIP8_BPR,CHIP8_RPT,CHIP8_PDLY,CHIP8_HRES,CHIP8_VRES,CHIP8_CHROMA}
 };
 
 uint8_t video_buffer[VRES*BPR];
@@ -135,32 +178,23 @@ static void __attribute__((optimize("O1"))) pixel_delay(uint32_t dly){
                                        "and r2,#15\n\t"\
                                        "lsl r2,#1\n\t"\
                                        "add pc,pc,r2\n\t"\
+                                       ".rept 16\n\t"\
                                        "nop\n\t"\
-                                       "nop\n\t"\
-                                       "nop\n\t"\
-                                       "nop\n\t"\
-                                       "nop\n\t"\
-                                       "nop\n\t"\
-                                       "nop\n\t"\
-                                       "nop\n\t"\
-                                       "nop\n\t"\
-                                       "nop\n\t"\
-                                       "nop\n\t"\
-                                       "nop\n\t"\
-                                       "nop\n\t"\
-                                       "nop\n\t"\
-                                       "nop\n\t"\
-                                       "nop\n\t"\
+                                       ".endr\n"\
                                         ::"r"(TMR1_CNT))
+
 
 
 #define _pixel_delay(dly)    asm volatile (\
                               "mov r2,%0\n"\
-                              "1: subs r2,#1\n"\
-                              "bne.n 1b\n"\
-                              ::"i" (dly):"r2")
+                              "1: subs r2,#1\n\t"\
+                              "bne.n 1b\n\t"\
+                              ::"r" (dly):"r2")
 
 void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
+#define _bpr video_params[video_mode].bpr
+#define _rpt video_params[video_mode].rpt
+//#define _pdly video_params[video_mode].pdly
     register uint8_t *video_data;
     register uint16_t *video_port;
     if (video_mode<VM_SCHIP){
@@ -170,19 +204,27 @@ void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
     }
     if (flags&F_VIDEO){
             register uint32_t i;
-            register uint8_t bpr;
-            bpr=video_params[video_mode].bpr;
+            register uint8_t pdly;
             video_port=(uint16_t*)&PORTA->ODR;
             while(TMR1->CNT<video_params[video_mode].left_margin);
             _jitter_cancel();
             TMR3->CCER|=video_params[video_mode].chroma_setting;
+            video_data=&video_buffer[slice/_rpt*_bpr];
+            pdly=video_params[video_mode].pdly;
+            for (i=0;i<_bpr;i++){
+                *video_port=(*video_data)>>4;
+                _pixel_delay(pdly);
+                *video_port=(*video_data++)&0xf;
+                _pixel_delay(pdly);
+            }
+/*
             if (video_mode==VM_CHIP8){
-                video_data=&video_buffer[slice/4*bpr];
+                video_data=&video_buffer[slice/7*bpr];
                 for (i=0;i<bpr;i++){
                     *video_port=(*video_data)>>4;
-                    _pixel_delay(5);
+                    _pixel_delay(8);
                     *video_port=(*video_data++)&0xf;
-                    _pixel_delay(5);
+                    _pixel_delay(8);
                 }
             }else{
                 video_data=&video_buffer[slice/2*bpr];
@@ -193,6 +235,7 @@ void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
                     _pixel_delay(2);
                 }
             }
+*/
         PORTA->ODR=0;
         TMR3->CCER&=~(TMR_CCER_CC4E+TMR_CCER_CC3E);
     }

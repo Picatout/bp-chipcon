@@ -4,6 +4,7 @@ NAME = bp-chipcon
 
 PREFIX = arm-none-eabi-
 CC = $(PREFIX)gcc
+AS = $(PREFIX)as
 LD = $(PREFIX)ld
 NM = $(PREFIX)nm
 OBJCOPY = $(PREFIX)objcopy
@@ -13,6 +14,7 @@ CFLAGS = -mcpu=cortex-m3 -mthumb
 INC =../include/
 HAL = ../hal/
 BUILD=build/
+ASM =../*.s
 SRC = ../*.c
 SRC += $(HAL)nvic.c $(HAL)gpio.c $(HAL)spi.c $(HAL)dma.c 
 SRC += $(HAL)systick.c $(HAL)rtc.c $(HAL)bkp.c $(HAL)flash.c
