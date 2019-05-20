@@ -1,5 +1,5 @@
 /*
-* Copyright Jacques Deschênes  2019 
+* Copyright Jacques Deschênes 2018, 2019 
 * This file is part of BP_CHIPCON.
 *
 *     BP_CHIPCON is free software: you can redistribute it and/or modify
@@ -16,20 +16,17 @@
 *     along with BP_CHIPCON.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
- * Description: Command shell adapted from my BPOS project.
- * 
- * Auteur: PICATOUT
- * Date: 2018-12-31
- * Copyright Jacques Deschênes, 2018, 2019
- * Licence: GPLv3
- * revisions: 2019-05-19  imported from BPOS project
- * 
- */
+#ifndef SOUND_H
+#define SOUND_H
 
-#ifndef CCP_H
-#define CCP_H
+#include "include/stm32f103c8.h"
 
-void ccp();
+void sound_init();
 
-#endif // CCP_H
+void beep();
+
+void load_sound_buffer(const uint8_t* buffer);
+
+
+
+#endif //SOUND_H

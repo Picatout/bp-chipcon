@@ -1,5 +1,5 @@
 /*
-* Copyright Jacques Deschênes  2019 
+* Copyright Jacques Deschênes 2018, 2019 
 * This file is part of BP_CHIPCON.
 *
 *     BP_CHIPCON is free software: you can redistribute it and/or modify
@@ -16,20 +16,6 @@
 *     along with BP_CHIPCON.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
- * Description: Command shell adapted from my BPOS project.
- * 
- * Auteur: PICATOUT
- * Date: 2018-12-31
- * Copyright Jacques Deschênes, 2018, 2019
- * Licence: GPLv3
- * revisions: 2019-05-19  imported from BPOS project
- * 
- */
+#include "sound.h"
 
-#ifndef CCP_H
-#define CCP_H
 
-void ccp();
-
-#endif // CCP_H

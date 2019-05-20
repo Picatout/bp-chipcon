@@ -329,10 +329,35 @@ void frame_sync(){
     while (!(flags&F_VSYNC));
 }
 
-uint16_t btn_wait_any(){
-    while ((pad&ALL_BTN)==ALL_BTN);
+uint16_t btn_wait_down(uint16_t mask){
+    int counter=0;
+    while (counter<20){
+        if ((pad=((PORTA->IDR)&mask))==mask){
+            counter=0;
+        }else{
+            counter++;
+        }
+        pause(1);
+    }    
     return ~(pad&0xffff);
 }
+
+void btn_wait_up(uint16_t mask){
+    int counter=0;
+    while (counter<20){
+        if ((PORTA->IDR&mask)!=mask){
+            counter=0;
+        }else{
+            counter++;
+        }
+        pause(1);
+    }
+}
+
+int btn_query_down(uint16_t mask){
+    return (!(PORTA->IDR&mask));
+}
+
 
 void set_video_mode(vmode_t mode){
     gfx_cls();

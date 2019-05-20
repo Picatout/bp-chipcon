@@ -34,13 +34,10 @@
 #define BTN_DOWN BIT5
 #define BTN_LEFT BIT6
 #define BTN_RIGHT BIT7
-#define BTN_A BIT14
+#define BTN_A BIT12
 #define BTN_B BIT15
-#define ALL_BTN (BIT4|BIT5|BIT6|BIT7|BIT14|BIT15)
+#define ALL_BTN (BTN_UP|BTN_DOWN|BTN_LEFT|BTN_RIGHT|BTN_A|BTN_B)
 
-#define _get_btn(btn) (pad&btn)
-#define _wait_btn_release(btn)  ({while (!(pad&btn));})
-#define _btn_down(btn) (!(pad&btn))
 
 typedef enum VIDEO_MODES{
    VM_HIRES, // 180x112 16 colors (default)
@@ -70,6 +67,8 @@ void set_video_mode(vmode_t mode);
 vmode_params_t* get_video_params();
 void tvout_init();
 void frame_sync();
-uint16_t btn_wait_any();
+uint16_t btn_wait_down(uint16_t mask);
+void btn_wait_up(uint16_t mask);
+int btn_query_down(uint16_t mask);
 
 #endif // TVOUT_H

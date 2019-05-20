@@ -1,5 +1,5 @@
 /*
-* Copyright Jacques Deschênes 2018, 2019 
+* Copyright Jacques Deschênes 2019 
 * This file is part of BP_CHIPCON.
 *
 *     BP_CHIPCON is free software: you can redistribute it and/or modify
@@ -90,7 +90,7 @@ typedef struct ball{
 	const uint8_t* ball_sprite;
 }ball_t;
 
-#define BALL_COUNT 4
+#define BALL_COUNT 2
 ball_t balls[BALL_COUNT];
 
 void draw_balls(){
@@ -161,19 +161,12 @@ void init_balls(){
 	}
 }
 
-void main(void){
-	set_sysclock();
-	config_systicks();
-//	rtc_init(1000,RTC_SECIE|RTC_ALRIE);
-	RCC->APB2ENR=RCC_APB2ENR_IOPAEN|RCC_APB2ENR_IOPBEN|RCC_APB2ENR_IOPCEN|RCC_APB2ENR_AFIOEN|RCC_APB2ENR_TIM1EN;
-//	RCC->AHBENR|=RCC_AHBENR_DMA1EN; // activation DMA1
-	config_pin(LED_PORT,LED_PIN,OUTPUT_OD_SLOW);
-	_led_off();
-	tvout_init();
-	gfx_cls();
+static void video_test(){
 	int x,y,sx,sy,dx,dy;
 	uint32_t t0;
 	uint8_t c,p=3;
+
+	gfx_cls();
 	vmode_params_t* vparams=get_video_params();
 	for (y=vparams->vres/4*3;y<vparams->vres;y++){
 		c=0x10;
@@ -191,11 +184,10 @@ void main(void){
 	p=0;
 	while(1){
 		draw_balls();
-		t0=ticks+10;
-		while (ticks<t0);
+		pause(10);
 		draw_balls();
 		move_balls();
-		if (!(pad&BIT15)){
+		if (btn_query_down(BTN_B)){
 			p=++p&3;
 			set_video_mode(p);
 			switch(p){
@@ -213,8 +205,82 @@ void main(void){
 				break;
 			}
 			init_balls();
-			while (!(pad&BIT15));
-		}
-	};
+			t0=ticks+1000;
+			btn_wait_up(BTN_B);
+			if (ticks>t0) break;
+		}//if
+	}//while(1)
+}
 
+static void select_vmode(){
+	gfx_cls();
+	println("video modes");
+	pause(1000);
+}
+
+static void select_game(){
+	gfx_cls();
+	println("games");
+	pause(1000);
+}
+
+
+#define MENU_ITEMS (3)
+static const char *menu_list[MENU_ITEMS]={
+	" Video mode",
+	" Games list",
+	" Video test",
+};
+
+static void display_menu(){
+	int i;
+	for (i=0;i<MENU_ITEMS;i++){
+		println(menu_list[i]);
+	}
+}
+
+static void menu(){
+	int i=0;
+	uint32_t t0;
+	vmode_params_t* vparams=get_video_params();
+	display_menu();
+	while (1){
+		set_cursor(0,i*CHAR_HEIGHT);
+		put_char('>');
+		btn_wait_down(BTN_B);
+		t0=ticks+1000;
+		btn_wait_up(BTN_B);
+		if (ticks>=t0){
+			switch(i){
+			case 0:
+				select_vmode();
+				break;
+			case 1:
+				select_game();
+				break;
+			case 2:
+				video_test();
+				break;
+			}
+			set_video_mode(VM_HIRES);
+			display_menu();
+		}else{
+			set_cursor(0,i*CHAR_HEIGHT);
+			put_char(' ');
+			i=++i%MENU_ITEMS;
+		}
+	}//while
+}
+
+void main(void){
+	set_sysclock();
+	config_systicks();
+//	rtc_init(1000,RTC_SECIE|RTC_ALRIE);
+	RCC->APB2ENR=RCC_APB2ENR_IOPAEN|RCC_APB2ENR_IOPBEN|RCC_APB2ENR_IOPCEN|RCC_APB2ENR_AFIOEN|RCC_APB2ENR_TIM1EN;
+//	RCC->AHBENR|=RCC_AHBENR_DMA1EN; // activation DMA1
+	config_pin(LED_PORT,LED_PIN,OUTPUT_OD_SLOW);
+	_led_off();
+	tvout_init();
+	gfx_cls();
+	menu();
 }

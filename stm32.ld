@@ -25,13 +25,13 @@ SECTIONS
 	. = ALIGN(0x400) ;
 	_FLASH_FREE = . ;
     
-    .user_code : AT(_FLASH_FREE)
+    .user_data : AT(_FLASH_FREE)
     {
-		*(user_code) /* user code in flash */
+		*(user_data) /* user code in flash */
     }
     
     _DATA_ROM_START = .;
-
+    
     .  = 0x20000000;  /* From 0x20000000 */      
 
     _DATA_RAM_START = .;
