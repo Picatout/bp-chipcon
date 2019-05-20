@@ -20,7 +20,7 @@ NOTES
 1. Le cristal de 8Mhz sur la carte blue pill doit-être remplacé par un cristal 14.318Mhz. Cette fréquence correspond à 4 fois la fréquence du signal chroma NTSC (3.579545Mhz).
 2. XO-CHIP est la machine virtuelle utilisé par [OCTO](https://github.com/JohnEarnest/Octo) de John Earnest.
 3. La résolution de 180x112 est un compromis. Le µC stm32f103c8 ne possède que 20480 octets de RAM. Il faut en conserver une partie pour les variables,
-le pile et l'espace pour les programme CHIP. avec cette résolution le tampon vidéo accapare 180*112/2=10080 octets. Le tampon vidéo est alloué de manière statique donc on ne sauve pas d'espace RAM en passant aux modes à plus faible résolution.
+le pile et l'espace pour les programme CHIP. avec cette résolution le tampon vidéo accapare 180*112/2=10080 octets. Le tampon vidéo est alloué de manière statique donc on ne sauve pas d'espace RAM en passant aux modes à plus faible résolution. Par contre en renonçant au mode BPCHIP on peut réduite la taille du tampon vidéo à 2048 octets ce qui libèrerait plus de 8000 octets supplémentaires pour les programmes XO-CHIP. Par contre les programmes CHIP8 et SCHIP n'utilise jamais plus de 4096 octets de RAM.
 
 Schématique
 -
