@@ -45,16 +45,16 @@
 ///////////////////////////
 // video modes parameters
 ///////////////////////////
-// HIRES
-#define HIRES_VRES VRES
-#define HIRES_HRES HRES
-#define HIRES_BPR (HRES/2)
-#define HIRES_RPT (VIDEO_LINES/HIRES_VRES) // 2 scan lines per row
-#define HIRES_START FIRST_VIDEO_LINE
-#define HIRES_END HIRES_START+VIDEO_LINES
-#define HIRES_LEFT LEFT_MARGIN // left margin delay
-#define HIRES_PDLY (1) // pixel delay
-#define HIRES_CHROMA (TMR_CCER_CC3E|TMR_CCER_CC4E)
+// BP
+#define BP_VRES VRES
+#define BP_HRES HRES
+#define BP_BPR (HRES/2)
+#define BP_RPT (VIDEO_LINES/BP_VRES) // 2 scan lines per row
+#define BP_START FIRST_VIDEO_LINE
+#define BP_END BP_START+VIDEO_LINES
+#define BP_LEFT LEFT_MARGIN // left margin delay
+#define BP_PDLY (1) // pixel delay
+#define BP_CHROMA (TMR_CCER_CC3E|TMR_CCER_CC4E)
 //XOCHIP
 #define XO_VRES 64
 #define XO_HRES 128
@@ -110,7 +110,7 @@ enum TASK_ENUM{
 #define F_VIDEO BIT2
 
 
-static vmode_t video_mode=VM_HIRES;
+static vmode_t video_mode=VM_BPCHIP;
 static volatile uint16_t task=0; // active task number
 static volatile uint16_t flags; // boolean flags.
 static volatile uint16_t slice=0; //  task slice
@@ -119,7 +119,7 @@ volatile uint16_t pad;
 
 
 static const vmode_params_t video_params[MODES_COUNT]={
-    {VM_HIRES,HIRES_START,HIRES_END,HIRES_LEFT,HIRES_BPR,HIRES_RPT,HIRES_PDLY,HIRES_HRES,HIRES_VRES,HIRES_CHROMA},
+    {VM_BPCHIP,BP_START,BP_END,BP_LEFT,BP_BPR,BP_RPT,BP_PDLY,BP_HRES,BP_VRES,BP_CHROMA},
     {VM_XOCHIP,XO_START,XO_END,XO_LEFT,XO_BPR,XO_RPT,XO_PDLY,XO_HRES,XO_VRES,XO_CHROMA},
     {VM_SCHIP,SCHIP_START,SCHIP_END,SCHIP_LEFT,SCHIP_BPR,SCHIP_RPT,SCHIP_PDLY,SCHIP_HRES,SCHIP_VRES,SCHIP_CHROMA},
     {VM_CHIP8,CHIP8_START,CHIP8_END,CHIP8_LEFT,CHIP8_BPR,CHIP8_RPT,CHIP8_PDLY,CHIP8_HRES,CHIP8_VRES,CHIP8_CHROMA}

@@ -127,7 +127,7 @@ void move_balls(){
 			balls[i].x+=balls[i].dx;
 		}
 		balls[i].y+=balls[i].dy;
-		if ((balls[i].y<-7)||(balls[i].y>=vparams->vres)){
+		if ((balls[i].y<(2*CHAR_HEIGHT))||(balls[i].y>=vparams->vres)){
 			balls[i].dy=-balls[i].dy;
 			balls[i].y+=balls[i].dy;
 		} 
@@ -154,7 +154,7 @@ void init_balls(){
 	srand(ticks);
 	for (i=0;i<BALL_COUNT;i++){
 		balls[i].x=rand()%vparams->hres;
-		balls[i].y=rand()%vparams->vres;
+		balls[i].y=2*CHAR_HEIGHT+rand()%(vparams->vres-2*CHAR_HEIGHT);
 		balls[i].dx=1;
 		balls[i].dy=1;
 		balls[i].ball_sprite=ball8x8;
@@ -191,8 +191,8 @@ static void video_test(){
 			p=++p&3;
 			set_video_mode(p);
 			switch(p){
-			case VM_HIRES:
-				print("HIRES mode\n180x112 16 colors");
+			case VM_BPCHIP:
+				print("BPCHIP mode\n180x112 16 colors");
 				break;
 			case VM_XOCHIP:
 				print("XOCHIP mode\n128x64 4 colors");
@@ -205,7 +205,7 @@ static void video_test(){
 				break;
 			}
 			init_balls();
-			t0=ticks+1000;
+			t0=ticks+500;
 			btn_wait_up(BTN_B);
 			if (ticks>t0) break;
 		}//if
@@ -248,7 +248,7 @@ static void menu(){
 		set_cursor(0,i*CHAR_HEIGHT);
 		put_char('>');
 		btn_wait_down(BTN_B);
-		t0=ticks+1000;
+		t0=ticks+500;
 		btn_wait_up(BTN_B);
 		if (ticks>=t0){
 			switch(i){
@@ -262,7 +262,7 @@ static void menu(){
 				video_test();
 				break;
 			}
-			set_video_mode(VM_HIRES);
+			set_video_mode(VM_BPCHIP);
 			display_menu();
 		}else{
 			set_cursor(0,i*CHAR_HEIGHT);
