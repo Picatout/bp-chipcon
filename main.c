@@ -161,12 +161,9 @@ void init_balls(){
 	}
 }
 
-static void video_test(){
-	int x,y,sx,sy,dx,dy;
-	uint32_t t0;
-	uint8_t c,p=3;
-
-	gfx_cls();
+static void color_bars(){
+	int x,y;
+	uint8_t c=0;
 	vmode_params_t* vparams=get_video_params();
 	for (y=vparams->vres/4*3;y<vparams->vres;y++){
 		c=0x10;
@@ -178,6 +175,26 @@ static void video_test(){
 		}
 	}
 		
+
+}
+
+static void vertical_bars(){
+	int x,y;
+	vmode_params_t* vparams=get_video_params();
+	for (y=2*CHAR_HEIGHT;y<vparams->vres;y++){
+		gfx_plot(0,y,15);
+		gfx_plot(vparams->hres-1,y,15);
+	}
+}
+
+static void video_test(){
+	int x,y,sx,sy,dx,dy;
+	uint32_t t0;
+	uint8_t c,p=3;
+
+	gfx_cls();
+	color_bars();
+	vertical_bars();
     print_int((int)&_FLASH_FREE,16);	
 	print_int(0x20005000-(int)(&_TPA_START),10);
 	init_balls();
@@ -193,6 +210,7 @@ static void video_test(){
 			switch(p){
 			case VM_BPCHIP:
 				print("BPCHIP mode\n180x112 16 colors");
+				color_bars();
 				break;
 			case VM_XOCHIP:
 				print("XOCHIP mode\n128x64 4 colors");
@@ -204,6 +222,7 @@ static void video_test(){
 				print("CHIP8 mode\n64x32 mono");
 				break;
 			}
+			vertical_bars();
 			init_balls();
 			t0=ticks+500;
 			btn_wait_up(BTN_B);

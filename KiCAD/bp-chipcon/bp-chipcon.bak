@@ -578,10 +578,10 @@ Text Label 2750 3525 0    50   ~ 0
 PA7
 Text Label 4825 3600 0    50   ~ 0
 PA15
-Text Label 4825 4300 0    50   ~ 0
-PA14
+Text Label 4825 3700 0    50   ~ 0
+PA12
 Text Label 1125 3075 2    50   ~ 0
-PA14
+PA12
 Text Label 1125 3775 2    50   ~ 0
 PA15
 Wire Wire Line

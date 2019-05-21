@@ -35,12 +35,8 @@ Text Label 3825 3100 2    50   ~ 0
 PA1
 Text Label 5975 2350 2    50   ~ 0
 PB0
-Text Label 5950 3175 2    50   ~ 0
-PB1
 Text Label 3825 3800 2    50   ~ 0
 PB0
-Text Label 3825 3900 2    50   ~ 0
-PB1
 Text Label 6625 2400 0    50   ~ 0
 C0
 Text Label 6600 3125 0    50   ~ 0
@@ -854,4 +850,6 @@ Text Label 5325 1100 2    50   ~ 0
 audio
 Text Label 3825 4000 2    50   ~ 0
 audio
+Text Label 5950 3175 2    50   ~ 0
+PB0
 $EndSCHEMATC
