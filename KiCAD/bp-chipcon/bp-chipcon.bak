@@ -4,7 +4,7 @@ EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 1 1
+Sheet 1 2
 Title ""
 Date ""
 Rev ""
@@ -35,12 +35,8 @@ Text Label 3825 3100 2    50   ~ 0
 PA1
 Text Label 5975 2350 2    50   ~ 0
 PB0
-Text Label 5950 3175 2    50   ~ 0
-PB1
 Text Label 3825 3800 2    50   ~ 0
 PB0
-Text Label 3825 3900 2    50   ~ 0
-PB1
 Text Label 6625 2400 0    50   ~ 0
 C0
 Text Label 6600 3125 0    50   ~ 0
@@ -243,14 +239,6 @@ Wire Wire Line
 	9125 2875 9125 3125
 Text Label 3825 3300 2    50   ~ 0
 PA3
-Text Label 3825 3400 2    50   ~ 0
-PA4
-Text Label 3825 3500 2    50   ~ 0
-PA5
-Text Label 3825 3600 2    50   ~ 0
-PA6
-Text Label 3825 3700 2    50   ~ 0
-PA7
 $Comp
 L device:C C3
 U 1 1 5CD58135
@@ -436,154 +424,6 @@ F 3 "" H 2150 1550 50  0001 C CNN
 	1    2150 1550
 	1    0    0    -1  
 $EndComp
-$Comp
-L switches:SW_Push SW5
-U 1 1 5CD8B847
-P 1850 3750
-F 0 "SW5" V 1896 3702 50  0000 R CNN
-F 1 "LEFT" V 1805 3702 50  0000 R CNN
-F 2 "" H 1850 3950 50  0001 C CNN
-F 3 "" H 1850 3950 50  0001 C CNN
-	1    1850 3750
-	0    -1   -1   0   
-$EndComp
-$Comp
-L switches:SW_Push SW4
-U 1 1 5CD8BEE3
-P 2750 3725
-F 0 "SW4" V 2704 3873 50  0000 L CNN
-F 1 "RIGHT" V 2795 3873 50  0000 L CNN
-F 2 "" H 2750 3925 50  0001 C CNN
-F 3 "" H 2750 3925 50  0001 C CNN
-	1    2750 3725
-	0    1    1    0   
-$EndComp
-$Comp
-L switches:SW_Push SW3
-U 1 1 5CD8BFBD
-P 2300 3325
-F 0 "SW3" H 2300 3610 50  0000 C CNN
-F 1 "UP" H 2300 3519 50  0000 C CNN
-F 2 "" H 2300 3525 50  0001 C CNN
-F 3 "" H 2300 3525 50  0001 C CNN
-	1    2300 3325
-	1    0    0    -1  
-$EndComp
-$Comp
-L switches:SW_Push SW7
-U 1 1 5CD8C0BD
-P 2325 4375
-F 0 "SW7" H 2325 4660 50  0000 C CNN
-F 1 "DOWN" H 2325 4569 50  0000 C CNN
-F 2 "" H 2325 4575 50  0001 C CNN
-F 3 "" H 2325 4575 50  0001 C CNN
-	1    2325 4375
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:GND #PWR011
-U 1 1 5CD8C153
-P 2100 3325
-F 0 "#PWR011" H 2100 3075 50  0001 C CNN
-F 1 "GND" H 2105 3152 50  0000 C CNN
-F 2 "" H 2100 3325 50  0001 C CNN
-F 3 "" H 2100 3325 50  0001 C CNN
-	1    2100 3325
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:GND #PWR018
-U 1 1 5CD8C19E
-P 2125 4375
-F 0 "#PWR018" H 2125 4125 50  0001 C CNN
-F 1 "GND" H 2130 4202 50  0000 C CNN
-F 2 "" H 2125 4375 50  0001 C CNN
-F 3 "" H 2125 4375 50  0001 C CNN
-	1    2125 4375
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:GND #PWR016
-U 1 1 5CD8C2D3
-P 1850 3950
-F 0 "#PWR016" H 1850 3700 50  0001 C CNN
-F 1 "GND" H 1855 3777 50  0000 C CNN
-F 2 "" H 1850 3950 50  0001 C CNN
-F 3 "" H 1850 3950 50  0001 C CNN
-	1    1850 3950
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:GND #PWR015
-U 1 1 5CD8C31E
-P 2750 3925
-F 0 "#PWR015" H 2750 3675 50  0001 C CNN
-F 1 "GND" H 2755 3752 50  0000 C CNN
-F 2 "" H 2750 3925 50  0001 C CNN
-F 3 "" H 2750 3925 50  0001 C CNN
-	1    2750 3925
-	1    0    0    -1  
-$EndComp
-$Comp
-L switches:SW_Push SW2
-U 1 1 5CD8C684
-P 1125 3275
-F 0 "SW2" V 1171 3227 50  0000 R CNN
-F 1 "A" V 1080 3227 50  0000 R CNN
-F 2 "" H 1125 3475 50  0001 C CNN
-F 3 "" H 1125 3475 50  0001 C CNN
-	1    1125 3275
-	0    -1   -1   0   
-$EndComp
-$Comp
-L switches:SW_Push SW6
-U 1 1 5CD8C71E
-P 1125 3975
-F 0 "SW6" V 1171 3927 50  0000 R CNN
-F 1 "B" V 1080 3927 50  0000 R CNN
-F 2 "" H 1125 4175 50  0001 C CNN
-F 3 "" H 1125 4175 50  0001 C CNN
-	1    1125 3975
-	0    -1   -1   0   
-$EndComp
-$Comp
-L power:GND #PWR013
-U 1 1 5CD8C7D2
-P 1125 3475
-F 0 "#PWR013" H 1125 3225 50  0001 C CNN
-F 1 "GND" H 1130 3302 50  0000 C CNN
-F 2 "" H 1125 3475 50  0001 C CNN
-F 3 "" H 1125 3475 50  0001 C CNN
-	1    1125 3475
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:GND #PWR017
-U 1 1 5CD8C821
-P 1125 4175
-F 0 "#PWR017" H 1125 3925 50  0001 C CNN
-F 1 "GND" H 1130 4002 50  0000 C CNN
-F 2 "" H 1125 4175 50  0001 C CNN
-F 3 "" H 1125 4175 50  0001 C CNN
-	1    1125 4175
-	1    0    0    -1  
-$EndComp
-Text Label 2500 3325 0    50   ~ 0
-PA4
-Text Label 2525 4375 0    50   ~ 0
-PA5
-Text Label 1850 3550 0    50   ~ 0
-PA6
-Text Label 2750 3525 0    50   ~ 0
-PA7
-Text Label 4825 3600 0    50   ~ 0
-PA15
-Text Label 4825 3700 0    50   ~ 0
-PA12
-Text Label 1125 3075 2    50   ~ 0
-PA12
-Text Label 1125 3775 2    50   ~ 0
-PA15
 Wire Wire Line
 	7225 3125 8825 3125
 Wire Wire Line
@@ -854,4 +694,75 @@ Text Label 5325 1100 2    50   ~ 0
 audio
 Text Label 3825 4000 2    50   ~ 0
 audio
+Text Label 5950 3175 2    50   ~ 0
+PB0
+$Sheet
+S 2450 5575 675  800 
+U 5CE41476
+F0 "keypad" 50
+F1 "keypad.sch" 50
+F2 "KEY_VDD" U L 2450 5775 50 
+F3 "KEY_GND" U L 2450 6175 50 
+F4 "KEY_CLK" I L 2450 5875 50 
+F5 "KEY_IN" I L 2450 6075 50 
+F6 "KEY_OUT" O L 2450 5975 50 
+$EndSheet
+$Comp
+L power:GND #PWR0101
+U 1 1 5CE4EBEB
+P 1600 6175
+F 0 "#PWR0101" H 1600 5925 50  0001 C CNN
+F 1 "GND" H 1605 6002 50  0000 C CNN
+F 2 "" H 1600 6175 50  0001 C CNN
+F 3 "" H 1600 6175 50  0001 C CNN
+	1    1600 6175
+	1    0    0    -1  
+$EndComp
+Text Label 2225 5775 2    50   ~ 0
+3.3V
+Text Label 2225 5875 2    39   ~ 0
+SPI2_SCK
+Text Label 2225 6075 2    39   ~ 0
+SPI2_MOSI
+Text Label 2225 5975 2    39   ~ 0
+SPI2_MISO
+Text Label 4825 4200 0    39   ~ 0
+SPI2_MOSI
+Text Label 4825 4300 0    39   ~ 0
+SPI2_MOSI
+Text Label 4825 4400 0    39   ~ 0
+SPI2_SCK
+NoConn ~ 4275 5050
+NoConn ~ 4375 5050
+NoConn ~ 4175 5050
+NoConn ~ 4475 5050
+NoConn ~ 4175 2000
+NoConn ~ 4275 2000
+NoConn ~ 4375 2000
+NoConn ~ 4475 2000
+NoConn ~ 3825 2600
+Text Label 4825 2600 0    50   ~ 0
++3.3V
+$Comp
+L conn:Conn_01x05_Female J4
+U 1 1 5CE593C3
+P 1400 5975
+F 0 "J4" H 1294 5550 50  0000 C CNN
+F 1 "KEYPAD connector" H 1294 5641 50  0000 C CNN
+F 2 "" H 1400 5975 50  0001 C CNN
+F 3 "~" H 1400 5975 50  0001 C CNN
+	1    1400 5975
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	1600 5875 2450 5875
+Wire Wire Line
+	1600 5775 2450 5775
+Wire Wire Line
+	1600 5975 2450 5975
+Wire Wire Line
+	1600 6075 2450 6075
+Wire Wire Line
+	1600 6175 2450 6175
+Connection ~ 1600 6175
 $EndSCHEMATC

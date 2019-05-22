@@ -28,6 +28,13 @@ Ceci est sujet à changement:
 
 ![schématique](bp-chipcon-schematic.png)
 
+Un clavier séparé avec 8 boutons est prévue. Le clavier utilise un registre à décalge 74HC164 qui sera interfacé par périphérique SPI.
+Pour la lecture du clavier, il s'agit simplement d'envoyer 2 octets.
+Le premier 0xff sert à remettre à 1 tous les bits du 74HC164. Ensuite
+on envoie 0x7f et à la sortie tous les bits dont le bouton est enfoncé retourne 0 et les autres retourne 1.
+
+![keypad](keypad-schematic.png)
+
 carte de montage temporaire:
 
 ![prototype](prototyping-board.jpg)
