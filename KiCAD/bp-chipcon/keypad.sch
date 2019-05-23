@@ -1,0 +1,390 @@
+EESchema Schematic File Version 4
+LIBS:bp-chipcon-cache
+EELAYER 26 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 2 2
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L ttl_ieee:74164 U2
+U 1 1 5CE420C1
+P 3950 4450
+F 0 "U2" H 3950 5016 50  0000 C CNN
+F 1 "74HC164N" H 3950 4925 50  0000 C CNN
+F 2 "" H 3950 4450 50  0001 C CNN
+F 3 "" H 3950 4450 50  0001 C CNN
+	1    3950 4450
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:D D7
+U 1 1 5CE42379
+P 5475 4525
+F 0 "D7" H 5475 4741 50  0000 C CNN
+F 1 "1N4148" H 5475 4650 50  0000 C CNN
+F 2 "" H 5475 4525 50  0001 C CNN
+F 3 "" H 5475 4525 50  0001 C CNN
+	1    5475 4525
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:D D8
+U 1 1 5CE42417
+P 5475 4875
+F 0 "D8" H 5475 5091 50  0000 C CNN
+F 1 "1N4148" H 5475 5000 50  0000 C CNN
+F 2 "" H 5475 4875 50  0001 C CNN
+F 3 "" H 5475 4875 50  0001 C CNN
+	1    5475 4875
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:D D9
+U 1 1 5CE4257A
+P 5475 5200
+F 0 "D9" H 5475 5416 50  0000 C CNN
+F 1 "1N4148" H 5475 5325 50  0000 C CNN
+F 2 "" H 5475 5200 50  0001 C CNN
+F 3 "" H 5475 5200 50  0001 C CNN
+	1    5475 5200
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:D D10
+U 1 1 5CE42581
+P 5475 5550
+F 0 "D10" H 5475 5766 50  0000 C CNN
+F 1 "1N4148" H 5475 5675 50  0000 C CNN
+F 2 "" H 5475 5550 50  0001 C CNN
+F 3 "" H 5475 5550 50  0001 C CNN
+	1    5475 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:D D5
+U 1 1 5CE4260D
+P 5475 3825
+F 0 "D5" H 5475 4041 50  0000 C CNN
+F 1 "1N4148" H 5475 3950 50  0000 C CNN
+F 2 "" H 5475 3825 50  0001 C CNN
+F 3 "" H 5475 3825 50  0001 C CNN
+	1    5475 3825
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:D D6
+U 1 1 5CE42614
+P 5475 4175
+F 0 "D6" H 5475 4391 50  0000 C CNN
+F 1 "1N4148" H 5475 4300 50  0000 C CNN
+F 2 "" H 5475 4175 50  0001 C CNN
+F 3 "" H 5475 4175 50  0001 C CNN
+	1    5475 4175
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4500 4500 4500 3825
+Wire Wire Line
+	4500 4650 4650 4650
+Wire Wire Line
+	4650 4650 4650 4175
+Wire Wire Line
+	4500 4750 4800 4750
+Wire Wire Line
+	4800 4750 4800 4525
+Wire Wire Line
+	4500 4850 4875 4850
+Wire Wire Line
+	4875 4850 4875 4875
+Wire Wire Line
+	4500 4950 4800 4950
+Wire Wire Line
+	4800 4950 4800 5200
+Wire Wire Line
+	4500 5050 4650 5050
+Wire Wire Line
+	4650 5050 4650 5550
+$Comp
+L device:D D11
+U 1 1 5CE42A3D
+P 5475 5900
+F 0 "D11" H 5475 6116 50  0000 C CNN
+F 1 "1N4148" H 5475 6025 50  0000 C CNN
+F 2 "" H 5475 5900 50  0001 C CNN
+F 3 "" H 5475 5900 50  0001 C CNN
+	1    5475 5900
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:D D12
+U 1 1 5CE42A44
+P 5475 6250
+F 0 "D12" H 5475 6466 50  0000 C CNN
+F 1 "1N4148" H 5475 6375 50  0000 C CNN
+F 2 "" H 5475 6250 50  0001 C CNN
+F 3 "" H 5475 6250 50  0001 C CNN
+	1    5475 6250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4500 5150 4575 5150
+Wire Wire Line
+	4575 5150 4575 5900
+Wire Wire Line
+	4500 5250 4500 6250
+Wire Wire Line
+	5625 6250 5625 5900
+Wire Wire Line
+	5625 5900 5625 5550
+Connection ~ 5625 5900
+Connection ~ 5625 5550
+Wire Wire Line
+	5625 5550 5625 5200
+Wire Wire Line
+	5625 5200 5625 4875
+Connection ~ 5625 5200
+Connection ~ 5625 4175
+Wire Wire Line
+	5625 4175 5625 3825
+Connection ~ 5625 4525
+Wire Wire Line
+	5625 4525 5625 4175
+Connection ~ 5625 4875
+Wire Wire Line
+	5625 4875 5625 4525
+$Comp
+L conn:Conn_01x05_Male J3
+U 1 1 5CE44CE8
+P 5000 2675
+F 0 "J3" V 5060 2915 50  0000 L CNN
+F 1 "KEYPAD connector" V 4925 2350 50  0000 L CNN
+F 2 "" H 5000 2675 50  0001 C CNN
+F 3 "~" H 5000 2675 50  0001 C CNN
+	1    5000 2675
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR013
+U 1 1 5CE46111
+P 5200 2875
+F 0 "#PWR013" H 5200 2625 50  0001 C CNN
+F 1 "GND" H 5205 2702 50  0000 C CNN
+F 2 "" H 5200 2875 50  0001 C CNN
+F 3 "" H 5200 2875 50  0001 C CNN
+	1    5200 2875
+	1    0    0    -1  
+$EndComp
+Text Label 4775 3000 2    50   ~ 0
++3.3v
+Wire Wire Line
+	4800 2875 4800 3000
+Wire Wire Line
+	4800 3000 4775 3000
+Text Label 4750 3350 2    50   ~ 0
+CLOCK
+Text Label 4750 3125 2    50   ~ 0
+IN
+Text Label 4750 3225 2    50   ~ 0
+OUT
+Wire Wire Line
+	4750 3125 4900 3125
+Wire Wire Line
+	4900 3125 4900 2875
+Wire Wire Line
+	4750 3225 5000 3225
+Wire Wire Line
+	5000 3225 5000 2875
+Wire Wire Line
+	4750 3350 5100 3350
+Wire Wire Line
+	5100 3350 5100 2875
+Text Label 6250 3825 0    50   ~ 0
+OUT
+Text Label 3400 4300 2    50   ~ 0
+CLOCK
+Text Label 3400 4450 2    50   ~ 0
+IN
+Text Label 3400 4200 2    50   ~ 0
++3.3v
+Text Label 3400 4550 2    50   ~ 0
++3.3v
+Text HLabel 5200 2875 2    50   UnSpc ~ 0
+KEY_GND
+Text HLabel 4800 3000 2    50   UnSpc ~ 0
+KEY_VDD
+Text HLabel 4750 3350 2    50   Input ~ 0
+KEY_CLK
+Text HLabel 4750 3225 2    50   Output ~ 0
+KEY_OUT
+Text HLabel 4775 3125 2    50   Input ~ 0
+KEY_IN
+$Comp
+L switches:SW_Push SW2
+U 1 1 5CE47E3E
+P 5125 3825
+F 0 "SW2" H 5125 4110 50  0000 C CNN
+F 1 "A" H 5125 4019 50  0000 C CNN
+F 2 "" H 5125 4025 50  0001 C CNN
+F 3 "" H 5125 4025 50  0001 C CNN
+	1    5125 3825
+	1    0    0    -1  
+$EndComp
+$Comp
+L switches:SW_Push SW3
+U 1 1 5CE47F20
+P 5125 4175
+F 0 "SW3" H 5125 4460 50  0000 C CNN
+F 1 "C" H 5125 4369 50  0000 C CNN
+F 2 "" H 5125 4375 50  0001 C CNN
+F 3 "" H 5125 4375 50  0001 C CNN
+	1    5125 4175
+	1    0    0    -1  
+$EndComp
+$Comp
+L switches:SW_Push SW4
+U 1 1 5CE4867C
+P 5125 4525
+F 0 "SW4" H 5125 4810 50  0000 C CNN
+F 1 "B" H 5125 4719 50  0000 C CNN
+F 2 "" H 5125 4725 50  0001 C CNN
+F 3 "" H 5125 4725 50  0001 C CNN
+	1    5125 4525
+	1    0    0    -1  
+$EndComp
+$Comp
+L switches:SW_Push SW5
+U 1 1 5CE4897F
+P 5125 4875
+F 0 "SW5" H 5125 5160 50  0000 C CNN
+F 1 "D" H 5125 5069 50  0000 C CNN
+F 2 "" H 5125 5075 50  0001 C CNN
+F 3 "" H 5125 5075 50  0001 C CNN
+	1    5125 4875
+	1    0    0    -1  
+$EndComp
+$Comp
+L switches:SW_Push SW6
+U 1 1 5CE48986
+P 5125 5200
+F 0 "SW6" H 5125 5485 50  0000 C CNN
+F 1 "RIGHT" H 5125 5394 50  0000 C CNN
+F 2 "" H 5125 5400 50  0001 C CNN
+F 3 "" H 5125 5400 50  0001 C CNN
+	1    5125 5200
+	1    0    0    -1  
+$EndComp
+$Comp
+L switches:SW_Push SW7
+U 1 1 5CE48D8E
+P 5125 5550
+F 0 "SW7" H 5125 5835 50  0000 C CNN
+F 1 "DOWN" H 5125 5744 50  0000 C CNN
+F 2 "" H 5125 5750 50  0001 C CNN
+F 3 "" H 5125 5750 50  0001 C CNN
+	1    5125 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L switches:SW_Push SW8
+U 1 1 5CE48D95
+P 5125 5900
+F 0 "SW8" H 5125 6185 50  0000 C CNN
+F 1 "LEFT" H 5125 6094 50  0000 C CNN
+F 2 "" H 5125 6100 50  0001 C CNN
+F 3 "" H 5125 6100 50  0001 C CNN
+	1    5125 5900
+	1    0    0    -1  
+$EndComp
+$Comp
+L switches:SW_Push SW9
+U 1 1 5CE490EF
+P 5125 6250
+F 0 "SW9" H 5125 6535 50  0000 C CNN
+F 1 "UP" H 5125 6444 50  0000 C CNN
+F 2 "" H 5125 6450 50  0001 C CNN
+F 3 "" H 5125 6450 50  0001 C CNN
+	1    5125 6250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4500 3825 4925 3825
+Wire Wire Line
+	4650 4175 4925 4175
+Wire Wire Line
+	4800 4525 4925 4525
+Wire Wire Line
+	4875 4875 4925 4875
+Wire Wire Line
+	4800 5200 4925 5200
+Wire Wire Line
+	4650 5550 4925 5550
+Wire Wire Line
+	4575 5900 4925 5900
+Wire Wire Line
+	4500 6250 4925 6250
+Text Notes 7075 6900 0    79   ~ 0
+BP-CHIPCON\nCopyright Jacques Deschênes (PICatout)  2019\nlicence CC-BY-SA version 4.0
+Text Notes 8650 7300 2    100  ~ 0
+keypad\n
+Text Notes 8725 7625 2    50   ~ 0
+2019-05-21
+$Comp
+L device:C C7
+U 1 1 5CE4CA17
+P 2400 2725
+F 0 "C7" H 2515 2771 50  0000 L CNN
+F 1 "100nF" H 2515 2680 50  0000 L CNN
+F 2 "" H 2438 2575 50  0001 C CNN
+F 3 "" H 2400 2725 50  0001 C CNN
+	1    2400 2725
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0102
+U 1 1 5CE4CA9A
+P 2400 3000
+F 0 "#PWR0102" H 2400 2750 50  0001 C CNN
+F 1 "GND" H 2405 2827 50  0000 C CNN
+F 2 "" H 2400 3000 50  0001 C CNN
+F 3 "" H 2400 3000 50  0001 C CNN
+	1    2400 3000
+	1    0    0    -1  
+$EndComp
+Text Label 2400 2575 2    50   ~ 0
+U2-pin14
+Text Label 2250 3000 2    50   ~ 0
+U2-pin7
+Wire Wire Line
+	2250 3000 2400 3000
+Wire Wire Line
+	2400 3000 2400 2875
+Connection ~ 2400 3000
+$Comp
+L device:R R15
+U 1 1 5CE5EE6D
+P 5825 3675
+F 0 "R15" H 5895 3721 50  0000 L CNN
+F 1 "10K" H 5895 3630 50  0000 L CNN
+F 2 "" V 5755 3675 50  0001 C CNN
+F 3 "" H 5825 3675 50  0001 C CNN
+	1    5825 3675
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5625 3825 5825 3825
+Connection ~ 5625 3825
+Wire Wire Line
+	5825 3825 6250 3825
+Connection ~ 5825 3825
+Text Label 5825 3525 2    50   ~ 0
++3.3v
+$EndSCHEMATC
