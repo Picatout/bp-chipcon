@@ -35,6 +35,8 @@
 #include "tvout.h"
 #include "graphics.h"
 #include "text.h"
+#include "gamepad.h"
+#include "sound.h"
 
 //#include "sram.h"
 //#include "joystick.h"
@@ -88,19 +90,6 @@ void chip_scroll_left(){
 
 }
 
-void tone(unsigned freq,int length){
-
-}
-
-// joue une note de la gamme tempérée
-void key_tone(int note, int length,int wait_end){
-
-}
-
-// produit un bruit 
-void noise(int length){
-
-}
 
 void load_block(int addr,int count, uint8_t *block){
 
@@ -346,14 +335,14 @@ uint8_t schipp(uint16_t program_address){
 				break;
 		case 0xf:
 			switch(vms.b2){
-			case 0x07: // FX07  LD VX, DT   VX := delay_cntr
-				vms.var[x]=timer/FRAME_MSEC;
+			case 0x07: // FX07  LD VX, DT   VX := game_timer
+				vms.var[x]=game_timer;
 				break;
 			case 0x0a: // FX0A  LD VX, K  ; attend qu'une touche soit enfoncée et met sa valeur dans VX
-				vms.var[x]=btn_wait_down(ALL_BTN);
+				vms.var[x]=btn_wait_any();
 				break;
-			case 0x15: // FX15  LD DT, VX  ; démarre la minuterie delay_cntr avec la valeur indiqu�e par VX
-				timer=vms.var[x]*FRAME_MSEC;
+			case 0x15: // FX15  LD DT, VX  ; démarre la minuterie game_timer avec la valeur indiqu�e par VX
+				game_timer=vms.var[x];
 				break;
 			case 0x18: // FX18  LD ST, VX  ; beep d'une durée VX (multiple de 16.7 msec)
 				tone(523,vms.var[x]);
@@ -534,10 +523,10 @@ uint8_t schipp(uint16_t program_address){
 			case 0x907: // 9X07, POP VX  ; transfert le sommet de la pile dans VX
 			    vms.var[x]=vms.stack[vms.sp--];
 				break;	
-			case 0x908: // 9X08, SCRX  ;  VX=HRES nombre de pixels en largeur d'�cran.
+			case 0x908: // 9X08, SCRX  ;  VX=HRES nombre de pixels en largeur d'écran.
 				vms.var[x]=HRES;
 				break;
-			case 0x909: // 9X09, SCRY  ; VX=VRES  nombre de pixels en hauteur d'�cran.
+			case 0x909: // 9X09, SCRY  ; VX=VRES  nombre de pixels en hauteur d'écran.
 				vms.var[x]=VRES;
 				break;
 			case 0xa00: // ANNN    LD I, NNN  ; I := 2*NNN
@@ -549,7 +538,7 @@ uint8_t schipp(uint16_t program_address){
 			case 0xc00: //CXKK  RND VX,KK  ; VX=random_number&KK
 				vms.var[x]=rand()&vms.b2;
 				break;
-			case 0xd00: //DXYN DRW VX,VY   ; dessine un sprite � la position indiqu�e par vx,vy
+			case 0xd00: //DXYN DRW VX,VY   ; dessine un sprite à la position indiquée par vx,vy
 				n=vms.b2&0xf;
 				if (!n){
 					load_block(vms.ix,32,block);
@@ -559,20 +548,20 @@ uint8_t schipp(uint16_t program_address){
 					vms.var[15]=gfx_sprite((int8_t)vms.var[x],(int8_t)vms.var[y],8,n,(const uint8_t*)block);
 				}
 				break;
-			case 0xe9e: //EX9E, SKP VX   ; saute l'instruction suivante si le bouton indiqu� par VX est enfonc�e
-				if (_btn_down(vms.var[x])) vms.pc+=2;
+			case 0xe9e: //EX9E, SKP VX   ; saute l'instruction suivante si le bouton indiqué par VX est enfoncé
+				if (btn_query_down(vms.var[x])) vms.pc+=2;
 				break;
 			case 0xea1: //EXA1, SKNP VX  ; saute l'instruction suivante si la boutin indiqu� par VX n'est pas enfonc�e
-				if (!_btn_down(vms.var[x])) vms.pc+=2;
+				if (!btn_query_down(vms.var[x])) vms.pc+=2;
 				break;
-			case 0xf07: // FX07  LD VX, DT   VX := delay_cntr
-				vms.var[x]=timer/FRAME_MSEC;
+			case 0xf07: // FX07  LD VX, DT   VX := game_timer
+				vms.var[x]=game_timer;
 				break;
 			case 0xf0a: // FX0A  LD VX, K  ; attend qu'une touche soit enfonc�e et met sa valeur dans VX
-				vms.var[x]=_wait_any_key();
+				vms.var[x]=btn_wait_any();
 				break;
-			case 0xf15: // FX15  LD DT, VX  ; démarre la minuterie delay_cntr avec la valeur indiquée par VX
-				timer=vms.var[x]*FRAME_MSEC;
+			case 0xf15: // FX15  LD DT, VX  ; démarre la minuterie game_timer avec la valeur indiquée par VX
+				game_timer=vms.var[x];
 				break;
 			case 0xf18: // FX18  LD ST, VX  ; beep d'une dur�e VX (multiple de 16.7 msec)
 				tone(523,vms.var[x]);

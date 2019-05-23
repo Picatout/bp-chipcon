@@ -27,7 +27,7 @@
 #include "text.h"
 #include "tvout.h"
 #include "graphics.h"
-
+#include "gamepad.h"
 
 uint8_t font=FONT_ASCII;
 uint8_t xpos=0, ypos=0;
@@ -213,16 +213,14 @@ void text_scroller(const uint8_t *text, uint8_t speed){
 			if (btn_query_down(BTN_B)) {goto break_out;}
 		}
 		for (j=0;j<CHAR_HEIGHT;j++){
-			timer=speed;
-			while(timer);
+			game_pause(speed);
 			gfx_scroll_up(1);
 			if (btn_query_down(BTN_B)) {goto break_out;}
 		}
 		c=*text++;
 	}//while
 	for (c=0;c<4*CHAR_HEIGHT;c++){
-		timer=speed;
-		while(timer);
+		game_pause(speed);
 		gfx_scroll_up(1);
 		if (btn_query_down(BTN_B)) { break;}
 	}//for

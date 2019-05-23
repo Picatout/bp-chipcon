@@ -30,14 +30,6 @@
 #define BPP 4     // bits per pixel
 #define BPR (HRES*BPP/8)  // bytes per row
 
-#define BTN_UP BIT4
-#define BTN_DOWN BIT5
-#define BTN_LEFT BIT6
-#define BTN_RIGHT BIT7
-#define BTN_A BIT12
-#define BTN_B BIT15
-#define ALL_BTN (BTN_UP|BTN_DOWN|BTN_LEFT|BTN_RIGHT|BTN_A|BTN_B)
-
 
 typedef enum VIDEO_MODES{
    VM_BPCHIP, // 180x112 16 colors (default)
@@ -61,14 +53,16 @@ typedef struct vmode_params{
     uint16_t chroma_setting;
 }vmode_params_t;
 
-extern volatile uint16_t pad;
+extern volatile uint16_t game_timer;
+extern volatile uint16_t sound_timer;
+
 extern uint8_t video_buffer[VRES*BPR];
 void set_video_mode(vmode_t mode);
 vmode_params_t* get_video_params();
 void tvout_init();
 void frame_sync();
-uint16_t btn_wait_down(uint16_t mask);
-void btn_wait_up(uint16_t mask);
-int btn_query_down(uint16_t mask);
+void wait_sync_end();
+void game_pause(uint16_t frame_count);
+void micro_pause(uint32_t count);
 
 #endif // TVOUT_H

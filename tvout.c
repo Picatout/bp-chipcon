@@ -26,6 +26,8 @@
 #include "include/blue_pill.h"
 #include "tvout.h"
 #include "graphics.h"
+#include "gamepad.h"
+#include "sound.h"
 
 #define SYNC_PORT PORTA
 #define SYNC_PIN 8
@@ -89,7 +91,7 @@
 #define CHIP8_RPT (VIDEO_LINES/CHIP8_VRES) // 7 scan lines per row
 #define CHIP8_START (FIRST_VIDEO_LINE+(VIDEO_LINES-CHIP8_VRES*CHIP8_RPT)/2)
 #define CHIP8_END (CHIP8_START+CHIP8_VRES*CHIP8_RPT)
-#define CHIP8_LEFT LEFT_MARGIN
+#define CHIP8_LEFT LEFT_MARGIN-140
 #define CHIP8_PDLY (8)
 #define CHIP8_CHROMA (0) // no chroma signal
 
@@ -100,6 +102,8 @@ enum TASK_ENUM{
     POST_SYNC,
     VSYNC_END,
     READ_PAD,
+    SOUND_TMR,
+    GAME_TMR,
     WAIT_FIRST_VIDEO,
     WAIT_VIDEO_END,
     WAIT_FIELD_END,
@@ -111,12 +115,13 @@ enum TASK_ENUM{
 
 
 static vmode_t video_mode=VM_BPCHIP;
-static volatile uint16_t task=0; // active task number
+static volatile uint16_t task; // active task number
 static volatile uint16_t flags; // boolean flags.
-static volatile uint16_t slice=0; //  task slice
-static volatile uint16_t scan_line=0; // scan line counter
-volatile uint16_t pad; // buttons pad
-
+static volatile uint16_t slice; //  task slice
+static volatile uint16_t scan_line; // scan line counter
+volatile uint16_t game_timer;
+volatile uint16_t sound_timer;
+static volatile uint32_t ntsc_ticks;
 
 static const vmode_params_t video_params[MODES_COUNT]={
     {VM_BPCHIP,BP_START,BP_END,BP_LEFT,BP_BPR,BP_RPT,BP_PDLY,BP_HRES,BP_VRES,BP_CHROMA},
@@ -149,8 +154,8 @@ void tvout_init(){
     TMR1->DIER|=TMR_DIER_UIE;
     set_int_priority(IRQ_TIM1_UP,0);
     set_int_priority(IRQ_TIM1_CC,0);
-    enable_interrupt(IRQ_TIM1_CC);    
     enable_interrupt(IRQ_TIM1_UP);
+    enable_interrupt(IRQ_TIM1_CC);
     TMR1->CR1|=TMR_CR1_CEN; 
     // chroma signal generation
     config_pin(PORTB,0,OUTPUT_ALT_PP_SLOW); // TIMER3 CH3
@@ -207,7 +212,7 @@ void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
         //_wait_tmr1_cnt(573);
         TMR3->CCER&=~TMR_CCER_CC3E;
     }
-    if (flags&F_VIDEO){
+//    if (flags&F_VIDEO){
             register uint32_t i;
             register uint8_t pdly;
             uint8_t bpr;
@@ -225,34 +230,16 @@ void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
                 *video_port=(*video_data++)&0xf;
                 _pixel_delay(pdly);
             }
-/*
-            if (video_mode==VM_CHIP8){
-                video_data=&video_buffer[slice/7*bpr];
-                for (i=0;i<bpr;i++){
-                    *video_port=(*video_data)>>4;
-                    _pixel_delay(8);
-                    *video_port=(*video_data++)&0xf;
-                    _pixel_delay(8);
-                }
-            }else{
-                video_data=&video_buffer[slice/2*bpr];
-                for (i=0;i<bpr;i++){
-                    *video_port=(*video_data)>>4;
-                    _pixel_delay(2);
-                    *video_port=(*video_data++)&0xf;
-                    _pixel_delay(2);
-                }
-            }
-*/
         PORTA->ODR=0;
         TMR3->CCER&=~(TMR_CCER_CC4E+TMR_CCER_CC3E);
-    }
+//    }
     TMR1->SR&=~TMR_SR_CC2IF;
 }
 
 void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
 #define next_task(n)  ({slice++; if (slice==n){slice=0;task++;}})
     scan_line++;
+    ntsc_ticks++;
     switch (task){
     case PRE_SYNC:
         if (!slice){
@@ -295,25 +282,41 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
         flags&=~F_VSYNC;
         scan_line>>=2;
         task++;
-        TMR1->SR&=~TMR_SR_CC2IF;
-        TMR1->DIER|=TMR_DIER_CC2IE;
         break;
     case READ_PAD:
-        pad = PORTA->IDR&0xc0f0;
+        read_gamepad();
         task++;
         break;    
+    case SOUND_TMR:
+        if (sound_timer){
+            sound_timer--;
+            if (!sound_timer){
+                sound_stop();
+            }
+        }
+        task++;
+        break;    
+    case GAME_TMR:
+        if (game_timer){
+            game_timer--;
+        }
+        task++;
+        break;
     case WAIT_FIRST_VIDEO:
         if (scan_line==video_params[video_mode].first_visible){
+            TMR1->SR&=~TMR_SR_CC2IF;
+            TMR1->DIER|=TMR_DIER_CC2IE;
+            flags |= F_VIDEO;
             task++;
             slice=0;
-            flags |= F_VIDEO;
         }
         break;
     case WAIT_VIDEO_END:
         slice++;
         if (scan_line==video_params[video_mode].video_end){
-            task++;
+            TMR1->DIER&=~TMR_DIER_CC2IE;
             flags &=~F_VIDEO;
+            task++;
         }
         break;  
     case WAIT_FIELD_END:
@@ -326,7 +329,7 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
             scan_line=0;
             slice=0;
             task=0;
-            TMR1->DIER&=~TMR_DIER_CC2IE;
+//            TMR1->DIER&=~TMR_DIER_CC2IE;
         }
         break;
     }//switch slice
@@ -337,35 +340,9 @@ void frame_sync(){
     while (!(flags&F_VSYNC));
 }
 
-uint16_t btn_wait_down(uint16_t mask){
-    int counter=0;
-    while (counter<20){
-        if ((pad=((PORTA->IDR)&mask))==mask){
-            counter=0;
-        }else{
-            counter++;
-        }
-        pause(1);
-    }    
-    return ~(pad&0xffff);
+void wait_sync_end(){
+    while (flags&F_VSYNC);
 }
-
-void btn_wait_up(uint16_t mask){
-    int counter=0;
-    while (counter<20){
-        if ((PORTA->IDR&mask)!=mask){
-            counter=0;
-        }else{
-            counter++;
-        }
-        pause(1);
-    }
-}
-
-int btn_query_down(uint16_t mask){
-    return (!(PORTA->IDR&mask));
-}
-
 
 void set_video_mode(vmode_t mode){
     gfx_cls();
@@ -375,4 +352,18 @@ void set_video_mode(vmode_t mode){
 
 vmode_params_t* get_video_params(){
     return (vmode_params_t*)&video_params[video_mode];
+}
+
+void game_pause(uint16_t frame_count){
+    game_timer=frame_count;
+    while (game_timer);
+}
+
+// pause in scan lines count.
+// input:
+//      count number of scan lines to wait.
+void micro_pause(uint32_t count){
+    uint32_t t0;
+    t0=ntsc_ticks+count;
+    while (ntsc_ticks<t0);
 }

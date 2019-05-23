@@ -18,4 +18,33 @@
 
 #include "sound.h"
 
+void sound_init(){
 
+}
+
+void tone(uint16_t freq, uint16_t duration){
+
+}
+
+void beep(){
+
+}
+
+void load_sound_buffer(const uint8_t* buffer){
+
+}
+
+void sound_stop(){
+
+}
+
+
+// joue une note de la gamme tempérée
+void key_tone(int note, int length,int wait_end){
+
+}
+
+// produit un bruit 
+void noise(int length){
+
+}

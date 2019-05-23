@@ -703,8 +703,8 @@ F0 "keypad" 50
 F1 "keypad.sch" 50
 F2 "KEY_VDD" U L 2450 5775 50 
 F3 "KEY_GND" U L 2450 6175 50 
-F4 "KEY_CLK" I L 2450 5875 50 
-F5 "KEY_IN" I L 2450 6075 50 
+F4 "KEY_CLK" I L 2450 6075 50 
+F5 "KEY_IN" I L 2450 5875 50 
 F6 "KEY_OUT" O L 2450 5975 50 
 $EndSheet
 $Comp
@@ -720,9 +720,9 @@ F 3 "" H 1600 6175 50  0001 C CNN
 $EndComp
 Text Label 2225 5775 2    50   ~ 0
 3.3V
-Text Label 2225 5875 2    39   ~ 0
-SPI2_SCK
 Text Label 2225 6075 2    39   ~ 0
+SPI2_SCK
+Text Label 2225 5875 2    39   ~ 0
 SPI2_MOSI
 Text Label 2225 5975 2    39   ~ 0
 SPI2_MISO

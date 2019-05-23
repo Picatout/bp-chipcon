@@ -123,7 +123,7 @@ void spi_baudrate(spi_sfr_t* channel, unsigned baud);
 void spi_init(spi_sfr_t* channel, unsigned baud, unsigned mode, int afio_cfg);
 
 // envoie un octet via le canla SPI
-void spi_send(spi_sfr_t* channel, uint8_t b);
+uint8_t spi_send(spi_sfr_t* channel, uint8_t b);
 // reçois un octet du canal SPI
 uint8_t spi_receive(spi_sfr_t* channel);
 // écriture d'un bloc d'octet

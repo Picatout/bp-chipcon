@@ -93,12 +93,11 @@ void spi_init(spi_sfr_t* channel, unsigned baud,unsigned mode, int afio_cfg){
 
 
 // envoie un octet via le canla SPI
-inline void spi_send(spi_sfr_t* channel, uint8_t b){
-	uint8_t rx;
+inline uint8_t spi_send(spi_sfr_t* channel, uint8_t b){
 	while (!(channel->SR&SPI_SR_TXE));
 	channel->DR=b;
 	while (!(channel->SR&SPI_SR_RXNE));
-	rx=(uint8_t)channel->DR;
+	return (uint8_t)channel->DR;
 }
 
 // reçois un octet du canal SPI

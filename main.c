@@ -32,6 +32,7 @@
 #include "tvout.h"
 #include "graphics.h"
 #include "text.h"
+#include "gamepad.h"
 
 //const void* TPA_TOP=(void*)_TPA_TOP;
 
@@ -99,6 +100,7 @@ void draw_balls(){
 	for (i=0;i<BALL_COUNT;i++){
 		gfx_sprite(balls[i].x,balls[i].y,8,8,balls[i].ball_sprite);
 	}
+	wait_sync_end();
 }
 
 //REF: https://en.wikipedia.org/wiki/Integer_square_root
@@ -151,7 +153,7 @@ void move_balls(){
 void init_balls(){
 	int i;
 	vmode_params_t *vparams=get_video_params();
-	srand(ticks);
+	//srand(ticks);
 	for (i=0;i<BALL_COUNT;i++){
 		balls[i].x=rand()%vparams->hres;
 		balls[i].y=2*CHAR_HEIGHT+rand()%(vparams->vres-2*CHAR_HEIGHT);
@@ -189,10 +191,9 @@ static void vertical_bars(){
 
 static void video_test(){
 	int x,y,sx,sy,dx,dy;
-	uint32_t t0;
-	uint8_t c,p=3;
+	uint8_t c,p=0;
 
-	gfx_cls();
+	set_video_mode(p);
 	color_bars();
 	vertical_bars();
     print_int((int)&_FLASH_FREE,16);	
@@ -201,10 +202,10 @@ static void video_test(){
 	p=0;
 	while(1){
 		draw_balls();
-		pause(10);
+		//game_pause(1);
 		draw_balls();
 		move_balls();
-		if (btn_query_down(BTN_B)){
+		if (btn_query_down(BTN_RIGHT)){
 			p=++p&3;
 			set_video_mode(p);
 			switch(p){
@@ -224,23 +225,24 @@ static void video_test(){
 			}
 			vertical_bars();
 			init_balls();
-			t0=ticks+500;
+			btn_wait_up(BTN_RIGHT);
+		}else if (btn_query_down(BTN_B)){
 			btn_wait_up(BTN_B);
-			if (ticks>t0) break;
-		}//if
+			break;
+		}
 	}//while(1)
 }
 
 static void select_vmode(){
 	gfx_cls();
 	println("video modes");
-	pause(1000);
+	game_pause(60);
 }
 
 static void select_game(){
 	gfx_cls();
 	println("games");
-	pause(1000);
+	game_pause(60);
 }
 
 
@@ -253,6 +255,7 @@ static const char *menu_list[MENU_ITEMS]={
 
 static void display_menu(){
 	int i;
+	gfx_cls();
 	for (i=0;i<MENU_ITEMS;i++){
 		println(menu_list[i]);
 	}
@@ -260,16 +263,24 @@ static void display_menu(){
 
 static void menu(){
 	int i=0;
-	uint32_t t0;
+	uint8_t btn;
 	vmode_params_t* vparams=get_video_params();
 	display_menu();
 	while (1){
 		set_cursor(0,i*CHAR_HEIGHT);
 		put_char('>');
-		btn_wait_down(BTN_B);
-		t0=ticks+500;
-		btn_wait_up(BTN_B);
-		if (ticks>=t0){
+		btn=btn_wait_any();
+		btn_wait_up(btn);
+		set_cursor(0,i*CHAR_HEIGHT);
+		put_char(' ');
+		switch(btn){
+		case BTN_UP:
+			if (i) i--;
+			break;
+		case BTN_DOWN:
+			if (i<(MENU_ITEMS-1)) i++;
+			break;
+		case BTN_B:
 			switch(i){
 			case 0:
 				select_vmode();
@@ -281,24 +292,22 @@ static void menu(){
 				video_test();
 				break;
 			}
-			set_video_mode(VM_BPCHIP);
+			//set_video_mode(VM_BPCHIP);
 			display_menu();
-		}else{
-			set_cursor(0,i*CHAR_HEIGHT);
-			put_char(' ');
-			i=++i%MENU_ITEMS;
+			break;	
 		}
 	}//while
 }
 
 void main(void){
 	set_sysclock();
-	config_systicks();
+//	config_systicks();
 //	rtc_init(1000,RTC_SECIE|RTC_ALRIE);
 	RCC->APB2ENR=RCC_APB2ENR_IOPAEN|RCC_APB2ENR_IOPBEN|RCC_APB2ENR_IOPCEN|RCC_APB2ENR_AFIOEN|RCC_APB2ENR_TIM1EN;
 //	RCC->AHBENR|=RCC_AHBENR_DMA1EN; // activation DMA1
 	config_pin(LED_PORT,LED_PIN,OUTPUT_OD_SLOW);
 	_led_off();
+	gamepad_init();
 	tvout_init();
 	gfx_cls();
 	menu();
