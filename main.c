@@ -205,7 +205,7 @@ static void video_test(){
 		//game_pause(1);
 		draw_balls();
 		move_balls();
-		if (btn_query_down(BTN_RIGHT)){
+		if (btn_query_down(KEY_RIGHT)){
 			p=++p&3;
 			set_video_mode(p);
 			switch(p){
@@ -225,18 +225,84 @@ static void video_test(){
 			}
 			vertical_bars();
 			init_balls();
-			btn_wait_up(BTN_RIGHT);
-		}else if (btn_query_down(BTN_B)){
-			btn_wait_up(BTN_B);
+			btn_wait_up(KEY_RIGHT);
+		}else if (btn_query_down(KEY_B)){
+			btn_wait_up(KEY_B);
 			break;
 		}
 	}//while(1)
 }
 
-static void select_vmode(){
+static void display_keymap(uint8_t*map){
+	int i;
+	set_cursor(0,CHAR_HEIGHT);
+	for (i=0;i<8;i++) print_int(map[i],16);
+}
+
+static void buttons_map(){
+	int i;
+	uint8_t btn=255,key;
+	uint8_t* keymap=get_keymap(),newmap[8];
 	gfx_cls();
-	println("video modes");
-	game_pause(60);
+	println("buttons map table");
+	for (i=0;i<8;i++){
+		newmap[i]=keymap[i];
+	}
+	display_keymap(newmap);
+	set_cursor(0,CHAR_HEIGHT);
+	show_cursor(1);
+	i=0;
+	key=newmap[i];
+	while(btn!=KEY_B){
+		btn=btn_wait_any();
+		switch(btn){
+		case KEY_LEFT:
+			if (i){
+				show_cursor(0);
+				i--;
+				set_cursor(i*CHAR_WIDTH*3,CHAR_HEIGHT);
+				show_cursor(1);
+				key=newmap[i];
+			}
+			break;
+		case KEY_RIGHT:
+			if (i<7){
+				show_cursor(0);
+				i++;
+				set_cursor(i*CHAR_WIDTH*3,CHAR_HEIGHT);
+				show_cursor(1);
+				key=newmap[i];
+			}
+			break;
+		case KEY_UP:
+			if (key<15){
+				key++;
+				newmap[i]=key;
+				print_int(key,16);
+				set_cursor(i*CHAR_WIDTH*3,CHAR_HEIGHT);
+				show_cursor(1);
+			}
+			break;
+		case KEY_DOWN:
+			if (key){
+				key--;
+				newmap[i]=key;
+				print_int(key,16);
+				set_cursor(i*CHAR_WIDTH*3,CHAR_HEIGHT);
+				show_cursor(1);
+			}
+			break;
+		case KEY_C:
+			for (i=0;i<8;i++)newmap[i]=keymap[i];
+			display_keymap(newmap);
+			set_cursor(0,CHAR_HEIGHT);
+			i=0;
+			key=newmap[i];
+			break;	
+		}//switch
+		btn_wait_up(btn);
+	}
+	for (i=0;i<8;i++)keymap[i]=newmap[i];
 }
 
 static void select_game(){
@@ -248,7 +314,7 @@ static void select_game(){
 
 #define MENU_ITEMS (3)
 static const char *menu_list[MENU_ITEMS]={
-	" Video mode",
+	" Buttons map",
 	" Games list",
 	" Video test",
 };
@@ -274,16 +340,16 @@ static void menu(){
 		set_cursor(0,i*CHAR_HEIGHT);
 		put_char(' ');
 		switch(btn){
-		case BTN_UP:
+		case KEY_UP:
 			if (i) i--;
 			break;
-		case BTN_DOWN:
+		case KEY_DOWN:
 			if (i<(MENU_ITEMS-1)) i++;
 			break;
-		case BTN_B:
+		case KEY_B:
 			switch(i){
 			case 0:
-				select_vmode();
+				buttons_map();
 				break;
 			case 1:
 				select_game();

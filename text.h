@@ -52,5 +52,7 @@ void prompt_btn();
 void clear_screen();
 // print text and do crlf()
 void println(const char *text);
+// affiche un curseur texte
+void show_cursor(int show);
 
 #endif

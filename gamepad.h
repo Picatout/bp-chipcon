@@ -27,15 +27,34 @@
 
 // masque de bits pour les 8 boutons
 // du gamepad
-#define BTN_UP      BIT7
-#define BTN_DOWN    BIT5
-#define BTN_LEFT    BIT6
-#define BTN_RIGHT   BIT4
-#define BTN_A       BIT0
-#define BTN_B       BIT2
-#define BTN_C       BIT1
-#define BTN_D       BIT0
-#define ALL_BTN     0xff
+#define BTN_UP_MASK      BIT7
+#define BTN_DOWN_MASK    BIT5
+#define BTN_LEFT_MASK    BIT6
+#define BTN_RIGHT_MASK   BIT4
+#define BTN_A_MASK       BIT0
+#define BTN_B_MASK       BIT2
+#define BTN_C_MASK       BIT1
+#define BTN_D_MASK       BIT3
+#define ALL_BTN_MASK     0xff
+// index des boutons dans la table buttons[8]
+#define BTN_UP_IDX 7
+#define BTN_DOWN_IDX 5
+#define BTN_LEFT_IDX 6
+#define BTN_RIGHT_IDX 4
+#define BTN_A_IDX 0
+#define BTN_B_IDX 2 
+#define BTN_C_IDX 1
+#define BTN_D_IDX 3
+
+// valeur par défaut des boutons
+#define KEY_UP 0x5     // BTN_UP
+#define KEY_DOWN 0x8   // BTN_DOWN
+#define KEY_LEFT 0x7   // BTN_LEFT
+#define KEY_RIGHT 0x9  // BTN_RIGHT
+#define KEY_A  0xa     // BTN_A
+#define KEY_B  0xb     // BTN_B
+#define KEY_C  0xc     // BTN_C
+#define KEY_D  0xd     // BTN_D
 
 // API gamepad
 extern volatile uint8_t btn_state;
@@ -51,6 +70,9 @@ void btn_wait_down(uint8_t button);
 void btn_wait_up(uint8_t button);
 // attend que n'importe quel bouton soit enfoncé.
 uint8_t btn_wait_any();
-
+// transcription des boutons
+void btn_set_value(uint8_t btn,uint8_t value);
+// retourne la table de transcription
+uint8_t* get_keymap();
 
 #endif //GAMEPAD_H

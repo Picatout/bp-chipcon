@@ -179,8 +179,7 @@ void print_int(int i,uint8_t base){
     if (base==10 && sign){
         fmt[--idx]='-';
     }else if (base==16){
-        fmt[--idx]='x';
-        fmt[--idx]='0';
+        fmt[--idx]='$';
     }
     print(&fmt[idx]);
 }
@@ -210,23 +209,23 @@ void text_scroller(const uint8_t *text, uint8_t speed){
 		while (c && c!='\n'){
 			put_char(c);
 			c=*text++;
-			if (btn_query_down(BTN_B)) {goto break_out;}
+			if (btn_query_down(KEY_B)) {goto break_out;}
 		}
 		for (j=0;j<CHAR_HEIGHT;j++){
 			game_pause(speed);
 			gfx_scroll_up(1);
-			if (btn_query_down(BTN_B)) {goto break_out;}
+			if (btn_query_down(KEY_B)) {goto break_out;}
 		}
 		c=*text++;
 	}//while
 	for (c=0;c<4*CHAR_HEIGHT;c++){
 		game_pause(speed);
 		gfx_scroll_up(1);
-		if (btn_query_down(BTN_B)) { break;}
+		if (btn_query_down(KEY_B)) { break;}
 	}//for
 break_out:	
 	gfx_cls();
-	btn_wait_up(BTN_B); 
+	btn_wait_up(KEY_B); 
 }
 
 void prompt_btn(){
@@ -238,3 +237,13 @@ void clear_screen(){
 	xpos=0;
 	ypos=0;
 }
+
+// affiche un curseur texte
+void show_cursor(int show){
+	int x,y;
+	uint8_t color=show?15:0;
+		for (x=xpos;x<xpos+CHAR_WIDTH;x++){
+			gfx_plot(x,ypos+CHAR_HEIGHT-1,color);
+		}
+}
+

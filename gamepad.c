@@ -20,6 +20,13 @@
 /*  
  *  Date création: 2019-05-22
  *  Interface game pad
+ *  NOTES:
+ *  1) le COSMAC VIP utilisait un clavier hexadécimal
+ *     et ce gamepad n'a que 8 boutons. Pour faire fonctionner
+ *     des jeux pré-existants sur cette machine il faut créer une
+ *     correspondance entre les touches du gamepad et le clavier hexadécimal
+ *     utilisé dans le jeux. C'est le rôle de la table buttons[8].
+ *  
 */
 
 #include "gamepad.h"
@@ -31,6 +38,40 @@
 #define CLK_PIN (13)
 
 volatile uint8_t  btn_state;
+
+
+// valeurs hexadécimal des boutons 
+// les entrées correspondes à la position du bitmask du bouton
+// i.e.  le bouton BTN_A est à la position 0 dans la table et le
+// bouton BTN_UP  est à la position 7 dans la table.
+static uint8_t buttons[8]={KEY_A,KEY_C,KEY_B,KEY_D,KEY_RIGHT,KEY_DOWN,KEY_LEFT,KEY_UP};
+
+// retourne l'index du bouton dans la table buttons[]
+// à partir de sont bitmask
+// input:
+//      mask masque binaire du bouton
+// output:
+//      idx  index dans la table
+static uint8_t btn_idx(uint8_t mask){
+    uint8_t idx=0;
+    mask>>=1;
+    while(mask){idx++; mask>>=1;}
+    return idx;
+}
+
+// retourne la mask du bouton à partir de sa valeur hexadécimal
+// input:
+//      btn_value   valeur hexadécimal du bouton inscrite dans la table buttons[]
+// output:
+//      mask   retourne le masque de bit, si trouvé dans la table sinon retourne 255.
+static uint8_t btn_mask(uint8_t btn_value){
+    int i;
+    for (i=0;i<8;i++){
+        if (buttons[i]==btn_value) return 1<<i;
+    }
+    return 255;
+}
+
 
 // initialisation matérielle.
 void gamepad_init(){
@@ -79,8 +120,9 @@ void read_gamepad(){
 //    button  bouton à vérifier.
 //  output:
 //      1->bouton enfoncé, 0->relâché.
-int btn_query_down(uint8_t button){
-    return !(btn_state&button);
+int btn_query_down(uint8_t btn){
+    uint8_t mask=btn_mask(btn);
+    return !(btn_state&mask);
 }
 
 // attend qu'un bouton soit enfoncé.
@@ -90,11 +132,12 @@ int btn_query_down(uint8_t button){
 //      button  le bouton à vérifier
 //  output:
 //      
-void btn_wait_down(uint8_t button){
+void btn_wait_down(uint8_t btn){
+    uint8_t mask=btn_mask(btn);
     int frame_count=0;
     while (frame_count<3){
         frame_sync();
-        if (!(btn_state&button)){
+        if (!(btn_state&mask)){
             frame_count++;
         }else{
             frame_count=0;
@@ -109,11 +152,12 @@ void btn_wait_down(uint8_t button){
 //      button  le bouton à vérifier
 //  output:
 //      
-void btn_wait_up(uint8_t button){
+void btn_wait_up(uint8_t btn){
+    uint8_t mask=btn_mask(btn);
     int frame_count=0;
     while (frame_count<3){
         frame_sync();
-        if ((btn_state&button)){
+        if ((btn_state&mask)){
             frame_count++;
         }else{
             frame_count=0;
@@ -140,7 +184,18 @@ uint8_t btn_wait_any(){
             frame_count++;
         }       
     }
-    return last_state^0xff;
+    return buttons[btn_idx(last_state^0xff)];
 }
 
+// modifie la transcription d'un bouton
+// input:
+//      btn   index dans la table {0..7}
+void btn_set_value(uint8_t idx,uint8_t value){
+    buttons[idx]=value;
+}
+
+// retourne la table buttons
+uint8_t* get_keymap(){
+    return buttons;
+}
 
