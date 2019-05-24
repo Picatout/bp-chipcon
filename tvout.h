@@ -42,7 +42,7 @@ typedef enum VIDEO_MODES{
 
 typedef struct vmode_params{
     vmode_t mode; // video mode
-    uint16_t first_visible; // first visible scan line
+    uint16_t video_start; // first visible scan line
     uint16_t video_end;  // last visible scan line
     uint16_t left_margin;   // left margin delay
     uint8_t bpr; // bytes per row
@@ -50,7 +50,7 @@ typedef struct vmode_params{
     uint8_t pdly; // pixel delay
     uint16_t hres; // horizontal pixels
     uint16_t vres; // vertical pixels
-    uint16_t chroma_setting;
+    uint16_t chroma_cfg;
 }vmode_params_t;
 
 extern volatile uint16_t game_timer;

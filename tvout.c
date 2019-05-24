@@ -46,8 +46,9 @@
 #define HPULSE ((uint16_t)(4.7e-6*(float)FCLK))
 #define SERRATION ((uint16_t)(2.3e-6*(float)FCLK))
 #define SYNC_PULSE ((uint16_t)(27.1E-6*(float)FCLK))
-#define CHROMA_START ((uint16_t)(5.1e-6*(float)FCLK))
-#define LEFT_MARGIN (1040) 
+#define BURST_START ((uint16_t)(5.0e-6*(float)FCLK))
+#define BURST_END ((uint16_t)(7.3e-6*(float)FCLK))
+#define LEFT_MARGIN (750) 
 #define FIRST_VIDEO_LINE (22)
 #define VIDEO_LINES (224)
 
@@ -61,8 +62,8 @@
 #define BP_RPT (VIDEO_LINES/BP_VRES) // 2 scan lines per row
 #define BP_START FIRST_VIDEO_LINE
 #define BP_END BP_START+VIDEO_LINES
-#define BP_LEFT LEFT_MARGIN // left margin delay
-#define BP_PDLY (2) // pixel delay
+#define BP_LEFT LEFT_MARGIN+200 // left margin delay
+#define BP_PDLY (1) // pixel delay
 #define BP_CHROMA (TMR_CCER_CC3E)
 //XOCHIP
 #define XO_VRES 64
@@ -71,8 +72,8 @@
 #define XO_RPT (VIDEO_LINES/XO_VRES)  // 3 scan lines per row
 #define XO_START (FIRST_VIDEO_LINE+(VIDEO_LINES-XO_VRES*XO_RPT)/2)
 #define XO_END XO_START+XO_VRES*XO_RPT
-#define XO_LEFT LEFT_MARGIN
-#define XO_PDLY (3)
+#define XO_LEFT LEFT_MARGIN+200
+#define XO_PDLY (2)
 #define XO_CHROMA (TMR_CCER_CC3E)
 //SCHIP
 #define SCHIP_VRES 64
@@ -81,8 +82,8 @@
 #define SCHIP_RPT (VIDEO_LINES/SCHIP_VRES)  // 3 scan lines per row
 #define SCHIP_START (FIRST_VIDEO_LINE+(VIDEO_LINES-SCHIP_VRES*SCHIP_RPT)/2)
 #define SCHIP_END SCHIP_START+SCHIP_VRES*SCHIP_RPT
-#define SCHIP_LEFT LEFT_MARGIN
-#define SCHIP_PDLY (3)
+#define SCHIP_LEFT LEFT_MARGIN+200
+#define SCHIP_PDLY (2)
 #define SCHIP_CHROMA (0) // no chroma signal
 //CHIP8
 #define CHIP8_VRES 32
@@ -91,8 +92,8 @@
 #define CHIP8_RPT (VIDEO_LINES/CHIP8_VRES) // 7 scan lines per row
 #define CHIP8_START (FIRST_VIDEO_LINE+(VIDEO_LINES-CHIP8_VRES*CHIP8_RPT)/2)
 #define CHIP8_END (CHIP8_START+CHIP8_VRES*CHIP8_RPT)
-#define CHIP8_LEFT LEFT_MARGIN-140
-#define CHIP8_PDLY (8)
+#define CHIP8_LEFT LEFT_MARGIN+100
+#define CHIP8_PDLY (7)
 #define CHIP8_CHROMA (0) // no chroma signal
 
 
@@ -114,7 +115,6 @@ enum TASK_ENUM{
 #define F_VIDEO BIT2
 
 
-static vmode_t video_mode=VM_BPCHIP;
 static volatile uint16_t task; // active task number
 static volatile uint16_t flags; // boolean flags.
 static volatile uint16_t slice; //  task slice
@@ -129,6 +129,18 @@ static const vmode_params_t video_params[MODES_COUNT]={
     {VM_SCHIP,SCHIP_START,SCHIP_END,SCHIP_LEFT,SCHIP_BPR,SCHIP_RPT,SCHIP_PDLY,SCHIP_HRES,SCHIP_VRES,SCHIP_CHROMA},
     {VM_CHIP8,CHIP8_START,CHIP8_END,CHIP8_LEFT,CHIP8_BPR,CHIP8_RPT,CHIP8_PDLY,CHIP8_HRES,CHIP8_VRES,CHIP8_CHROMA}
 };
+
+// video mode parameters
+static vmode_t video_mode=VM_BPCHIP;
+static uint16_t video_start=BP_START;
+static uint16_t video_end=BP_END;
+static uint16_t left_margin=BP_LEFT;
+static uint8_t byte_per_row=BP_BPR;
+static uint8_t lines_repeat=BP_RPT;
+static uint8_t pixel_delay=BP_PDLY;
+static uint8_t hres=BP_HRES;
+static uint8_t vres=BP_VRES;
+static uint16_t chroma_cfg=BP_CHROMA;
 
 uint8_t video_buffer[VRES*BPR];
 
@@ -147,7 +159,7 @@ void tvout_init(){
     TMR1->CR1=TMR_CR1_ARPE|TMR_CR1_URS;
     TMR1->ARR=HPERIOD;
     TMR1->CCR1=HPULSE;
-    TMR1->CCR2=CHROMA_START;
+    TMR1->CCR2=BURST_START;
     TMR1->EGR|=TMR_EGR_UG;
     TMR1->BDTR=TMR_BDTR_MOE;
     TMR1->SR=0;
@@ -161,7 +173,6 @@ void tvout_init(){
     config_pin(PORTB,0,OUTPUT_ALT_PP_SLOW); // TIMER3 CH3
 	RCC->APB1ENR|=RCC_APB1ENR_TIM3EN;
     TMR3->CCMR2=(7<<TMR_CCMR2_OC3M_POS)|TMR_CCMR2_OC3PE;
-    TMR3->CCER=TMR_CCER_CC3E;//|TMR_CCER_CC3P|TMR_CCER_CC4P;
     TMR3->CR1=TMR_CR1_ARPE|TMR_CR1_URS;
     TMR3->ARR=19; 
     TMR3->CCR3=10;
@@ -171,24 +182,26 @@ void tvout_init(){
     TMR3->CR1|=TMR_CR1_CEN; 
 }
 
+/*
 static void __attribute__((optimize("O1"))) pixel_delay(uint32_t dly){
     asm("");
     while (dly--);
 }
-
+*/
+/*
 #define _wait_tmr1_cnt(cnt) asm volatile ("mov r2,%0\n\t"\
                                         "mov r0,%1\n\t"\
                                         "1: ldr r3,[r2,#0]\n\t"\
                                         "cmp r3,r0\n\t"\
                                         "bls.n 1b\n\t"\
                                         ::"r"(TMR1_CNT),"r"(cnt):"r0","r2","r3")
-
+*/
 #define _jitter_cancel()  asm volatile ("mov r2,%0\n\t"\
                                        "ldr r2,[r2,#0]\n\t"\
-                                       "and r2,#15\n\t"\
+                                       "and r2,#7\n\t"\
                                        "lsl r2,#1\n\t"\
                                        "add pc,pc,r2\n\t"\
-                                       ".rept 16\n\t"\
+                                       ".rept 8\n\t"\
                                        "nop\n\t"\
                                        ".endr\n"\
                                         ::"r"(TMR1_CNT):"r2")
@@ -202,37 +215,28 @@ static void __attribute__((optimize("O1"))) pixel_delay(uint32_t dly){
                               ::"r" (dly):"r2")
 
 void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
-#define _rpt video_params[video_mode].rpt
-//#define _pdly video_params[video_mode].pdly
     register uint8_t *video_data;
     register uint16_t *video_port;
-    if (video_mode<VM_SCHIP){
+    register uint32_t i;
+//    if (video_mode<VM_SCHIP){
         TMR3->CCER|=TMR_CCER_CC3E;
-        while(TMR1->CNT<573); //(uint16_t)(8.0e-6*(float)FCLK));
-        //_wait_tmr1_cnt(573);
+        while(TMR1->CNT<BURST_END); //(uint16_t)(8.0e-6*(float)FCLK));
+        //_wait_tmr1_cnt();
         TMR3->CCER&=~TMR_CCER_CC3E;
-    }
-//    if (flags&F_VIDEO){
-            register uint32_t i;
-            register uint8_t pdly;
-            uint8_t bpr;
-            video_port=(uint16_t*)&PORTA->ODR;
-            while(TMR1->CNT<video_params[video_mode].left_margin);
-            //_wait_tmr1_cnt(1000);
-            bpr=video_params[video_mode].bpr;
-            TMR3->CCER|=video_params[video_mode].chroma_setting;
-            video_data=&video_buffer[slice/_rpt*bpr];
-            pdly=video_params[video_mode].pdly;
-            _jitter_cancel();
-            for (i=0;i<bpr;i++){
-                *video_port=(*video_data)>>4;
-                _pixel_delay(pdly);
-                *video_port=(*video_data++)&0xf;
-                _pixel_delay(pdly);
-            }
-        PORTA->ODR=0;
-        TMR3->CCER&=~(TMR_CCER_CC4E+TMR_CCER_CC3E);
 //    }
+    video_port=(uint16_t*)&PORTA->ODR;
+    video_data=&video_buffer[slice/lines_repeat*byte_per_row];
+    while(TMR1->CNT<left_margin);
+    _jitter_cancel();
+    TMR3->CCER|=chroma_cfg;
+    for (i=0;i<byte_per_row;i++){
+        *video_port=(*video_data)>>4;
+        _pixel_delay(pixel_delay);
+        *video_port=(*video_data++)&0xf;
+        _pixel_delay(pixel_delay);
+    }
+    PORTA->ODR=0;
+    TMR3->CCER&=~(TMR_CCER_CC3E);
     TMR1->SR&=~TMR_SR_CC2IF;
 }
 
@@ -303,7 +307,7 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
         task++;
         break;
     case WAIT_FIRST_VIDEO:
-        if (scan_line==video_params[video_mode].first_visible){
+        if (scan_line==video_start){
             TMR1->SR&=~TMR_SR_CC2IF;
             TMR1->DIER|=TMR_DIER_CC2IE;
             flags |= F_VIDEO;
@@ -313,7 +317,7 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
         break;
     case WAIT_VIDEO_END:
         slice++;
-        if (scan_line==video_params[video_mode].video_end){
+        if (scan_line==video_end){
             TMR1->DIER&=~TMR_DIER_CC2IE;
             flags &=~F_VIDEO;
             task++;
@@ -329,10 +333,9 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
             scan_line=0;
             slice=0;
             task=0;
-//            TMR1->DIER&=~TMR_DIER_CC2IE;
         }
         break;
-    }//switch slice
+    }//switch task
     TMR1->SR&=~TMR_SR_UIF;
 }
 
@@ -345,9 +348,18 @@ void wait_sync_end(){
 }
 
 void set_video_mode(vmode_t mode){
-    gfx_cls();
     frame_sync();
     video_mode=mode;
+    video_start=video_params[mode].video_start;
+    video_end=video_params[mode].video_end;
+    left_margin=video_params[mode].left_margin;
+    byte_per_row=video_params[mode].bpr;
+    lines_repeat=video_params[mode].rpt;
+    pixel_delay=video_params[mode].pdly;
+    hres=video_params[mode].hres;
+    vres=video_params[mode].vres;
+    chroma_cfg=video_params[mode].chroma_cfg;
+    gfx_cls();
 }
 
 vmode_params_t* get_video_params(){
