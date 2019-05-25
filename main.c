@@ -33,6 +33,7 @@
 #include "graphics.h"
 #include "text.h"
 #include "gamepad.h"
+#include "sound.h"
 
 //const void* TPA_TOP=(void*)_TPA_TOP;
 
@@ -233,6 +234,54 @@ static void video_test(){
 	}//while(1)
 }
 
+static void sound_test(){
+	uint8_t key=255;
+	uint16_t freq;
+	gfx_cls();
+	print("press buttons\n");
+	while (key!=KEY_B){
+		key=btn_wait_any();
+		switch(key){
+		case KEY_UP:
+			print("key up\n");
+			freq=440;
+			break;
+		case KEY_DOWN:
+			print("key down\n");
+			freq=466;
+			break;
+		case KEY_LEFT:
+			print("key left\n");
+			freq=493;
+			break;
+		case KEY_RIGHT:
+			print("key right\n");
+			freq=523;
+			break;
+		case KEY_A:
+			print("key A\n");
+			freq=554;
+			break;
+		case KEY_B:
+			print("key B\n");
+			freq=587;
+			break;
+		case KEY_C:
+			print("key C\n");
+			freq=622;
+			break;
+		case KEY_D:
+			print("key D\n");
+			freq=659;
+			break;
+		}//swtich
+		tone(freq,3);
+		//btn_wait_up(key);
+	}
+	btn_wait_up(key);
+	sound_sampler(60);
+}
+
 static void display_keymap(uint8_t*map){
 	int i;
 	set_cursor(0,CHAR_HEIGHT);
@@ -312,11 +361,12 @@ static void select_game(){
 }
 
 
-#define MENU_ITEMS (3)
+#define MENU_ITEMS (4)
 static const char *menu_list[MENU_ITEMS]={
 	" Buttons map",
 	" Games list",
 	" Video test",
+	" Sound test",
 };
 
 static void display_menu(){
@@ -357,6 +407,9 @@ static void menu(){
 			case 2:
 				video_test();
 				break;
+			case 3:
+				sound_test();
+				break;	
 			}
 			//set_video_mode(VM_BPCHIP);
 			display_menu();
@@ -365,6 +418,7 @@ static void menu(){
 	}//while
 }
 
+//const uint8_t sample[16]={0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA};
 void main(void){
 	set_sysclock();
 //	config_systicks();
@@ -375,6 +429,11 @@ void main(void){
 	_led_off();
 	gamepad_init();
 	tvout_init();
+	sound_init();
+	uint8_t sample[16];
+	int i;
+	for (i=0;i<16;i++)sample[i]=rand()&255;
+	load_sound_buffer((const uint8_t*)sample);
 	gfx_cls();
 	menu();
 }

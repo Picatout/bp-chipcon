@@ -45,6 +45,7 @@ void startup();
 void main();
 void __attribute__((__interrupt__)) TV_SYNC_handler();
 void __attribute__((__interrupt__)) TV_OUT_handler();
+void __attribute__((__interrupt__)) sound_handler();
 
 // réinitialise le µC
 void __attribute__((naked)) reset_mcu(){
@@ -186,7 +187,7 @@ __attribute__ ((section("vectors")))= {
     (unsigned int *)  TV_SYNC_handler, // 25 TIM1_UP
     (unsigned int *)  reset_mcu, // 26 TIM1_TRG_COM
     (unsigned int *)  TV_OUT_handler, // 27 TIM1_CC
-    (unsigned int *)  TIM2_handler, // 28 TIM2
+    (unsigned int *)  sound_handler, // 28 TIM2
     (unsigned int *)  TIM3_handler, // 29 TIM3
     (unsigned int *)  TIM4_handler, // 30 TIM4
     (unsigned int *)  reset_mcu, // 31 I2C1_EV
