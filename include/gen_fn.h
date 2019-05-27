@@ -28,7 +28,7 @@
 
 #ifndef GEN_FN_H
 #define GEN_FN_H
-
+#include <stdlib.h>
 
 // compare les chaînes s1 et s2
 // retourne -1 si s1 précède s2 dans l'ordre alphabétique
@@ -46,7 +46,7 @@ int atoi(const char *str);
 // copie n caractère
 void move(const char *src , char *dest, unsigned int len);
 // retourne la longueur de la chaîne.
-int strlen(const char* str);
+size_t strlen(const char* str);
 // remplie un buffer avec un caractère
 void fill(void *buffer, unsigned int size, char c);
 // conversion en majuscule in situ
@@ -60,8 +60,6 @@ int skip(const char *buffer, int start, char c);
 //recherche la première occurence du caractee 'c' à partir de la position 'start'.
 // retourne -1, si 'c' absent.
 int scan(const char *buffer, int start, char c);
-// converti un entier en chaîne.
-char* itoa(int i, char *buff,int base, int width);
 // concatenation de la chaîne s2 à la fin de s1
 char* strcat(char* s1, const char* s2);
 

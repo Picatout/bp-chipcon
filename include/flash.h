@@ -196,7 +196,7 @@ int flash_write_hword(uint16_t *address, uint16_t hword);
 
 // écriture d'un octet dans la mémoire flash
 // retourne succès errreur.
-//int flash_write(BYTE* address, 	BYTE b);
+int flash_write(uint8_t* address, 	BYTE b);
 
 // efface une ligne de 1024 octets
 int flash_erase_row(unsigned int row_nbr);
@@ -208,9 +208,14 @@ int flash_erase_row(unsigned int row_nbr);
 //		address,  adresse de début du bloc.
 //		buffer,   tampon recevant les données.
 //		size,     nombre d'octets à lire.
-//void flash_read_block(BYTE *address, BYTE *buffer,int size);
+void flash_read_block(const uint8_t *address, uint8_t *buffer,int size);
 
-//int flash_write_block(BYTE *address, const BYTE *buffer, int size);
+// écriture d'un bloc dans la mémoire flash du mcu
+//	arguments:
+//		address  addresse flash de destination
+//		buffer   données à écrire
+//		size     nombre d'octets à écrire.
+int flash_write_block(uint8_t *address, const uint8_t *buffer, int size);
 
 // lecture d'une ligne flash (1024 octets)
 //  arguments:

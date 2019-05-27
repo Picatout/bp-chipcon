@@ -15,10 +15,11 @@ INC =../include/
 HAL = ../hal/
 BUILD=build/
 ASM =../*.s
+GAMES=../games/*.c
 SRC = ../*.c
 SRC += $(HAL)nvic.c $(HAL)gpio.c $(HAL)spi.c $(HAL)dma.c 
 SRC += $(HAL)rtc.c $(HAL)bkp.c $(HAL)flash.c
-
+SRC += $(GAMES)
 
 all: build
 	

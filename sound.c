@@ -28,7 +28,7 @@ void sound_init(){
     TMR2->CCMR2=(7<<TMR_CCMR2_OC3M_POS)|TMR_CCMR2_OC3PE;
     TMR2->CCER=TMR_CCER_CC3E;
     TMR2->PSC=9; //FCLK/10
-    set_int_priority(IRQ_TIM2,4);
+    set_int_priority(IRQ_TIM2,0);
     enable_interrupt(IRQ_TIM2);
 }
 

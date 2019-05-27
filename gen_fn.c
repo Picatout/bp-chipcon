@@ -142,23 +142,6 @@ int skip(const char *buffer, int start, char c){
 	return start;
 }
 
-// converti un entier en chaîne.
-char* itoa(int i, char *buff,int base,int width){
-	int sign=0;
-	char c;
-	buff[width--]=0;
-	if (i<0){i=-i;sign=-1;}
-	while (i && (width>=0)){
-		c=i%base+'0';
-		if (c>'9'){c+=7;}
-		buff[width--]=c;
-		i/=base;
-	}
-	while(width>0) buff[width--]='0';
-	if (sign && width==0) buff[0]='-';else if (width==0) buff[0]='0';
-	return buff;
-}
-
 // concatenation de la chaîne s2 à la fin de s1
 char* strcat(char* s1, const char* s2){
 	s1+=strlen(s1);

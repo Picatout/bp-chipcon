@@ -28,12 +28,16 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "include/blue_pill.h"
 #include "tvout.h"
 #include "graphics.h"
 #include "text.h"
 #include "gamepad.h"
 #include "sound.h"
+#include "games/games.h"
+#include "chipcon_vm.h"
+#include "include/gen_fn.h"
 
 //const void* TPA_TOP=(void*)_TPA_TOP;
 
@@ -243,35 +247,27 @@ static void sound_test(){
 		key=btn_wait_any();
 		switch(key){
 		case KEY_UP:
-			print("key up\n");
 			freq=440;
 			break;
 		case KEY_DOWN:
-			print("key down\n");
 			freq=466;
 			break;
 		case KEY_LEFT:
-			print("key left\n");
 			freq=493;
 			break;
 		case KEY_RIGHT:
-			print("key right\n");
 			freq=523;
 			break;
 		case KEY_A:
-			print("key A\n");
 			freq=554;
 			break;
 		case KEY_B:
-			print("key B\n");
 			freq=587;
 			break;
 		case KEY_C:
-			print("key C\n");
 			freq=622;
 			break;
 		case KEY_D:
-			print("key D\n");
 			freq=659;
 			break;
 		}//swtich
@@ -354,10 +350,60 @@ static void buttons_map(){
 	for (i=0;i<8;i++)keymap[i]=newmap[i];
 }
 
+static void print_games_list(unsigned first, unsigned rows){
+	int r=1;
+
+	set_cursor(0,0);
+	print("**** GAMES ****");
+	while ((r<rows) && games_list[first].size){
+		new_line();
+		put_char(' ');
+		print(games_list[first].name);
+		first++;
+	}
+}
+
+static void run_game(unsigned idx){
+	int i;
+	move(games_list[idx].data,game_ram,games_list[idx].size);
+	set_video_mode(games_list[idx].vmode);
+	chip_vm(0);
+}
+
 static void select_game(){
-	gfx_cls();
-	println("games");
-	game_pause(60);
+	int i=0,first=0,count,rows,selected=1;
+	int loop=1;
+	uint8_t btn;
+	vmode_params_t *vparams;
+	count=games_count();
+	set_video_mode(VM_BPCHIP);
+	vparams=get_video_params();
+	rows=vparams->vres/CHAR_HEIGHT;
+	while(loop){
+		print_games_list(first,rows);
+		set_cursor(0,selected*CHAR_HEIGHT);
+		put_char('>');
+		btn=btn_wait_any();
+		btn_wait_up(btn);
+		switch(btn){
+		case KEY_UP:
+			if (first) first--;
+			if (selected>1) selected--;
+			break;
+		case KEY_DOWN:
+			if ((first+selected-1)<(count-1)){
+				selected++;
+				if (selected>=rows) first++;
+			}
+			break;
+		case KEY_B:
+			loop=false;
+			break;	
+		case KEY_C:
+			return;	
+		}
+	}
+	run_game(first+selected-1);
 }
 
 

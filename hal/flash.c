@@ -50,6 +50,8 @@ typedef struct{
 
 static row_buffer_t row_buff;
 
+extern uint32_t _FLASH_FREE;
+#define ffa  ((void*)_FLASH_FREE)
 
 // activation interface de programmation
 //mémoire flash du mcu
@@ -70,8 +72,11 @@ int flash_enable(){
 
 // lecture d'un octet de la mémoire flash
 // accède le tampon si 'address' est déjà dans le tampon.
-/*
-static BYTE read_byte(BYTE *address){
+// arguments:
+//		address   adresse de la mémoire flash à lire
+// retourne:
+//		valeur lue à cette adresse
+static uint8_t read_byte(const uint8_t *address){
 		uint32_t i;
 		if (_addr2row(address)==row_buff.row){
 			i=((uint32_t)address&FLASH_ROW_MASK);
@@ -80,14 +85,13 @@ static BYTE read_byte(BYTE *address){
 			return *address;
 		}
 }
-*/
 
-/*
+
 // écris un octet dans le tampon.
-static inline void write_buffered_byte(unsigned offset, BYTE b){
+static inline void write_buffered_byte(unsigned offset, uint8_t b){
 	row_buff.data[offset]=b;
 }
-*/
+
 
 // écriture dans la mémoire flash du MCU
 // cett écriture se fait par mot de 16 bits.
@@ -203,8 +207,8 @@ void flash_disable(){
 // Si l'écriture doit-être faite dans un autre ligne que 
 // celle qui est dans le tampon. la fonction flash_sync()
 // est appellée suivie d'un load_row() avec le nouveau no. de ligne.
-/*
-int flash_write_byte(BYTE* address, BYTE b){
+
+int flash_write_byte(uint8_t* address, BYTE b){
 	uint32_t offset, row;
 	
 	row=_addr2row(address);
@@ -218,7 +222,7 @@ int flash_write_byte(BYTE* address, BYTE b){
 	row_buff.flags|=F_MODIFIED;
 	return 1;
 }
-*/
+
 	
 // lecture d'un bloc de mémoire flash
 // si les données sont dans le tampon c'est le contenu du tampon 'row_buff.data'
@@ -227,28 +231,32 @@ int flash_write_byte(BYTE* address, BYTE b){
 //		address,  adresse de début du bloc.
 //		buffer,   tampon recevant les données.
 //		size,     nombre d'octets à lire.
-/*
-void flash_read_block(BYTE *address, BYTE *buffer,int size){
+
+void flash_read_block(const uint8_t *address, uint8_t *buffer,int size){
 	int i;
 	for (i=0;i<size;i++){*buffer++=read_byte(address++);}
 }
-*/
+
 
 // écris un bloc de mots de 16 bits dans la mémoire en fait l'écriture
 // est faite dans le tampon 'row_buff.data'.
-/*
-int flash_write_block(BYTE *address, const BYTE *buffer, int size){
+//	arguments:
+//		address  addresse flash de destination
+//		buffer   données à écrire
+//		size     nombre d'octets à écrire.
+int flash_write_block(uint8_t *address, const uint8_t *buffer, int size){
 	int i;
 	if ((void*)address<ffa) return 0;
-	
+	if (!flash_enable()) return 0;	
 	for (i=0;i<size;i++){
 		if (!flash_write_byte(address++,*buffer++)){
 			return 0;
 		}
 	}
+	flash_disable();
 	return 1;
 }
-*/
+
 
 // lecture d'une ligne flash (1024 octets)
 //  arguments:
@@ -283,3 +291,4 @@ int flash_write_row(unsigned int row_nbr, const BYTE *buffer){
 	return flash_write_block(address,buffer,FLASH_ROW_SIZE_BYTES);
 }
 */
+

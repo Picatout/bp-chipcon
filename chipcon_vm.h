@@ -43,7 +43,6 @@ typedef struct vm_state{
 	uint16_t ix;
 	uint8_t  sp;
 	uint8_t  var[16];
-	uint8_t  rpl[16];
 	union {
 		uint16_t opcode;	
 	struct{	
@@ -62,7 +61,7 @@ extern uint8_t game_ram[GAME_SPACE];
 
 void print_vms(const char *msg);
 	
-uint8_t schipp(uint16_t program_address);
+uint8_t chip_vm(uint16_t program_address);
 void srand(unsigned n);
 int rand();
 
