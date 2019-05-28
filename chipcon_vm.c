@@ -142,7 +142,7 @@ uint8_t chip_vm(uint16_t program_address){
 				//NOP 
 			}else if ((vms.b2&0xf0)==0xc0){ // 00CN scroll screen down  ; SCHIP
 				gfx_scroll_down(vms.b2&0xf); 
-			}else if ((vms.b2&0xf0)==0xd0){ // 00DN scroll screen up ; XO-CHIP
+			}else if ((vms.b2&0xf0)==0xd0){ // 00DN scroll screen up ; BP-CHIP
 				gfx_scroll_up(vms.b2&0xf);					
 			}else switch(vms.b2){
 				case 0xe0: // 00E0, CLS   clear screen  ; CHIP-8
@@ -187,9 +187,9 @@ uint8_t chip_vm(uint16_t program_address){
 			case 0:  // 5XY0  SE VX,VY   ;Saute l'instruction suivante si VX == VY ; CHIP-8
 				if (vms.var[x]==vms.var[y]) vms.pc+=2;
 				break;
-			case 2:  // 5XY2  save VX..VY at address pointed by I, I not incremented  ; XO-CHIP
+			case 2:  // 5XY2  save VX..VY at address pointed by I, I not incremented  ; BP-CHIP
 				break;
-			case 3: // 5XY3   load VX..VY from adress pointed by I, I not incremented ; XO-CHIP
+			case 3: // 5XY3   load VX..VY from adress pointed by I, I not incremented ; BP-CHIP
 				break;
 			}
 			break;
@@ -338,11 +338,12 @@ uint8_t chip_vm(uint16_t program_address){
 				break;
 		case 0xf:
 			switch(vms.b2){
-			case 0: // F000 NNNN  load i with a 16-bit address, XO-CHIP
+			case 0: // F000 NNNN  load i with a 16-bit address, BP-CHIP
 				break;
-			case 1: // FN01  select zero or more drawing planes by bitmask (0 <= n <= 3), XO-CHIP
+			case 1: // FN01  set sprite bit/pixels 1,2,4
+				sprite_bpp=vms.b1&0x3;
 				break;
-			case 2: // FN02   store 16 bytes starting at i in the audio pattern buffer, XO-CHIP
+			case 2: // FN02   store 16 bytes starting at i in the audio pattern buffer, BP-CHIPCON
 				break;	
 			case 0x07: // FX07  LD VX, DT   VX := game_timer
 				vms.var[x]=game_timer;

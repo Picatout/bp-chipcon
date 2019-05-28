@@ -54,10 +54,10 @@ typedef struct vm_state{
 }vm_state_t;
 
 
-
 // memory containing game
 #define GAME_SPACE 8192
 extern uint8_t game_ram[GAME_SPACE];
+extern uint8_t planes;
 
 void print_vms(const char *msg);
 	

@@ -43,8 +43,9 @@ typedef enum BLIT_OP{
     BIT_SET,
 } blit_op_t;
 
+extern uint8_t sprite_bpp;
+void set_palette(const uint8_t palette[4]);
 void gfx_plot (int x,int y,uint8_t color);
-void gfx_rectangle(int x0,int y0, int x1,int y1);
 void gfx_cls();
 void gfx_scroll_up(uint8_t n);
 void gfx_scroll_down(uint8_t n);

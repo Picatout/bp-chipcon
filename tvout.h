@@ -33,7 +33,7 @@
 
 typedef enum VIDEO_MODES{
    VM_BPCHIP, // 180x112 16 colors (default)
-   VM_XOCHIP, // 128x64 4 colors
+//   VM_XOCHIP, // 128x64 4 colors
    VM_SCHIP, // 128x64 monochrome
    VM_CHIP8,  // 64x32 monochrome
 
@@ -55,6 +55,7 @@ typedef struct vmode_params{
 
 extern volatile uint16_t game_timer;
 extern volatile uint16_t sound_timer;
+extern vmode_t video_mode;
 
 extern uint8_t video_buffer[VRES*BPR];
 void set_video_mode(vmode_t mode);

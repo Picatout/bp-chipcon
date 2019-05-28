@@ -65,6 +65,7 @@
 #define BP_LEFT LEFT_MARGIN+200 // left margin delay
 #define BP_PDLY (1) // pixel delay
 #define BP_CHROMA (TMR_CCER_CC3E)
+/*
 //XOCHIP
 #define XO_VRES 64
 #define XO_HRES 128
@@ -75,6 +76,7 @@
 #define XO_LEFT LEFT_MARGIN+200
 #define XO_PDLY (2)
 #define XO_CHROMA (TMR_CCER_CC3E)
+*/
 //SCHIP
 #define SCHIP_VRES 64
 #define SCHIP_HRES 128
@@ -92,7 +94,7 @@
 #define CHIP8_RPT (VIDEO_LINES/CHIP8_VRES) // 7 scan lines per row
 #define CHIP8_START (FIRST_VIDEO_LINE+(VIDEO_LINES-CHIP8_VRES*CHIP8_RPT)/2)
 #define CHIP8_END (CHIP8_START+CHIP8_VRES*CHIP8_RPT)
-#define CHIP8_LEFT LEFT_MARGIN+100
+#define CHIP8_LEFT LEFT_MARGIN+60
 #define CHIP8_PDLY (7)
 #define CHIP8_CHROMA (0) // no chroma signal
 
@@ -125,13 +127,13 @@ static volatile uint32_t ntsc_ticks;
 
 static const vmode_params_t video_params[MODES_COUNT]={
     {VM_BPCHIP,BP_START,BP_END,BP_LEFT,BP_BPR,BP_RPT,BP_PDLY,BP_HRES,BP_VRES,BP_CHROMA},
-    {VM_XOCHIP,XO_START,XO_END,XO_LEFT,XO_BPR,XO_RPT,XO_PDLY,XO_HRES,XO_VRES,XO_CHROMA},
+ //   {VM_XOCHIP,XO_START,XO_END,XO_LEFT,XO_BPR,XO_RPT,XO_PDLY,XO_HRES,XO_VRES,XO_CHROMA},
     {VM_SCHIP,SCHIP_START,SCHIP_END,SCHIP_LEFT,SCHIP_BPR,SCHIP_RPT,SCHIP_PDLY,SCHIP_HRES,SCHIP_VRES,SCHIP_CHROMA},
     {VM_CHIP8,CHIP8_START,CHIP8_END,CHIP8_LEFT,CHIP8_BPR,CHIP8_RPT,CHIP8_PDLY,CHIP8_HRES,CHIP8_VRES,CHIP8_CHROMA}
 };
 
 // video mode parameters
-static vmode_t video_mode=VM_BPCHIP;
+vmode_t video_mode=VM_BPCHIP;
 static uint16_t video_start=BP_START;
 static uint16_t video_end=BP_END;
 static uint16_t left_margin=BP_LEFT;
@@ -350,6 +352,7 @@ void wait_sync_end(){
 void set_video_mode(vmode_t mode){
     frame_sync();
     video_mode=mode;
+    if (mode==VM_BPCHIP) sprite_bpp=4;else sprite_bpp=1;
     video_start=video_params[mode].video_start;
     video_end=video_params[mode].video_end;
     left_margin=video_params[mode].left_margin;

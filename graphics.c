@@ -37,6 +37,18 @@
 #include "graphics.h"
 #include "text.h"
 
+uint8_t sprite_bpp=4;
+// palette 4 couleurs pour les sprites 1 ou 2 bits/pixel
+static uint8_t palette[4]={0,15,3,5};
+
+
+void set_palette(const uint8_t new[4]){
+    palette[0]=new[0];
+    palette[1]=new[1];
+    palette[2]=new[2];
+    palette[3]=new[3];
+}
+
 int gfx_blit(int x, int y, uint8_t color, blit_op_t op){
 	register int idx;
     int collision;
@@ -89,29 +101,6 @@ void gfx_plot (int x,int y,uint8_t color){
         byte|=color<<4;
     }
     video_buffer[idx]=byte;
-}
-
-
-void gfx_rectangle(int x0,int y0, int x1,int y1){
-	int tmp;
-	if (x0>x1){
-		tmp=x0;
-		x0=x1;
-		x1=tmp;
-	}
-	if (y0>y1){
-		tmp=y0;
-		y0=y1;
-		y1=tmp;
-	}
-	for (tmp=x0;tmp<=x1;tmp++){
-		gfx_plot(tmp,y0,15);
-		gfx_plot(tmp,y1,15);
-	}
-	for (++y0;y0<y1;y0++){
-		gfx_plot(x0,y0,15);
-		gfx_plot(x1,y0,15);
-	}
 }
 
 void gfx_cls(){
@@ -192,19 +181,32 @@ uint8_t gfx_get_pixel(int x, int y){
     return byte&0xf;
 }
 
+static const uint8_t bit_mask[5]={0,128,0xc0,0,0xf0};
+static const uint8_t bit_shift[5]={0,7,6,0,4};
 // put sprite on screen using BIT_XOR
 int gfx_sprite(int x, int y, uint8_t width, uint8_t height, const uint8_t *sprite){
-    register uint8_t bmp_byte;
+    register uint8_t color,bmp_byte,mask,shift,ppb;
     register int x0,y0;
-    int collision;
+    int collision=0;
 
+    shift=bit_shift[sprite_bpp];
     bmp_byte=*sprite++;
+    mask=bit_mask[sprite_bpp];
+    ppb=8/sprite_bpp;
     for (y0=y;y0<(y+height);y0++){
         for(x0=x;x0<(x+width);x0++){
-            gfx_blit(x0,y0,bmp_byte>>4,BIT_XOR);
-            x0++;
-            collision=gfx_blit(x0,y0,bmp_byte,BIT_XOR);
-            bmp_byte=*sprite++;
+            if (sprite_bpp<4){
+                color=palette[(bmp_byte&mask)>>shift];
+            }else{
+                color=(bmp_byte&mask)>>shift;
+            }
+            collision|=gfx_blit(x0,y0,color,BIT_XOR);
+            bmp_byte<<=(8-shift);
+            ppb--;
+            if (!ppb){
+                bmp_byte=*sprite++;
+                ppb=8/sprite_bpp;
+            }
         }
     }
     return collision;

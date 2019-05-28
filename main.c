@@ -88,6 +88,17 @@ const static uint8_t ball8x8[8*BPP]={
 	0x00,0x77,0x77,0x00,
 };
 
+const static uint8_t ball8x8_1bpp[8]={
+	0x3c,
+	0x7e,
+	0xff,
+	0xff,
+	0xff,
+	0xff,
+	0x7e,
+	0x3c
+};
+
 typedef struct ball{
 	int x;
 	int y;
@@ -164,7 +175,11 @@ void init_balls(){
 		balls[i].y=2*CHAR_HEIGHT+rand()%(vparams->vres-2*CHAR_HEIGHT);
 		balls[i].dx=1;
 		balls[i].dy=1;
-		balls[i].ball_sprite=ball8x8;
+		if (vparams->mode==VM_BPCHIP){
+			balls[i].ball_sprite=ball8x8;
+		}else{
+			balls[i].ball_sprite=ball8x8_1bpp;
+		}
 	}
 }
 
@@ -211,15 +226,12 @@ static void video_test(){
 		draw_balls();
 		move_balls();
 		if (btn_query_down(KEY_RIGHT)){
-			p=++p&3;
+			p=++p%3;
 			set_video_mode(p);
 			switch(p){
 			case VM_BPCHIP:
 				print("BPCHIP mode\n180x112 16 colors");
 				color_bars();
-				break;
-			case VM_XOCHIP:
-				print("XOCHIP mode\n128x64 4 colors");
 				break;
 			case VM_SCHIP:
 				print("SCHIP mode\n128x64 mono");
