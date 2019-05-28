@@ -47,15 +47,16 @@
 #define BTN_D_IDX 3
 
 // valeur par défaut des boutons
-#define KEY_UP 0x5     // BTN_UP
-#define KEY_DOWN 0x8   // BTN_DOWN
-#define KEY_LEFT 0x7   // BTN_LEFT
-#define KEY_RIGHT 0x9  // BTN_RIGHT
-#define KEY_A  0xa     // BTN_A
-#define KEY_B  0xb     // BTN_B
-#define KEY_C  0xc     // BTN_C
-#define KEY_D  0xd     // BTN_D
+#define KEY_UP 32    // BTN_UP
+#define KEY_DOWN 4   // BTN_DOWN
+#define KEY_LEFT 8   // BTN_LEFT
+#define KEY_RIGHT 16  // BTN_RIGHT
+#define KEY_A  1     // BTN_A
+#define KEY_B  2      // BTN_B
+#define KEY_C  64     // BTN_C
+#define KEY_D  128     // BTN_D
 
+extern const uint8_t default_kmap[8];
 // API gamepad
 extern volatile uint8_t btn_state;
 // initialisation matérielle.
@@ -72,6 +73,8 @@ void btn_wait_up(uint8_t button);
 uint8_t btn_wait_any();
 // transcription des boutons
 void btn_set_value(uint8_t btn,uint8_t value);
+// set buttons map
+void set_keymap(const uint8_t *kmap);
 // retourne la table de transcription
 uint8_t* get_keymap();
 

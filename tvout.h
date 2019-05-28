@@ -56,6 +56,7 @@ typedef struct vmode_params{
 extern volatile uint16_t game_timer;
 extern volatile uint16_t sound_timer;
 extern vmode_t video_mode;
+extern volatile uint32_t ntsc_ticks;
 
 extern uint8_t video_buffer[VRES*BPR];
 void set_video_mode(vmode_t mode);

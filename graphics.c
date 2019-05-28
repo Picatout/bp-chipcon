@@ -105,7 +105,8 @@ void gfx_plot (int x,int y,uint8_t color){
 
 void gfx_cls(){
 	int x;
-	for (x=0;x<VRES*BPR;x++) video_buffer[x]=0;
+    vmode_params_t *vparams=get_video_params();
+	for (x=0;x<vparams->vres*vparams->bpr;x++) video_buffer[x]=0;
     set_cursor(0,0);
 }
 
@@ -123,24 +124,24 @@ static uint8_t* move_down(uint8_t* src, uint8_t* dest, int size){
 void gfx_scroll_up(uint8_t n){
     uint8_t *src,*dest;
     int size;
-
-    src=&video_buffer[n*BPR];
+    vmode_params_t *vparams=get_video_params();
+    src=&video_buffer[n*vparams->bpr];
     dest=video_buffer;
-    size = (VRES-n)*BPR;
+    size = (vparams->vres-n)*vparams->bpr;
     dest=move_down(src,dest,size);
-    size=BPR*n;
+    size=vparams->bpr*n;
     while (size--) *dest++=0;
 }
 
 void gfx_scroll_down(uint8_t n){
     uint8_t *src,*dest;
     int size;
-
-    src=&video_buffer[(VRES-n)*BPR];
-    dest=&video_buffer[VRES*BPR];
-    size = (VRES-n)*BPR;
+    vmode_params_t *vparams=get_video_params();
+    src=&video_buffer[(vparams->vres-n)*vparams->bpr];
+    dest=&video_buffer[vparams->vres*vparams->bpr];
+    size = (vparams->vres-n)*vparams->bpr;
     dest=move_up(src,dest,size);
-    size=BPR*n;
+    size=vparams->bpr*n;
     while (size--) *--dest=0;
 }
 
@@ -148,10 +149,11 @@ void gfx_scroll_down(uint8_t n){
 void gfx_scroll_left(uint8_t n){
     int y,size;
     uint8_t *src, *dest;
-    for (y=0;y<VRES;y++){
-        dest=&video_buffer[y*BPR];
+    vmode_params_t *vparams=get_video_params();
+    for (y=0;y<vparams->vres;y++){
+        dest=&video_buffer[y*vparams->bpr];
         src=dest+n;
-        size=HRES/2-n;
+        size=vparams->hres/2-n;
         dest=move_down(src,dest,size);
         size=n;
         while (size--) *dest++=0;
@@ -162,10 +164,11 @@ void gfx_scroll_left(uint8_t n){
 void gfx_scroll_right(uint8_t n){
     int y,size;
     uint8_t *src, *dest;
-    for (y=0;y<VRES;y++){
-        dest=&video_buffer[y*BPR]+BPR;
+    vmode_params_t *vparams=get_video_params();
+    for (y=0;y<vparams->vres;y++){
+        dest=&video_buffer[y*vparams->bpr]+vparams->bpr;
         src=dest-n;
-        size=HRES/2-n;
+        size=vparams->hres/2-n;
         dest=move_up(src,dest,size);
         size=n;
         while (size--) *--dest=0;
@@ -175,8 +178,9 @@ void gfx_scroll_right(uint8_t n){
 
 uint8_t gfx_get_pixel(int x, int y){
     register uint8_t byte;
-    if (x<0 || x>=HRES || y<0 || y>=VRES) return 255;
-    byte=video_buffer[y*BPR+(x>>1)];
+    vmode_params_t *vparams=get_video_params();
+    if (x<0 || x>=vparams->hres || y<0 || y>=vparams->vres) return 255;
+    byte=video_buffer[y*vparams->bpr+(x>>1)];
     if (!(x&1)) byte>>=4;
     return byte&0xf;
 }

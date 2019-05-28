@@ -52,23 +52,24 @@ void select_font(uint8_t font_id){
 
 void new_line(){
 	xpos=0;
+	vmode_params_t *vparams=get_video_params();	
 	switch (font){
 	case FONT_SHEX:
-		if ((ypos+SHEX_HEIGHT)<=(VRES-SHEX_HEIGHT+1)){
+		if ((ypos+SHEX_HEIGHT)<=(vparams->vres-SHEX_HEIGHT+1)){
 			ypos+=SHEX_HEIGHT;
 		}else{
 			gfx_scroll_up(SHEX_HEIGHT);
 		}
 		break;
 	case FONT_LHEX:
-		if ((ypos+LHEX_HEIGHT)<=(VRES-LHEX_HEIGHT+1)){
+		if ((ypos+LHEX_HEIGHT)<=(vparams->vres-LHEX_HEIGHT+1)){
 			ypos+=LHEX_HEIGHT;
 		}else{
 			gfx_scroll_up(LHEX_HEIGHT);
 		}
 		break;
 	case FONT_ASCII:
-		if ((ypos+CHAR_HEIGHT)<=(VRES-CHAR_HEIGHT+1)){
+		if ((ypos+CHAR_HEIGHT)<=(vparams->vres-CHAR_HEIGHT+1)){
 			ypos+=CHAR_HEIGHT;
 		}else{
 			gfx_scroll_up(CHAR_HEIGHT);

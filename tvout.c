@@ -123,7 +123,7 @@ static volatile uint16_t slice; //  task slice
 static volatile uint16_t scan_line; // scan line counter
 volatile uint16_t game_timer;
 volatile uint16_t sound_timer;
-static volatile uint32_t ntsc_ticks;
+volatile uint32_t ntsc_ticks;
 
 static const vmode_params_t video_params[MODES_COUNT]={
     {VM_BPCHIP,BP_START,BP_END,BP_LEFT,BP_BPR,BP_RPT,BP_PDLY,BP_HRES,BP_VRES,BP_CHROMA},

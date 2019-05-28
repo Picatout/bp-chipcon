@@ -169,7 +169,7 @@ void move_balls(){
 void init_balls(){
 	int i;
 	vmode_params_t *vparams=get_video_params();
-	//srand(ticks);
+	srand(ntsc_ticks);
 	for (i=0;i<BALL_COUNT;i++){
 		balls[i].x=rand()%vparams->hres;
 		balls[i].y=2*CHAR_HEIGHT+rand()%(vparams->vres-2*CHAR_HEIGHT);
@@ -378,8 +378,10 @@ static void print_games_list(unsigned first, unsigned rows){
 static void run_game(unsigned idx){
 	int i;
 	move(games_list[idx].data,game_ram,games_list[idx].size);
+	set_keymap(games_list[idx].keymap);
 	set_video_mode(games_list[idx].vmode);
 	chip_vm(0);
+	set_video_mode(VM_BPCHIP);
 }
 
 static void select_game(){

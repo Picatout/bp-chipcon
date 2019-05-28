@@ -20,6 +20,7 @@
 *   games directory
 */
 
+#include "../gamepad.h"
 #include "games.h"
 #include "blinky.h"
 #include "alien.h"
@@ -31,14 +32,14 @@
 #include "octopac.h"
 
 game_info_t games_list[]={
-    {VM_SCHIP,"blinky",BLINKY_SIZE,blinky},
-    {VM_SCHIP,"alien",ALIEN_SIZE,alien},
-    {VM_SCHIP,"ant",ANT_SIZE,ant},
-    {VM_SCHIP,"octopac",OCTOPAC_SIZE,octopac},
-    {VM_SCHIP,"worm",WORM_SIZE,worm},
-    {VM_SCHIP,"car",CAR_SIZE,car},
-    {VM_SCHIP,"lem",LEM_SIZE,lem},
-    {VM_SCHIP,"piper",PIPER_SIZE,piper},
+    {VM_SCHIP,"blinky",BLINKY_SIZE,blinky,default_kmap},
+    {VM_SCHIP,"alien",ALIEN_SIZE,alien,default_kmap},
+    {VM_SCHIP,"ant",ANT_SIZE,ant,default_kmap},
+    {VM_SCHIP,"octopac",OCTOPAC_SIZE,octopac,default_kmap},
+    {VM_SCHIP,"worm",WORM_SIZE,worm,default_kmap},
+    {VM_SCHIP,"car",CAR_SIZE,car,default_kmap},
+    {VM_SCHIP,"lem",LEM_SIZE,lem,default_kmap},
+    {VM_SCHIP,"piper",PIPER_SIZE,piper,default_kmap},
     {0,"",0,NULL}
 };
 

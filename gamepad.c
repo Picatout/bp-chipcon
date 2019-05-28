@@ -44,7 +44,8 @@ volatile uint8_t  btn_state;
 // les entrées correspondes à la position du bitmask du bouton
 // i.e.  le bouton BTN_A est à la position 0 dans la table et le
 // bouton BTN_UP  est à la position 7 dans la table.
-static uint8_t buttons[8]={KEY_A,KEY_C,KEY_B,KEY_D,KEY_RIGHT,KEY_DOWN,KEY_LEFT,KEY_UP};
+const uint8_t default_kmap[8]={KEY_A,KEY_C,KEY_B,KEY_D,KEY_RIGHT,KEY_DOWN,KEY_LEFT,KEY_UP};
+static uint8_t buttons[8];
 
 // retourne l'index du bouton dans la table buttons[]
 // à partir de sont bitmask
@@ -72,6 +73,11 @@ static uint8_t btn_mask(uint8_t btn_value){
     return 255;
 }
 
+// set buttons map
+void set_keymap(const uint8_t *kmap){
+    int i;
+    for (i=0;i<8;i++) buttons[i]=kmap[i];
+}
 
 // initialisation matérielle.
 void gamepad_init(){
@@ -79,6 +85,7 @@ void gamepad_init(){
     config_pin(GAMEPAD_PORT,CLK_PIN,OUTPUT_PP_SLOW);
     config_pin(GAMEPAD_PORT,RX_PIN,INPUT_PULL);
     btn_state=0xff;
+    set_keymap(default_kmap);
 }
 
 

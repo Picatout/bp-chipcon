@@ -38,6 +38,7 @@
 #include "gamepad.h"
 #include "sound.h"
 #include "include/flash.h"
+#include "include/gen_fn.h"
 
 //#include "sram.h"
 //#include "joystick.h"
@@ -50,7 +51,6 @@
 #define caddr(b1,b2)  ((((b1<<8)|b2)<<1)&0xfff)
 #define rx(b1)  (b1&0xf)
 #define ry(b2)  (b2>>4)
-#define FRAME_MSEC (17)
 
 #define RAM_MEM 0
 #define FLASH_MEM 1
@@ -58,7 +58,7 @@
 // état de la machine virtuelle
 static vm_state_t vms;
 
-// stockage temporaire sprite
+// stockage temporaire
 static uint8_t block[32];
 
 uint8_t game_ram[GAME_SPACE];
@@ -84,28 +84,15 @@ void print_vms(const char *msg){
 	new_line();
 	prompt_btn();
 }
-
-void chip_scroll_right(){
-
-}
-
-void chip_scroll_left(){
+/*
+static void load_block(int addr,int count, uint8_t *block){
 
 }
 
-
-void load_block(int addr,int count, uint8_t *block){
-
-}
-
-void store_block(int addr,int count, uint8_t *block){
+static void store_block(int addr,int count, uint8_t *block){
 
 }
-
-int put_big_sprite(int x, int y,int height, const uint8_t *sprite){
-
-}
-
+*/
 static uint32_t state=1;
 
 void srand(unsigned n){
@@ -255,11 +242,9 @@ uint8_t chip_vm(uint16_t program_address){
 			case 0x2: // 9XY2  PRT VX, VY ; imprime le texte pointe par I. I est incrémenté. position VX, VY
 				select_font(FONT_ASCII);
 				set_cursor(vms.var[x],vms.var[y]);
-				n=game_ram[vms.ix++];
-				while (n){
-					put_char(n);
-					n=game_ram[vms.ix++];
-				}
+				print((const char*)&game_ram[vms.ix]);
+				vms.ix+=strlen((const char*)&game_ram[vms.ix])+1;
+				//while (game_ram[vms.ix++]);
 				break;
 			case 0x3: // 9XY3 PIXI VX, VY  ; inverse le pixel à la position VX,VY
 				gfx_blit(vms.var[x],vms.var[y],0,BIT_INVERT);
@@ -316,11 +301,11 @@ uint8_t chip_vm(uint16_t program_address){
 		case 0xd: //DXYN DRW VX,VY   draw a sprite, from SCHIP can draw 16x16 sprites
 			n=vms.b2&0xf;
 			if (!n){
-				load_block(vms.ix,32,block);
-				vms.var[15]=put_big_sprite((int8_t)vms.var[x],(int8_t)vms.var[y],32,(const uint8_t*)block);
+				//load_block(vms.ix,32,block);
+				vms.var[15]=gfx_sprite((int8_t)vms.var[x],(int8_t)vms.var[y],16,16,(const uint8_t*)&game_ram[vms.ix]);
 				}else{
-					load_block(vms.ix,n,block);
-					vms.var[15]=gfx_sprite((int8_t)vms.var[x],(int8_t)vms.var[y],8,n,(const uint8_t*)block);
+					//load_block(vms.ix,n,block);
+					vms.var[15]=gfx_sprite((int8_t)vms.var[x],(int8_t)vms.var[y],8,n,(const uint8_t*)&game_ram[vms.ix]);
 				}
 			
 			break;
@@ -374,13 +359,16 @@ uint8_t chip_vm(uint16_t program_address){
 				n /=10;
 				block[1]=n%10;
 				block[0]=n/10;
-				store_block(vms.ix,3,block);
+				//store_block(vms.ix,3,block);
+				move((const uint8_t*)block,(uint8_t*)&game_ram[vms.ix],3);
 				break;
 			case 0x55: // FX55  LD [I], VX  save registers V0..VX in ram pointed by I
-				store_block(vms.ix,x+1,vms.var);
+				move((const uint8_t*)vms.var,&game_ram[vms.ix],x+1);
+				//store_block(vms.ix,x+1,vms.var);
 				break;
 			case 0x65: // FX65 LD VX,[I]  load registers V0-VX from ram pointed by I
-				load_block(vms.ix,x+1,vms.var);
+				//load_block(vms.ix,x+1,vms.var);
+				move((const uint8_t*)&game_ram[vms.ix],(uint8_t*)vms.var,x+1);
 				break;
 			case 0x75: // FX75 LD R,VX  ; save registers V0-VX in mcu flash  ; SCHIP
 				flash_write_block(PERSIST_STORE,vms.var,n);

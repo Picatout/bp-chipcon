@@ -33,6 +33,7 @@ typedef struct game_info{
     const char name[12];
     const uint32_t size;
     const uint8_t* data;
+    const uint8_t  *keymap;
 }game_info_t;
 
 extern game_info_t games_list[];
