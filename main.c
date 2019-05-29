@@ -201,11 +201,20 @@ static void color_bars(){
 }
 
 static void vertical_bars(){
-	int x,y;
+	int y;
 	vmode_params_t* vparams=get_video_params();
 	for (y=2*CHAR_HEIGHT;y<vparams->vres;y++){
 		gfx_plot(0,y,15);
 		gfx_plot(vparams->hres-1,y,15);
+	}
+}
+
+static void horiz_bars(){
+	int x;
+	vmode_params_t* vparams=get_video_params();
+	for (x=0;x<vparams->hres;x++){
+		gfx_plot(x,0,15);
+		gfx_plot(x,vparams->vres-1,15);
 	}
 }
 
@@ -216,6 +225,7 @@ static void video_test(){
 	set_video_mode(p);
 	color_bars();
 	vertical_bars();
+	horiz_bars();
     print_int((int)&_FLASH_FREE,16);	
 	print_int(0x20005000-(int)(&_TPA_START),10);
 	init_balls();
@@ -241,6 +251,7 @@ static void video_test(){
 				break;
 			}
 			vertical_bars();
+			horiz_bars();
 			init_balls();
 			btn_wait_up(KEY_RIGHT);
 		}else if (btn_query_down(KEY_B)){
@@ -248,6 +259,7 @@ static void video_test(){
 			break;
 		}
 	}//while(1)
+	set_video_mode(VM_BPCHIP);
 }
 
 static void sound_test(){

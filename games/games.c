@@ -30,6 +30,9 @@
 #include "worm.h"
 #include "lem.h"
 #include "octopac.h"
+#include "sokoban.h"
+#include "spacefig.h"
+#include "mines.h"
 
 game_info_t games_list[]={
     {VM_SCHIP,"blinky",BLINKY_SIZE,blinky,default_kmap},
@@ -40,6 +43,9 @@ game_info_t games_list[]={
     {VM_SCHIP,"car",CAR_SIZE,car,default_kmap},
     {VM_SCHIP,"lem",LEM_SIZE,lem,default_kmap},
     {VM_SCHIP,"piper",PIPER_SIZE,piper,default_kmap},
+    {VM_CHIP8,"mines",MINES_SIZE,mines,default_kmap},
+    {VM_CHIP8,"sokoban",SOKOBAN_SIZE,sokoban,default_kmap},
+    {VM_CHIP8,"spacefig",SPACEFIG_SIZE,spacefig,default_kmap},
     {0,"",0,NULL}
 };
 

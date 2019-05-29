@@ -385,13 +385,13 @@ uint8_t chip_vm(uint16_t program_address){
 				break;
 			case 0x55: // FX55  LD [I], VX  save registers V0..VX in ram pointed by I
 				move((const uint8_t*)vms.var,&game_ram[vms.ix],x+1);
-				vms.ix+=x+1;
+				//vms.ix+=x+1;
 				//store_block(vms.ix,x+1,vms.var);
 				break;
 			case 0x65: // FX65 LD VX,[I]  load registers V0-VX from ram pointed by I
 				//load_block(vms.ix,x+1,vms.var);
 				move((const uint8_t*)&game_ram[vms.ix],(uint8_t*)vms.var,x+1);
-				vms.ix+=x+1;
+				//vms.ix+=x+1;
 				break;
 			case 0x75: // FX75 LD R,VX  ; save registers V0-VX in mcu flash  ; SCHIP
 				//flash_write_block(PERSIST_STORE,vms.var,x+1);

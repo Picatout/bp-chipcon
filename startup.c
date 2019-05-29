@@ -145,10 +145,10 @@ __attribute__ ((section("vectors")))= {
     (unsigned int *)    STACK_TOP,  // 0 stack pointer
     (unsigned int *)    startup,     // 1 reset entry point
     (unsigned int *)  NMI_handler, // 2 NMI
-    (unsigned int *)  HARD_FAULT_handler, // 3 Hard fault
-    (unsigned int *)  MM_FAULT_handler, // 4 MM fault
-    (unsigned int *)  BUS_FAULT_handler, // 5 bus fault
-    (unsigned int *)  USAGE_FAULT_handler, // 6 usage fault
+    (unsigned int *)  reset_mcu, // 3 Hard fault
+    (unsigned int *)  reset_mcu, // 4 MM fault
+    (unsigned int *)  reset_mcu, // 5 bus fault
+    (unsigned int *)  reset_mcu, // 6 usage fault
     (unsigned int *)  reset_mcu, // 7 reserved
     (unsigned int *)  reset_mcu, // 8 reserved
     (unsigned int *)  reset_mcu, // 9 reserved

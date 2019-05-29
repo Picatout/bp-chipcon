@@ -1,5 +1,5 @@
 /*
-* Copyright 2014, Jacques Deschênes
+* Copyright 2014, Jacques Deschï¿½nes
 * This file is part of CHIPcon.
 *
 *     CHIPcon is free software: you can redistribute it and/or modify
@@ -23,25 +23,26 @@
 *   REVISIONS:
 *   2015-02-16  added ORG directive
 *				assembly begin at 0 instead of 512
-*   2015-08-10 adapté pour CHIPcon v2
-*              renommé cc2asm.exe
-*              ajouté opcodes PUSH, POP, SCRX, SCRY, SCU
-*              doublé espace d'adressage en divisant NNN/2 avant encodage
-*              supprimé directive ORG et ajoute directive END
+*   2015-08-10 adaptï¿½ pour CHIPcon v2
+*              renommï¿½ cc2asm.exe
+*              ajoutï¿½ opcodes PUSH, POP, SCRX, SCRY, SCU
+*              doublï¿½ espace d'adressage en divisant NNN/2 avant encodage
+*              supprimï¿½ directive ORG et ajoute directive END
 */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-
+#include <ctype.h>
+#include <stdint.h>
 
 typedef struct data_node{
 	char *name;
 	union {
-		unsigned addr;
-		unsigned pc;
-		unsigned value;
+		uint16_t addr;
+		uint16_t pc;
+		uint16_t value;
 		char *defn;
 	};
 	struct data_node *next;
@@ -69,9 +70,9 @@ node_t *define_list=NULL;
 #define search_define(name) search_list(name,define_list)
 
 
-FILE *bin=NULL,  // fichier binaire généré par l'assembleur
-     *ppf=NULL,  // fichier optionnel généré par le pré-processeur
-	 *lbl=NULL;  // fichier des étiquettes avec l'adresse.
+FILE *bin=NULL,  // fichier binaire gï¿½nï¿½rï¿½ par l'assembleur
+     *ppf=NULL,  // fichier optionnel gï¿½nï¿½rï¿½ par le prï¿½-processeur
+	 *lbl=NULL;  // fichier des ï¿½tiquettes avec l'adresse.
 	 
 
 int pc; // compteur ordinal
@@ -83,8 +84,8 @@ bool file_done=false;
 unsigned char binary[MEM_SIZE];
 
 
-int inp; // pointeur d'analyse ligne d'entrée
-char line[256]; // contient la ligne à analyser
+int inp; // pointeur d'analyse ligne d'entrï¿½e
+char line[256]; // contient la ligne ï¿½ analyser
 
 #define KW_COUNT (43)
 
@@ -139,6 +140,27 @@ bool identifier(char *name){
 	return true;
 }
 
+char *itoa(int n, char* buffer,int base){
+	char d,sign=0;
+	char temp[16];
+	int i=15;
+	temp[15]=0;
+	if (base=10 && n<0){
+		sign=1;
+		n=-n;
+	}
+	while (n){
+		d=n%base+'0';
+		if (d>'9') d+=7;
+		temp[--i]=d;
+		n/=base;
+	}
+	if (i==15) temp[--i]='0';
+	if (sign) temp[--i]='-';
+	strcpy(buffer,&temp[i]);
+	return buffer;
+}
+
 bool separator(char c){
 	strchr("()[]+-*/%,",c);
 }
@@ -149,7 +171,7 @@ bool match_vx(char *w){
 
 
 void memory_overflow(){
-	printf("CHIPcon program memory overflow at line %d\n", line_no);
+	printf("BP-CHIP program memory overflow at line %d\n", line_no);
 }
 
 
@@ -179,7 +201,7 @@ const char *error_msg[eERRNONE]={
 
 void error(error_code_t error_code){
 	puts(line);
-	printf("%s at line %d, position %d\n",error_msg[error_code],line_no,inp-strlen(tok_value));
+	printf("%s at line %d, position %d\n",error_msg[error_code],line_no,(int)(inp-strlen(tok_value)));
 	exit(EXIT_FAILURE);
 }
 
@@ -193,7 +215,7 @@ void store_code(unsigned char b1, unsigned char b2){
 	}
 }
 
-//convertie une chaine hexadécimale
+//convertie une chaine hexadï¿½cimale
 //en entier positif
 int htoi(char *hnbr){
 	unsigned int n=0;
@@ -217,7 +239,7 @@ int btoi(char *bnbr){
 	return n;
 }
 
-//convertie un token numérique
+//convertie un token numï¿½rique
 // en entier positif
 unsigned token_to_i(){
 	switch(tok_value[0]){
@@ -671,7 +693,7 @@ void load(){
 		c=tok_value[0];
 		next_token();
 		if (tok_id!=eCOMMA) error(eSYNTAX);
-		switch (c){ // 2ième argument
+		switch (c){ // 2iï¿½me argument
 		case 'I': // LD I,label  ANNN
 			b1=0xa0;
 			b2=0;
@@ -792,10 +814,10 @@ load_done:
 }
 
 void usage(){
-	puts("PICVisionPortable assembler");
-	puts("USAGE: pvpasm source binary [-p pp_file] [-s labels_file]");
-	puts("'source' is CHIPcon(V2) assembly source file.");
-	puts("'binary' is generated binary file to be executed on CHIPcon(V2) console.");
+	puts("BP-CHIP assembler");
+	puts("USAGE: bpasm source binary [-p pp_file] [-s labels_file]");
+	puts("'source' is BP-CHIP assembly source file.");
+	puts("'binary' is generated binary file to be executed on BP-CHIPCON console.");
 	puts("'-p' generate a pre-processing 'pp_file'.");
 	puts("'-s' generate a list of labels file.");
     puts("\t'labels_file' this file can be loaded in cc2emul");
@@ -908,7 +930,7 @@ void next_token(){
 			case '#':
 				tok_id=eNUMBER;
 				tok_value[i++]=line[inp];
-				state=1; // nombre hexadécimal
+				state=1; // nombre hexadï¿½cimal
 				break;
 			case '$':
 				tok_id=eNUMBER;
@@ -918,15 +940,15 @@ void next_token(){
 				if (letter(line[inp])||(line[inp]=='_')){
 					tok_id=eSYMBOL;
 					tok_value[i++]=toupper(line[inp]);
-					state=4; // symbole alphanumérique
+					state=4; // symbole alphanumï¿½rique
 				}else if (digit(line[inp])){
 					tok_id=eNUMBER;
 					tok_value[i++]=line[inp];
-					state=3; // nombre décimal
+					state=3; // nombre dï¿½cimal
 				}
 			}//switch
 			break;
-		case 1: // nombre hexadécimal
+		case 1: // nombre hexadï¿½cimal
 			if (hex(toupper(line[inp]))){
 				tok_value[i++]=toupper(line[inp]);
 			}else if (separator(line[inp])){
@@ -946,7 +968,7 @@ void next_token(){
 				error(eSYNTAX);
 			}
 			break;
-		case 3: // nombre décimal
+		case 3: // nombre dï¿½cimal
 			if (digit(line[inp])){
 				tok_value[i++]=line[inp];
 			}else if (separator(line[inp])){
@@ -956,7 +978,7 @@ void next_token(){
 				error(eSYNTAX);
 			}
 			break;
-		case 4: // symbole alphanumérique
+		case 4: // symbole alphanumï¿½rique
 			if (alnum(line[inp]) || line[inp]=='_'){
 				tok_value[i++]=toupper(line[inp]);
 			}else if (line[inp]==':'){
@@ -1230,7 +1252,7 @@ void assemble_line(){
 				}
 			}else if ((i=search_word(tok_value,directives,DIR_COUNT))<DIR_COUNT){
 				// directive d'assembleur
-				// les directives 'EQU','DEFN' et les LABELS  sont traité par preprocess() 
+				// les directives 'EQU','DEFN' et les LABELS  sont traitï¿½ par preprocess() 
 				switch(i){
 				case 0: // DB
 					data_byte();
@@ -1274,7 +1296,7 @@ void fix_forward_ref(){
 }
 
 // traitement des directives et substitution des DEFN
-// retourne 'true' si l'analyse de cette ligne est complétée.
+// retourne 'true' si l'analyse de cette ligne est complï¿½tï¿½e.
 // sinon 'false'
 bool preprocess(){
 	char ppline[256];

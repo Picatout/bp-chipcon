@@ -88,6 +88,14 @@ void gamepad_init(){
     set_keymap(default_kmap);
 }
 
+static int count_zeros(uint8_t u8){
+    int count=0;
+    while (u8){
+        if (!(u8&1)) count++;
+        u8>>=1;
+    }
+    return count;
+}
 
 static uint8_t shift_out(uint8_t byte){
     uint8_t mask=1,rx_byte=0;
@@ -118,8 +126,8 @@ static uint8_t shift_out(uint8_t byte){
 // cette fonction est appellée
 // à partir de TV_SYNC_handler()
 void read_gamepad(){
-    //shift_out(0xff);
     btn_state=shift_out(0xfe);
+    if ((btn_state&(BTN_RIGHT_MASK|BTN_C_MASK))==0)_reset_mcu();
 }
 
 // véririfie si le bouton est enfoncé.
@@ -171,6 +179,7 @@ void btn_wait_up(uint8_t btn){
         }
     }
 }
+
 
 // attend qu'au moins un bouton soit enfoncé.
 // pour être reconnu comme enfoncé un bouton doit 
