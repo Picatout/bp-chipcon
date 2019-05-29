@@ -47,12 +47,12 @@
 #define BTN_D_IDX 3
 
 // valeur par défaut des boutons
-#define KEY_UP 32    // BTN_UP
+#define KEY_UP 2    // BTN_UP
 #define KEY_DOWN 4   // BTN_DOWN
 #define KEY_LEFT 8   // BTN_LEFT
 #define KEY_RIGHT 16  // BTN_RIGHT
 #define KEY_A  1     // BTN_A
-#define KEY_B  2      // BTN_B
+#define KEY_B  32      // BTN_B
 #define KEY_C  64     // BTN_C
 #define KEY_D  128     // BTN_D
 

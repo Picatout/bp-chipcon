@@ -82,7 +82,7 @@ int gfx_blit(int x, int y, uint8_t color, blit_op_t op){
         break;
     }//switch (op)
     video_buffer[idx]=byte;
-    return (byte&mask)^color;
+    return !((byte&~mask)^color==0);
 }
 
 void gfx_plot (int x,int y,uint8_t color){

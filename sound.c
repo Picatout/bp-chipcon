@@ -18,6 +18,7 @@
 
 #include "sound.h"
 #include "tvout.h"
+#include "chipcon_vm.h"
 
 #define SOUND_BUFFER_SIZE 16
 static uint8_t sound_buffer[SOUND_BUFFER_SIZE];
@@ -72,14 +73,22 @@ void sound_stop(){
     TMR2->DIER&=~TMR_DIER_UIE;
 }
 
+static const uint16_t tempered_scale[16]={
+    440,466,494,523,554,587,622,659,698,740,784,831,880,932,988,1046
+};
 
 // joue une note de la gamme tempérée
 void key_tone(int note, int length,int wait_end){
+    tone(tempered_scale[note],length);
+    if (wait_end) while (sound_timer);
 }
 
 // produit un bruit 
 void noise(int length){
-
+    int i;
+    srand(ntsc_ticks);
+    for (i=0;i<16;i++) sound_buffer[i]=rand()&0xff;
+    sound_sampler(length);
 }
 
 void __attribute__((__interrupt__)) sound_handler(){

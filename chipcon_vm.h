@@ -42,6 +42,7 @@ typedef struct vm_state{
 	uint16_t pc;
 	uint16_t ix;
 	uint8_t  sp;
+	uint8_t  sprite_mem;
 	uint8_t  var[16];
 	union {
 		uint16_t opcode;	
@@ -57,7 +58,6 @@ typedef struct vm_state{
 // memory containing game
 #define GAME_SPACE 8192
 extern uint8_t game_ram[GAME_SPACE];
-extern uint8_t planes;
 
 void print_vms(const char *msg);
 	

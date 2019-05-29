@@ -48,7 +48,7 @@
 
 //#define caddr(b1,b2) ((((b1&0xf)<<8)+b2)<<1)
 #define _get_opcode(addr) ({vms.b1=game_ram[addr];vms.b2=game_ram[addr+1];})
-#define caddr(b1,b2)  ((((b1<<8)|b2)<<1)&0xfff)
+#define caddr(b1,b2)  ((((b1<<8)|b2)<<1)&0x1fff)
 #define rx(b1)  (b1&0xf)
 #define ry(b2)  (b2>>4)
 
@@ -129,7 +129,7 @@ uint8_t chip_vm(uint16_t program_address){
 				//NOP 
 			}else if ((vms.b2&0xf0)==0xc0){ // 00CN scroll screen down  ; SCHIP
 				gfx_scroll_down(vms.b2&0xf); 
-			}else if ((vms.b2&0xf0)==0xd0){ // 00DN scroll screen up ; BP-CHIP
+			}else if ((vms.b2&0xf0)==0xd0){ // 00DN scroll screen up ; XO-CHIP, BP-CHIP
 				gfx_scroll_up(vms.b2&0xf);					
 			}else switch(vms.b2){
 				case 0xe0: // 00E0, CLS   clear screen  ; CHIP-8
@@ -149,9 +149,12 @@ uint8_t chip_vm(uint16_t program_address){
 				case 0xfe: //00FE,  LOW   switch to CHIP-8 64x32 graphic mode ; SCHIP
 					set_video_mode(VM_CHIP8);
 					break; 
-				case 0xff:  //00FF, HIGH  switch to SCHIP 128x64 graphicmode ; SCHIP
+				case 0xff:  //00FF, HIGH  switch to SCHIP 128x64 graphic mode ; SCHIP
 					set_video_mode(VM_SCHIP);
 					break; 
+				case 0xfa: // 00FA BPRES  switch to BPCHIP 180x112 graphic mode; BPCHIP
+					set_video_mode(VM_BPCHIP);
+					break;
 				default:
 					return CHIP_BAD_OPCODE;
 			}//switch(b2)
@@ -174,9 +177,11 @@ uint8_t chip_vm(uint16_t program_address){
 			case 0:  // 5XY0  SE VX,VY   ;Saute l'instruction suivante si VX == VY ; CHIP-8
 				if (vms.var[x]==vms.var[y]) vms.pc+=2;
 				break;
-			case 2:  // 5XY2  save VX..VY at address pointed by I, I not incremented  ; BP-CHIP
+			case 2:  // 5XY2  save VX..VY at address pointed by I, I not incremented  ; XO-CHIP, BP-CHIP
+				move((const uint8_t*)&vms.var[x<y?x:y],(uint8_t*)&game_ram[vms.ix],abs(y-x)+1);
 				break;
-			case 3: // 5XY3   load VX..VY from adress pointed by I, I not incremented ; BP-CHIP
+			case 3: // 5XY3   load VX..VY from adress pointed by I, I not incremented ; XO-CHIP, BP-CHIP
+				move((const uint8_t*)&game_ram[vms.ix],(uint8_t*)&vms.var[x<y?x:y],abs(y-x)+1);
 				break;
 			}
 			break;
@@ -233,53 +238,58 @@ uint8_t chip_vm(uint16_t program_address){
 			break;
 		case 0x9:
 			switch (vms.b2&0xf){
-			case 0x0: // 9XY0  SNE VX,VY  ; Saute l'instruction suivante si VX <> VY
+			case 0x0: // 9XY0  SNE VX,VY  ; skip if VX <> VY
 				if (vms.var[x]!=vms.var[y]) vms.pc+=2;
 				break;
-			case 0x1: // 9XY1  TONE VX, VY ; joue une note de la gamme tempérée. VX=note, VY=durée
+			case 0x1: // 9XY1  TONE VX, VY ; play a tempered scale note. VX=note, VY=length
 				key_tone(vms.var[x],vms.var[y],false);
 				break;
-			case 0x2: // 9XY2  PRT VX, VY ; imprime le texte pointe par I. I est incrémenté. position VX, VY
+			case 0x2: // 9XY2  PRT VX, VY ; print text pointed by I at position x,y. I is incremented ; BP-CHIP
 				select_font(FONT_ASCII);
 				set_cursor(vms.var[x],vms.var[y]);
 				print((const char*)&game_ram[vms.ix]);
 				vms.ix+=strlen((const char*)&game_ram[vms.ix])+1;
 				//while (game_ram[vms.ix++]);
 				break;
-			case 0x3: // 9XY3 PIXI VX, VY  ; inverse le pixel à la position VX,VY
+			case 0x3: // 9XY3 PIXI VX, VY  ; invert pixel at coordinates VX,VY
 				gfx_blit(vms.var[x],vms.var[y],0,BIT_INVERT);
 				break;
-			case 0x4: // 9NN4  NOISE NN ; bruit blanc durée NN*frame
+			case 0x4: // 9NN4  NOISE NN ; noise length NN
 				noise((x<<4)+y);
 				break;
-			case 0x5: // 9XY5 TONE VX, VY, WAIT ; joue une note attend la fin avant de poursuivre. VX=note, VY=durée
+			case 0x5: // 9XY5 TONE VX, VY, WAIT ; play tempered scale note, wait end. VX=note, VY=length ; BP-CHIP
 				key_tone(vms.var[x],vms.var[y],true);
 				break;
-			case 0x6: // 9X06, PUSH VX  ; empile le contenu de VX
+			case 0x6: // 9X06, PUSH VX  ; push VX on stack ; BP-CHIP
 				vms.stack[++vms.sp]=vms.var[x];
 				break;
-			case 0x7: // 9X07, POP VX  ; transfert le sommet de la pile dans VX
+			case 0x7: // 9X07, POP VX  ; pop VX from stack ; BP-CHIP
 				vms.var[x]=vms.stack[vms.sp--];
 				break;
-			case 0x8: // 9X08, SCRX  ;  VX=HRES nombre de pixels en largeur d'écran.
-				vms.var[x]=HRES;
+			case 0x8: // 9X08, SCRX  ;  VX=HRES screen width in pixels.
+				{ 	vmode_params_t *vparams=get_video_params();
+					vms.var[x]=vparams->hres;
+				}
 				break;
-			case 0x9: // 9X09, SCRY  ; VX=VRES  nombre de pixels en hauteur d'écran.
-				vms.var[x]=VRES;
+			case 0x9: // 9X09, SCRY  ; VX=VRES  screen height in pixels
+				{
+					vmode_params_t *vparams=get_video_params();
+					vms.var[x]=vparams->vres;
+				}
 				break;
-			case 0xA: // 9XNA, BSET VX,N  ; met � 1 le bit N de VX
+			case 0xA: // 9XNA, BSET VX,N  ; set VX bit N
 			    vms.var[x] |= (1<<(y&0x7));
 			    break;
-		    case 0xB: // 9XNB  BCLR VX,N  ; met � 0 le bit N de VX
+		    case 0xB: // 9XNB  BCLR VX,N  ; clear VX bit N
 			    vms.var[x] &= ~(1<<(y&0x7));
 			    break;
-			case 0xC: // 9XNC  BINV VX,N  ; inverse le bit N de VX
+			case 0xC: // 9XNC  BINV VX,N  ; invert VX bit N
    			    vms.var[x] ^= (1<<(y&0x7));
 				break;
-			case 0xD: // 9XND  BTSS VX,N  ; saute l'instruction suivante si le bit N de VX==1
+			case 0xD: // 9XND  BTSS VX,N  ; skip if VX bit N==1
 			    if (vms.var[x]&(1<<(y&0x7))) vms.pc+=2;
 				break;
-			case 0xE: // 9XNE  BTSC VX,N  ; saute l'instruction suivante si le bit N de VX==0
+			case 0xE: // 9XNE  BTSC VX,N  ; skip if VX bit N==0
 			    if (!(vms.var[x]&(1<<(y&0x7)))) vms.pc+=2;
 				break;
 			case 0xF: // 9XYF GPIX,  VF=pixel((vx),(vy))
@@ -290,31 +300,39 @@ uint8_t chip_vm(uint16_t program_address){
 			}//switch(vms.b2&0xf)
 			break;
 		case 0xa: // ANNN    LD I, NNN  ; I := 2*NNN
-			vms.ix=caddr(vms.b1,vms.b2);  // adressse de 13 bits toujours paire
+			vms.ix=caddr(vms.b1,vms.b2);  // 13 bits address always even
+			vms.sprite_mem=RAM_MEM;
 			break;
-		case 0xb: // BNNN     JP V0, NNN  ;  saut � 2*(NNN+V0)
+		case 0xb: // BNNN     JP V0, NNN  ;  skip to 2*(NNN+V0)
 			vms.pc=(vms.var[0]<<1)+caddr(vms.b1,vms.b2);
 			break;
 		case 0xc: //CXKK  RND VX,KK  ; VX=random_number&KK
 			vms.var[x]=rand()&vms.b2;
 			break;
-		case 0xd: //DXYN DRW VX,VY   draw a sprite, from SCHIP can draw 16x16 sprites
+		case 0xd: //DXYN DRW VX,VY   draw a sprite, SCHIP and BP-CHIP can draw 16x16 sprites
 			n=vms.b2&0xf;
 			if (!n){
-				//load_block(vms.ix,32,block);
-				vms.var[15]=gfx_sprite((int8_t)vms.var[x],(int8_t)vms.var[y],16,16,(const uint8_t*)&game_ram[vms.ix]);
+				if (vms.sprite_mem==RAM_MEM){
+					vms.var[15]=gfx_sprite((int8_t)vms.var[x],(int8_t)vms.var[y],16,16,(const uint8_t*)&game_ram[vms.ix]);
 				}else{
-					//load_block(vms.ix,n,block);
-					vms.var[15]=gfx_sprite((int8_t)vms.var[x],(int8_t)vms.var[y],8,n,(const uint8_t*)&game_ram[vms.ix]);
+					vms.var[15]=gfx_sprite((int8_t)vms.var[x],(int8_t)vms.var[y],16,16,(const uint8_t*)(uint32_t)vms.ix);
 				}
+
+			}else{
+				if (vms.sprite_mem==RAM_MEM){
+					vms.var[15]=gfx_sprite((int8_t)vms.var[x],(int8_t)vms.var[y],8,n,(const uint8_t*)&game_ram[vms.ix]);
+				}else{
+					vms.var[15]=gfx_sprite((int8_t)vms.var[x],(int8_t)vms.var[y],8,n,(const uint8_t*)(uint32_t)vms.ix);
+				}
+			}
 			
 			break;
 		case 0xe:
 				switch(vms.b2){
-				case 0x9e: //EX9E, SKP VX   ; saute l'instruction suivante si le bouton indiqué par VX est enfonc�e
+				case 0x9e: //EX9E, SKP VX   ; skip if VX key is down
 					if (btn_query_down(vms.var[x])) vms.pc+=2;
 					break;
-				case 0xa1: //EXA1, SKNP VX  ; saute l'instruction suivante si la boutin indiqué par VX n'est pas enfonc�e
+				case 0xa1: //EXA1, SKNP VX  ; skip if VX key is up
 					if (!btn_query_down(vms.var[x])) vms.pc+=2;
 					break;
 				default:
@@ -323,34 +341,37 @@ uint8_t chip_vm(uint16_t program_address){
 				break;
 		case 0xf:
 			switch(vms.b2){
-			case 0: // F000 NNNN  load i with a 16-bit address, BP-CHIP
-				break;
-			case 1: // FN01  set sprite bit/pixels 1,2,4
+//			case 0: // F000 NNNN  load i with a 16-bit address, XO-CHIP
+//				break;
+			case 1: // FN01  set sprite bitS  per pixels 1,2,4
 				sprite_bpp=vms.b1&0x3;
 				break;
-			case 2: // FN02   store 16 bytes starting at i in the audio pattern buffer, BP-CHIPCON
+			case 2: // FN02   store 16 bytes starting at i in the audio pattern buffer, XO-CHIP and BP-CHIPCON
+				load_sound_buffer(&game_ram[vms.ix]);
 				break;	
 			case 0x07: // FX07  LD VX, DT   VX := game_timer
 				vms.var[x]=game_timer;
 				break;
-			case 0x0a: // FX0A  LD VX, K  ; attend qu'une touche soit enfoncée et met sa valeur dans VX
+			case 0x0a: // FX0A  LD VX, K  ; wait for key down and put it in VX.
 				vms.var[x]=btn_wait_any();
 				break;
-			case 0x15: // FX15  LD DT, VX  ; démarre la minuterie game_timer avec la valeur indiqu�e par VX
+			case 0x15: // FX15  LD DT, VX  ; initialize game_timer with value in VX.
 				game_timer=vms.var[x];
 				break;
-			case 0x18: // FX18  LD ST, VX  ; beep d'une durée VX (multiple de 16.7 msec)
+			case 0x18: // FX18  LD ST, VX  ; beep sound of length VX (multiple de 16.7 msec)
 				tone(523,vms.var[x]);
 				break;
 			case 0x1e: // FX1E  ADD I, VX  ;  I := I + VX
 				vms.ix += vms.var[x];
 				break;
-			case 0x29: // FX29  LD F,VX   ; fait pointé I vers le caractère indiqué par VX dans la police FONT_SHEX
+			case 0x29: // FX29  LD F,VX   ; set I to point to character VX in FONT_SHEX table.
 				vms.ix=(uint32_t)font_hex_4x6+vms.var[x]*SHEX_HEIGHT;
+				vms.sprite_mem=FLASH_MEM;
 				select_font(FONT_SHEX);
 				break;
-			case 0x30: // FX30 LD LF,VX  this SCHIP intruction set I to point to large hex character sprite
+			case 0x30: // FX30 LD LF,VX  set I to point to character VX in FONT_LHEX table
 				vms.ix=(uint32_t)font_hex_8x10+vms.var[x]*LHEX_HEIGHT;
+				vms.sprite_mem=FLASH_MEM;
 				select_font(FONT_LHEX);
 				break;
 			case 0x33: // FX33 LD B, VX  ;  set I to point BCD value of VX, i.e. M[I]..M[I+2]
@@ -364,17 +385,21 @@ uint8_t chip_vm(uint16_t program_address){
 				break;
 			case 0x55: // FX55  LD [I], VX  save registers V0..VX in ram pointed by I
 				move((const uint8_t*)vms.var,&game_ram[vms.ix],x+1);
+				vms.ix+=x+1;
 				//store_block(vms.ix,x+1,vms.var);
 				break;
 			case 0x65: // FX65 LD VX,[I]  load registers V0-VX from ram pointed by I
 				//load_block(vms.ix,x+1,vms.var);
 				move((const uint8_t*)&game_ram[vms.ix],(uint8_t*)vms.var,x+1);
+				vms.ix+=x+1;
 				break;
 			case 0x75: // FX75 LD R,VX  ; save registers V0-VX in mcu flash  ; SCHIP
-				flash_write_block(PERSIST_STORE,vms.var,n);
+				//flash_write_block(PERSIST_STORE,vms.var,x+1);
+				move((const uint8_t*)vms.var,block,x+1);
 				break;
 			case 0x85: // FX85 LD VX, R  restore V0..VX from mcu flash
-				flash_read_block((const uint8_t*)PERSIST_STORE,vms.var,n);
+				//flash_read_block((const uint8_t*)PERSIST_STORE,vms.var,x+1);
+				move((const uint8_t*)block,vms.var,x+1);
 				break;
 			default:
 				return CHIP_BAD_OPCODE;
