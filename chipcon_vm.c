@@ -46,9 +46,8 @@
 
 #define PERSIST_STORE ((uint8_t*)(FLASH_SIZE-1024))
 
-//#define caddr(b1,b2) ((((b1&0xf)<<8)+b2)<<1)
 #define _get_opcode(addr) ({vms.b1=game_ram[addr];vms.b2=game_ram[addr+1];})
-#define caddr(b1,b2)  ((((b1<<8)|b2)<<1)&0x1fff)
+#define caddr(b1,b2)  (((b1<<8)|b2)&0xfff)
 #define rx(b1)  (b1&0xf)
 #define ry(b2)  (b2>>4)
 
@@ -69,8 +68,8 @@ void print_vms(const char *msg){
 	print(msg);
 	print("PC:");
 	print_hex(vms.pc-2);
-	print_hex(vms.b1);
 	print_hex(vms.b2);
+	print_hex(vms.b1);
 	new_line();
 	print("I:");
 	print_hex(vms.ix);
@@ -161,10 +160,16 @@ uint8_t chip_vm(uint16_t program_address){
 			break;
 		case 0x1: // 1NNN JP label  ;saut vers 'label'  adresse=2*NNN
 			vms.pc=caddr(vms.b1,vms.b2);
+			if (video_mode!=VM_CHIP8){
+				vms.pc<<=1;
+			}
 			break;
 		case 0x2: // 2NNN  CALL label  ; appelle la sous-routine 'label' adresse=2*NNN
 			vms.stack[++vms.sp]=vms.pc;
 			vms.pc=caddr(vms.b1,vms.b2);
+			if (video_mode!=VM_CHIP8){
+				vms.pc<<=1;
+			}
 			break;
 		case 0x3: // 3XKK   SE VX, KK  ;saute l'instruction suivante si VX == KK
 			if (vms.var[x]==vms.b2) vms.pc+=2;
@@ -300,11 +305,17 @@ uint8_t chip_vm(uint16_t program_address){
 			}//switch(vms.b2&0xf)
 			break;
 		case 0xa: // ANNN    LD I, NNN  ; I := 2*NNN
-			vms.ix=caddr(vms.b1,vms.b2);  // 13 bits address always even
+			vms.ix=caddr(vms.b1,vms.b2);
+			if (video_mode!=VM_CHIP8){
+				vms.ix<<=1;
+			}
 			vms.sprite_mem=RAM_MEM;
 			break;
 		case 0xb: // BNNN     JP V0, NNN  ;  skip to 2*(NNN+V0)
 			vms.pc=(vms.var[0]<<1)+caddr(vms.b1,vms.b2);
+			if (video_mode!=VM_CHIP8){
+				vms.pc<<=1;
+			}
 			break;
 		case 0xc: //CXKK  RND VX,KK  ; VX=random_number&KK
 			vms.var[x]=rand()&vms.b2;

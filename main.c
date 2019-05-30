@@ -389,10 +389,14 @@ static void print_games_list(unsigned first, unsigned rows){
 
 static void run_game(unsigned idx){
 	int i;
-	move(games_list[idx].data,game_ram,games_list[idx].size);
+	uint16_t addr=0;
+	if (games_list[idx].vmode==VM_CHIP8){
+		addr=512;
+	}
+	move(games_list[idx].data,&game_ram[addr],games_list[idx].size);
 	set_keymap(games_list[idx].keymap);
 	set_video_mode(games_list[idx].vmode);
-	chip_vm(0);
+	chip_vm(addr);
 	set_video_mode(VM_BPCHIP);
 }
 

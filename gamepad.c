@@ -150,7 +150,7 @@ int btn_query_down(uint8_t btn){
 void btn_wait_down(uint8_t btn){
     uint8_t mask=btn_mask(btn);
     int frame_count=0;
-    while (frame_count<3){
+    while (frame_count<4){
         frame_sync();
         if (!(btn_state&mask)){
             frame_count++;
