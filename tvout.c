@@ -51,7 +51,7 @@
 #define LEFT_MARGIN (750) 
 #define FIRST_VIDEO_LINE (22)
 #define VIDEO_LINES (224)
-
+#define CHROMA_CFG  (TMR_CCER_CC3E) 
 ///////////////////////////
 // video modes parameters
 ///////////////////////////
@@ -64,7 +64,6 @@
 #define BP_END BP_START+VIDEO_LINES
 #define BP_LEFT LEFT_MARGIN+200 // left margin delay
 #define BP_PDLY (1) // pixel delay
-#define BP_CHROMA (TMR_CCER_CC3E)
 /*
 //XOCHIP
 #define XO_VRES 64
@@ -75,7 +74,6 @@
 #define XO_END XO_START+XO_VRES*XO_RPT
 #define XO_LEFT LEFT_MARGIN+200
 #define XO_PDLY (2)
-#define XO_CHROMA (TMR_CCER_CC3E)
 */
 //SCHIP
 #define SCHIP_VRES 64
@@ -86,7 +84,7 @@
 #define SCHIP_END SCHIP_START+SCHIP_VRES*SCHIP_RPT
 #define SCHIP_LEFT LEFT_MARGIN+200
 #define SCHIP_PDLY (2)
-#define SCHIP_CHROMA (0) // no chroma signal
+/*
 //CHIP8
 #define CHIP8_VRES 32
 #define CHIP8_HRES 64
@@ -96,8 +94,7 @@
 #define CHIP8_END (CHIP8_START+CHIP8_VRES*CHIP8_RPT)
 #define CHIP8_LEFT LEFT_MARGIN+60
 #define CHIP8_PDLY (7)
-#define CHIP8_CHROMA (0) // no chroma signal
-
+*/
 
 enum TASK_ENUM{
     PRE_SYNC,
@@ -126,10 +123,10 @@ volatile uint16_t sound_timer;
 volatile uint32_t ntsc_ticks;
 
 static const vmode_params_t video_params[MODES_COUNT]={
-    {VM_BPCHIP,BP_START,BP_END,BP_LEFT,BP_BPR,BP_RPT,BP_PDLY,BP_HRES,BP_VRES,BP_CHROMA},
- //   {VM_XOCHIP,XO_START,XO_END,XO_LEFT,XO_BPR,XO_RPT,XO_PDLY,XO_HRES,XO_VRES,XO_CHROMA},
-    {VM_SCHIP,SCHIP_START,SCHIP_END,SCHIP_LEFT,SCHIP_BPR,SCHIP_RPT,SCHIP_PDLY,SCHIP_HRES,SCHIP_VRES,SCHIP_CHROMA},
-//    {VM_CHIP8,CHIP8_START,CHIP8_END,CHIP8_LEFT,CHIP8_BPR,CHIP8_RPT,CHIP8_PDLY,CHIP8_HRES,CHIP8_VRES,CHIP8_CHROMA}
+    {VM_BPCHIP,BP_START,BP_END,BP_LEFT,BP_BPR,BP_RPT,BP_PDLY,BP_HRES,BP_VRES},
+ //   {VM_XOCHIP,XO_START,XO_END,XO_LEFT,XO_BPR,XO_RPT,XO_PDLY,XO_HRES,XO_VRES},
+    {VM_SCHIP,SCHIP_START,SCHIP_END,SCHIP_LEFT,SCHIP_BPR,SCHIP_RPT,SCHIP_PDLY,SCHIP_HRES,SCHIP_VRES},
+//    {VM_CHIP8,CHIP8_START,CHIP8_END,CHIP8_LEFT,CHIP8_BPR,CHIP8_RPT,CHIP8_PDLY,CHIP8_HRES,CHIP8_VRES}
 };
 
 // video mode parameters
@@ -142,7 +139,6 @@ static uint8_t lines_repeat=BP_RPT;
 static uint8_t pixel_delay=BP_PDLY;
 static uint8_t hres=BP_HRES;
 static uint8_t vres=BP_VRES;
-static uint16_t chroma_cfg=BP_CHROMA;
 
 uint8_t video_buffer[VRES*BPR];
 
@@ -158,7 +154,6 @@ void tvout_init(){
     RCC->APB2ENR|=RCC_APB2ENR_TIM1EN;
     TMR1->CCMR1=(7<<TMR_CCMR1_OC1M_POS)|TMR_CCMR1_OC1PE;
     TMR1->CCER=TMR_CCER_CC1E;
-    TMR1->CCER&=~TMR_CCER_CC2E;
     TMR1->CR1=TMR_CR1_ARPE|TMR_CR1_URS;
     TMR1->ARR=HPERIOD;
     TMR1->CCR1=HPULSE;
@@ -199,7 +194,7 @@ static void __attribute__((optimize("O1"))) pixel_delay(uint32_t dly){
                                         "bls.n 1b\n\t"\
                                         ::"r"(TMR1_CNT),"r"(cnt):"r0","r2","r3")
 */
-#define _jitter_cancel()  asm volatile ("mov r2,%0\n\t"\
+#define _jitter_cancel()  __asm__ volatile ("mov r2,%0\n\t"\
                                        "ldr r2,[r2,#0]\n\t"\
                                        "and r2,#7\n\t"\
                                        "lsl r2,#1\n\t"\
@@ -211,7 +206,7 @@ static void __attribute__((optimize("O1"))) pixel_delay(uint32_t dly){
 
 
 
-#define _pixel_delay(dly)    asm volatile (\
+#define _pixel_delay(dly)    __asm__ volatile (\
                               "mov r2,%0\n"\
                               "1: subs r2,#1\n\t"\
                               "bne.n 1b\n\t"\
@@ -221,21 +216,20 @@ void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
     register uint8_t *video_data;
     register uint16_t *video_port;
     register uint32_t i;
-//    if (video_mode<VM_SCHIP){
-        TMR3->CCER|=TMR_CCER_CC3E;
-        while(TMR1->CNT<BURST_END); //(uint16_t)(8.0e-6*(float)FCLK));
-        //_wait_tmr1_cnt();
-        TMR3->CCER&=~TMR_CCER_CC3E;
-//    }
+    TMR3->CCER|=CHROMA_CFG;
+    while(TMR1->CNT<BURST_END); //(uint16_t)(8.0e-6*(float)FCLK));
+    TMR3->CCER&=~CHROMA_CFG;
     video_port=(uint16_t*)&PORTA->ODR;
     video_data=&video_buffer[slice/lines_repeat*byte_per_row];
     while(TMR1->CNT<left_margin);
     _jitter_cancel();
-    TMR3->CCER|=chroma_cfg;
+    TMR3->CCER|=CHROMA_CFG;
     for (i=0;i<byte_per_row;i++){
         *video_port=(*video_data)>>4;
         _pixel_delay(pixel_delay);
+        //__asm__ volatile("nop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\t");
         *video_port=(*video_data++)&0xf;
+        //__asm__ volatile("nop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\t");
         _pixel_delay(pixel_delay);
     }
     PORTA->ODR=0;
@@ -362,7 +356,6 @@ void set_video_mode(vmode_t mode){
     pixel_delay=video_params[mode].pdly;
     hres=video_params[mode].hres;
     vres=video_params[mode].vres;
-    chroma_cfg=video_params[mode].chroma_cfg;
     gfx_cls();
 }
 

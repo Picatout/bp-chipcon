@@ -7,8 +7,8 @@
 #define KEY_RIGHT  8
 #define KEY_A  1
 #define KEY_B  15
-#define KEY_C  3
-#define KEY_D  8
+#define KEY_C  14
+#define KEY_D  9
 
 const uint8_t blinky_kmap[8]={KEY_A,KEY_C,KEY_B,KEY_D,KEY_RIGHT,KEY_DOWN,KEY_LEFT,KEY_UP};
 

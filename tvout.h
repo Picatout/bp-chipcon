@@ -50,7 +50,6 @@ typedef struct vmode_params{
     uint8_t pdly; // pixel delay
     uint16_t hres; // horizontal pixels
     uint16_t vres; // vertical pixels
-    uint16_t chroma_cfg;
 }vmode_params_t;
 
 extern volatile uint16_t game_timer;

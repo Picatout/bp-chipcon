@@ -236,7 +236,7 @@ static void video_test(){
 		draw_balls();
 		move_balls();
 		if (btn_query_down(KEY_RIGHT)){
-			p=++p%3;
+			p^=1;
 			set_video_mode(p);
 			switch(p){
 			case VM_BPCHIP:
@@ -246,9 +246,6 @@ static void video_test(){
 			case VM_SCHIP:
 				print("SCHIP mode\n128x64 mono");
 				break;
-//			case VM_CHIP8:
-//				print("CHIP8 mode\n64x32 mono");
-//				break;
 			}
 			vertical_bars();
 			horiz_bars();
@@ -301,79 +298,6 @@ static void sound_test(){
 	btn_wait_up(key);
 	sound_sampler(60);
 }
-
-static void display_keymap(uint8_t*map){
-	int i;
-	set_cursor(0,CHAR_HEIGHT);
-	for (i=0;i<8;i++) print_int(map[i],16);
-}
-
-static void buttons_map(){
-	int i;
-	uint8_t btn=255,key;
-	uint8_t* keymap=get_keymap(),newmap[8];
-	gfx_cls();
-	println("buttons map table");
-	for (i=0;i<8;i++){
-		newmap[i]=keymap[i];
-	}
-	display_keymap(newmap);
-	set_cursor(0,CHAR_HEIGHT);
-	show_cursor(1);
-	i=0;
-	key=newmap[i];
-	while(btn!=KEY_B){
-		btn=btn_wait_any();
-		switch(btn){
-		case KEY_LEFT:
-			if (i){
-				show_cursor(0);
-				i--;
-				set_cursor(i*CHAR_WIDTH*3,CHAR_HEIGHT);
-				show_cursor(1);
-				key=newmap[i];
-			}
-			break;
-		case KEY_RIGHT:
-			if (i<7){
-				show_cursor(0);
-				i++;
-				set_cursor(i*CHAR_WIDTH*3,CHAR_HEIGHT);
-				show_cursor(1);
-				key=newmap[i];
-			}
-			break;
-		case KEY_UP:
-			if (key<15){
-				key++;
-				newmap[i]=key;
-				print_int(key,16);
-				set_cursor(i*CHAR_WIDTH*3,CHAR_HEIGHT);
-				show_cursor(1);
-			}
-			break;
-		case KEY_DOWN:
-			if (key){
-				key--;
-				newmap[i]=key;
-				print_int(key,16);
-				set_cursor(i*CHAR_WIDTH*3,CHAR_HEIGHT);
-				show_cursor(1);
-			}
-			break;
-		case KEY_C:
-			for (i=0;i<8;i++)newmap[i]=keymap[i];
-			display_keymap(newmap);
-			set_cursor(0,CHAR_HEIGHT);
-			i=0;
-			key=newmap[i];
-			break;	
-		}//switch
-		btn_wait_up(btn);
-	}
-	for (i=0;i<8;i++)keymap[i]=newmap[i];
-}
-
 static void print_games_list(unsigned first, unsigned rows){
 	int r=1;
 
@@ -387,6 +311,7 @@ static void print_games_list(unsigned first, unsigned rows){
 	}
 }
 
+static int debug_print;
 static void run_game(unsigned idx){
 	int i;
 	uint16_t addr=0;
@@ -396,8 +321,9 @@ static void run_game(unsigned idx){
 	move(games_list[idx].data,&game_ram[addr],games_list[idx].size);
 	set_keymap(games_list[idx].keymap);
 	set_video_mode(games_list[idx].vmode);
-	chip_vm(addr,0);
+	chip_vm(addr,debug_print);
 	set_video_mode(VM_BPCHIP);
+	set_keymap(default_kmap);
 }
 
 static void select_game(){
@@ -436,11 +362,46 @@ static void select_game(){
 	run_game(first+selected-1);
 }
 
+static void enable_debug(){
+	uint8_t btn;
+	gfx_cls();
+	print("VM debug support\n");
+	print(" enable debug print\n");
+	print(" disable debug print");
+	if (debug_print){
+		set_cursor(0,CHAR_HEIGHT);
+		put_char('*');
+	}else{
+		set_cursor(0,2*CHAR_HEIGHT);
+		put_char('*');
+	}
+	while (1){
+		btn=btn_wait_any();
+		switch(btn){
+		case KEY_UP:
+			set_cursor(0,2*CHAR_HEIGHT);
+			put_char(' ');
+			set_cursor(0,CHAR_HEIGHT);
+			put_char('*');
+			debug_print=1;
+			break;
+		case KEY_DOWN:
+			set_cursor(0,CHAR_HEIGHT);
+			put_char(' ');
+			set_cursor(0,2*CHAR_HEIGHT);
+			put_char('*');
+			debug_print=0;
+			break;
+		case KEY_B:
+			return;	
+		}//swtich
+	}
+}
 
 #define MENU_ITEMS (4)
 static const char *menu_list[MENU_ITEMS]={
-	" Buttons map",
 	" Games list",
+	" Debug support",
 	" Video test",
 	" Sound test",
 };
@@ -475,11 +436,11 @@ static void menu(){
 		case KEY_B:
 			switch(i){
 			case 0:
-				buttons_map();
-				break;
-			case 1:
 				select_game();
 				break;
+			case 1:
+				enable_debug();
+				break;	
 			case 2:
 				video_test();
 				break;

@@ -112,6 +112,7 @@ int rand(){
 
 //  CHIP8/SCHIP/XOCHIP  virtual machine
 uint8_t chip_vm(uint16_t program_address, int debug){
+#define SLOW_DOWN 5
 	uint8_t x,y,n;
 	uint16_t code;
 	char buffer[24];
@@ -119,7 +120,7 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 	vms.sp=0;
 	vms.ix=0;
  	while (1){
-		//if (joystick_break()) return CHIP_EXIT_OK;
+		if (video_mode==VM_SCHIP) micro_pause(SLOW_DOWN);
 		_get_opcode(vms.pc);
 		if (debug){
 			debug_print(itoa(vms.pc,buffer,16));

@@ -155,7 +155,7 @@ int btn_query_down(uint8_t btn){
 void btn_wait_down(uint8_t btn){
     uint8_t mask=btn_mask(btn);
     int frame_count=0;
-    while (frame_count<4){
+    while (frame_count<3){
         frame_sync();
         if (!(btn_state&mask)){
             frame_count++;
@@ -194,7 +194,7 @@ void btn_wait_up(uint8_t btn){
 //  output:
 //      État de tous les boutons, bit à 0->relâché, bit à 1->enfoncé
 uint8_t btn_wait_any(){
-    uint8_t last_state=btn_state;
+    uint8_t btn, last_state=btn_state;
     int frame_count=0;
     while (frame_count<3){
         frame_sync();
@@ -205,7 +205,10 @@ uint8_t btn_wait_any(){
             frame_count++;
         }       
     }
-    return buttons[btn_idx(last_state^0xff)];
+    btn=buttons[btn_idx(last_state^0xff)];
+    // wait button release
+    btn_wait_up(btn);
+    return btn;
 }
 
 // modifie la transcription d'un bouton

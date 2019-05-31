@@ -23,6 +23,10 @@
 #include "../gamepad.h"
 #include "games.h"
 #include "blinky.h"
+#include "mines.h"
+#include "joust23.h"
+#include "square.h"
+/*
 #include "alien.h"
 #include "ant.h"
 #include "piper.h"
@@ -32,24 +36,25 @@
 #include "octopac.h"
 #include "sokoban.h"
 #include "spacefig.h"
-#include "mines.h"
 #include "tetris.h"
 #include "invaders.h"
-
+*/
 game_info_t games_list[]={
     {VM_SCHIP,"blinky",BLINKY_SIZE,blinky,blinky_kmap},
-    {VM_SCHIP,"alien",ALIEN_SIZE,alien,default_kmap},
-    {VM_SCHIP,"ant",ANT_SIZE,ant,default_kmap},
-    {VM_SCHIP,"octopac",OCTOPAC_SIZE,octopac,default_kmap},
-    {VM_SCHIP,"worm",WORM_SIZE,worm,default_kmap},
-    {VM_SCHIP,"car",CAR_SIZE,car,default_kmap},
-    {VM_SCHIP,"lem",LEM_SIZE,lem,default_kmap},
-    {VM_SCHIP,"piper",PIPER_SIZE,piper,default_kmap},
-    {VM_SCHIP,"tetris",TETRIS_SIZE,tetris,tetris_kmap},
-    {VM_SCHIP,"invaders",INVADERS_SIZE,invaders,invaders_kmap},
-    {VM_SCHIP,"mines",MINES_SIZE,mines,default_kmap},
-    {VM_SCHIP,"sokoban",SOKOBAN_SIZE,sokoban,default_kmap},
-    {VM_SCHIP,"spacefig",SPACEFIG_SIZE,spacefig,default_kmap},
+    {VM_SCHIP,"mines",MINES_SIZE,mines,mines_kmap},
+    {VM_SCHIP,"joust 2.3",JOUST23_SIZE,joust23,joust23_kmap},
+    {VM_SCHIP,"square",SQUARE_SIZE,square,square_kmap},
+//    {VM_SCHIP,"alien",ALIEN_SIZE,alien,default_kmap},
+//    {VM_SCHIP,"ant",ANT_SIZE,ant,default_kmap},
+//    {VM_SCHIP,"octopac",OCTOPAC_SIZE,octopac,default_kmap},
+//    {VM_SCHIP,"worm",WORM_SIZE,worm,default_kmap},
+//    {VM_SCHIP,"car",CAR_SIZE,car,default_kmap},
+//    {VM_SCHIP,"lem",LEM_SIZE,lem,default_kmap},
+//    {VM_SCHIP,"piper",PIPER_SIZE,piper,default_kmap},
+//    {VM_SCHIP,"tetris",TETRIS_SIZE,tetris,tetris_kmap},
+//    {VM_SCHIP,"invaders",INVADERS_SIZE,invaders,invaders_kmap},
+//    {VM_SCHIP,"sokoban",SOKOBAN_SIZE,sokoban,default_kmap},
+//    {VM_SCHIP,"spacefig",SPACEFIG_SIZE,spacefig,default_kmap},
     {0,"",0,NULL}
 };
 
