@@ -54,5 +54,7 @@ void clear_screen();
 void println(const char *text);
 // affiche un curseur texte
 void show_cursor(int show);
+// efface la ligne où est le curseur texte
+void clear_line();
 
 #endif

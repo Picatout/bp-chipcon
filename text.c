@@ -24,6 +24,7 @@
 
 #include "include/timer.h"
 #include "include/gen_macros.h"
+#include "include/gen_fn.h"
 #include "text.h"
 #include "tvout.h"
 #include "graphics.h"
@@ -246,5 +247,16 @@ void show_cursor(int show){
 		for (x=xpos;x<xpos+CHAR_WIDTH;x++){
 			gfx_plot(x,ypos+CHAR_HEIGHT-1,color);
 		}
+}
+
+// efface la ligne où est le curseur texte
+void clear_line(){
+	int y;
+	vmode_params_t *vparams=get_video_params();
+//	set_cursor(0,ypos);
+	for (y=ypos;y<ypos+CHAR_HEIGHT;y++)
+		fill(&video_buffer[y*vparams->bpr],vparams->bpr,0);
+//	while (xpos<(vparams->hres-CHAR_WIDTH))put_char(' ');
+//	set_cursor(0,ypos-CHAR_HEIGHT);
 }
 

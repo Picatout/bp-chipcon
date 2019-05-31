@@ -16,19 +16,21 @@ void usage(){
 int main(int argc, char *argv[]){
 	FILE *inp, *hf, *cf;
 	unsigned char c;
-	unsigned char array_name[32],header_var[32],h_file[32], c_file[32], *bslash;
-	int size,  i=0;
+	unsigned char array_name[32],header_var[32],h_file[32], c_file[32], *fname;
+	int size,  i;
 	if (argc<2) usage();
-	printf("%s\n", argv[1]);
-	inp=fopen(argv[1],"rb");
+	fname=argv[1];
+	printf("%s\n", fname);
+	inp=fopen(fname,"rb");
 	if (!inp) {
-		printf("failed to open %s file.\n",argv[1]);
+		printf("failed to open %s file.\n",fname);
 		exit(EXIT_FAILURE);
 	}
-	bslash=argv[1]+strlen(argv[1])-1;
-	while (bslash>=(unsigned char*)&argv[1] && *bslash!='\\') --bslash;
-	bslash++;
-	strcpy(c_file,bslash); 
+	i=strlen(fname)-1;
+	while (i && fname[i]!='/'){--i;}
+	i++;
+	strcpy(c_file,&fname[i]);
+	printf("%s\n",c_file); 
 	i=0;
 	while (c_file[i] && c_file[i]!='.'){
 		array_name[i]=tolower(c_file[i]);
@@ -66,8 +68,17 @@ int main(int argc, char *argv[]){
 		fclose(cf);
 		exit(EXIT_SUCCESS);
 	}
-	fprintf(cf,"#include \"games.h\"");
+	fprintf(cf,"#include \"games.h\"\n");
 	fprintf(cf,"#include \"%s.h\"\n\n",array_name);
+	fprintf(cf,"#define KEY_UP    3\n"\
+			   "#define KEY_DOWN  6\n"\
+			   "#define KEY_LEFT   7\n"\
+			   "#define KEY_RIGHT  8\n"\
+				"#define KEY_A  1\n"\
+				"#define KEY_B  15\n"\
+				"#define KEY_C  14\n"\
+				"#define KEY_D  9\n\n");
+	fprintf(cf,"const uint8_t %s_kmap[8]={KEY_A,KEY_C,KEY_B,KEY_D,KEY_RIGHT,KEY_DOWN,KEY_LEFT,KEY_UP};\n\n",array_name);
 	fprintf(cf,"const uint8_t %s[%s_SIZE] _GAME={",array_name,header_var);
 	fseek(inp,0,SEEK_SET);
 	i=0;
@@ -81,12 +92,13 @@ int main(int argc, char *argv[]){
 	fputs("\n};\n",cf);
 	fclose(cf);
 	fclose(inp);
-	fprintf(hf,"#ifndef %s_\n",header_var); 
-	fprintf(hf,"#define %s_\n\n",header_var);
+	fprintf(hf,"#ifndef %s_H\n",header_var); 
+	fprintf(hf,"#define %s_H\n\n",header_var);
 	fprintf(hf,"#include <stdint.h>\n\n");
 	fprintf(hf,"#define %s_SIZE (%d)\n\n",header_var, size);
+	fprintf(hf,"extern const uint8_t %s_kmap[8];\n",array_name);
 	fprintf(hf,"extern const uint8_t %s[%s_SIZE];\n\n",array_name,header_var);
-	fprintf(hf,"#endif\n");
+	fprintf(hf,"#endif // %s_H\n",header_var);
 	fclose(hf);
 	printf("%d octets\n",size);
 	return EXIT_SUCCESS;

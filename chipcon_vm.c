@@ -120,7 +120,7 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 	vms.sp=0;
 	vms.ix=0;
  	while (1){
-		if (video_mode==VM_SCHIP) micro_pause(SLOW_DOWN);
+		if ((video_mode==VM_SCHIP) && !debug)  micro_pause(SLOW_DOWN);
 		_get_opcode(vms.pc);
 		if (debug){
 			debug_print(itoa(vms.pc,buffer,16));

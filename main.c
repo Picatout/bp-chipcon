@@ -298,18 +298,6 @@ static void sound_test(){
 	btn_wait_up(key);
 	sound_sampler(60);
 }
-static void print_games_list(unsigned first, unsigned rows){
-	int r=1;
-
-	set_cursor(0,0);
-	print("**** GAMES ****");
-	while ((r<rows) && games_list[first].size){
-		new_line();
-		put_char(' ');
-		print(games_list[first].name);
-		first++;
-	}
-}
 
 static int debug_print;
 static void run_game(unsigned idx){
@@ -326,6 +314,22 @@ static void run_game(unsigned idx){
 	set_keymap(default_kmap);
 }
 
+static void print_games_list(unsigned first, unsigned rows){
+	int r=1;
+
+	set_cursor(0,0);
+	print(" ********** GAMES **********");
+	while ((r<rows) && games_list[first].size){
+		new_line();
+		clear_line();
+		put_char(' ');
+		print(games_list[first].name);
+		first++;
+		r++;
+	}
+}
+
+
 static void select_game(){
 	int i=0,first=0,count,rows,selected=1;
 	int loop=1;
@@ -337,7 +341,7 @@ static void select_game(){
 	rows=vparams->vres/CHAR_HEIGHT;
 	while(loop){
 		print_games_list(first,rows);
-		set_cursor(0,selected*CHAR_HEIGHT);
+		set_cursor(0,(selected-first)*CHAR_HEIGHT);
 		put_char('>');
 		btn=btn_wait_any();
 		btn_wait_up(btn);
@@ -365,7 +369,7 @@ static void select_game(){
 static void enable_debug(){
 	uint8_t btn;
 	gfx_cls();
-	print("VM debug support\n");
+	print(" *** VM debug support ***\n");
 	print(" enable debug print\n");
 	print(" disable debug print");
 	if (debug_print){
