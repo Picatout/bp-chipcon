@@ -18,7 +18,7 @@ ASM =../*.s
 GAMES=../games/*.c
 SRC = ../*.c
 SRC += $(HAL)nvic.c $(HAL)gpio.c $(HAL)spi.c $(HAL)dma.c 
-SRC += $(HAL)rtc.c $(HAL)bkp.c $(HAL)flash.c
+SRC += $(HAL)rtc.c $(HAL)bkp.c $(HAL)flash.c $(HAL)usart.c
 SRC += $(GAMES)
 
 all: build

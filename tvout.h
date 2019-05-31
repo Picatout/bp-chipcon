@@ -35,7 +35,7 @@ typedef enum VIDEO_MODES{
    VM_BPCHIP, // 180x112 16 colors (default)
 //   VM_XOCHIP, // 128x64 4 colors
    VM_SCHIP, // 128x64 monochrome
-   VM_CHIP8,  // 64x32 monochrome
+//   VM_CHIP8,  // 64x32 monochrome
 
    MODES_COUNT
 }vmode_t;

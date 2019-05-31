@@ -152,3 +152,24 @@ char* strcat(char* s1, const char* s2){
 	return s1;
 }
 
+char *itoa(int n,char *buffer,int base){
+	char d,fmt[16];
+	int i=14,sign=0;
+	if ((base==10) && (n<0)){
+		sign=1;
+		n=-n;
+	}
+	fmt[15]=0;
+	fmt[14]=' ';
+	while (n){
+		d=n%base+'0';
+		if (d>'9') d+=7;
+		n/=base;
+		fmt[--i]=d;
+	}
+	if (i==14) fmt[--i]='0';
+	if ((base==10) && sign) fmt[--i]='-';
+	if (base==16) fmt[--i]='$';
+	move((const char*)&fmt[i],buffer,16-i);
+	return buffer;
+}

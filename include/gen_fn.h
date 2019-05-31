@@ -62,6 +62,8 @@ int skip(const char *buffer, int start, char c);
 int scan(const char *buffer, int start, char c);
 // concatenation de la chaîne s2 à la fin de s1
 char* strcat(char* s1, const char* s2);
+// convert integer to string
+char *itoa(int n,char *buffer,int base);
 
 #endif // GEN_FN_H
 

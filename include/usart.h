@@ -130,6 +130,9 @@ typedef struct{
 // contrôle de flux
 #define FLOW_SOFT 0  // XON/XOFF
 #define FLOW_HARD 1  // RTC/CTS
+// use choice
+#define STD_PORT 0
+#define ALT_PORT 1
 
 // ports et bits utilisés par les USART
 // USART1 PINOUT
@@ -176,7 +179,7 @@ void usart_comm_dir(usart_t* channel, unsigned direction);
 
 // configure l'USART pour comminication selon protocole RS-232
 // 8 bit 1 stop pas de parité
-void usart_open_channel(usart_t* channel, unsigned baud, unsigned parity, unsigned dir, unsigned flow_ctrl);
+void usart_open_channel(usart_t* channel, unsigned baud, unsigned parity, unsigned dir, int port, unsigned flow_ctrl);
 
 // status récepction
 // retourne 0 si pas de caractère disponible
@@ -188,6 +191,11 @@ char usart_getc(usart_t* channel);
 
 // transmet un caractère à la console
 void usart_putc(usart_t* channel,char c);
+
+// print string to usart channel
+void usart_print(usart_t* channel, const char *str);
+
+#define debug_print(s)  usart_print(USART1,s)
 
 // vérifie l'état de la ligne CTS
 int usart_cts(usart_t* channel);

@@ -61,7 +61,7 @@ extern uint8_t game_ram[GAME_SPACE];
 
 void print_vms(const char *msg);
 	
-uint8_t chip_vm(uint16_t program_address);
+uint8_t chip_vm(uint16_t program_address, int debug);
 void srand(unsigned n);
 int rand();
 

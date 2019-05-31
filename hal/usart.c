@@ -38,16 +38,22 @@ void usart_config_port(usart_t* channel, gpio_t *port, unsigned flow_ctrl){
 	switch((uint32_t)channel){ // activation du périphérique USART et du PORT
 	case (uint32_t)USART1:
 		RCC->APB2ENR|=RCC_APB2ENR_USART1EN|RCC_APB2ENR_IOPAEN;
-		// PA9 -> TX   output (push-pull)
-		// PA10 -> RX  input (floating)
-		// PA11 -> CTS input (floating)
-		// PA12 -> RTS output (push-pull)
 		if (flow_ctrl==FLOW_HARD){
-			port->CR[1]&=~((15<<((USART1_TX_PIN-8)*4))|(15<<((USART1_RTS_PIN-8)*4)));
-			port->CR[1]|=(0xA<<((USART1_TX_PIN-8)*4))|(0xA<<((USART1_RTS_PIN-8)*4));
-		}else{
+				port->CR[1]&=~(15<<((USART1_RTS_PIN-8)*4));
+				port->CR[1]|=(0xA<<((USART1_RTS_PIN-8)*4));
+		}
+		if (port==USART1_PORT){
+			// PA9 -> TX   output (push-pull)
+			// PA10 -> RX  input (floating)
+			// PA11 -> CTS input (floating)
+			// PA12 -> RTS output (push-pull)
 			port->CR[1]&=~(15<<((USART1_TX_PIN-8)*4));
 			port->CR[1]|=0xA<<((USART1_TX_PIN-8)*4);
+		}else{//USART1_ALT_PORT
+			AFIO->MAPR|=AFIO_MAPR_USART1_REMAP;
+			RCC->APB2ENR|=RCC_APB2ENR_IOPBEN;
+			port->CR[0]&=~(15<<(USART1_ALT_TX_PIN*4));
+			port->CR[0]|=0xA<<(USART1_ALT_TX_PIN*4);
 		}
 		break;
 	case (uint32_t)USART2:
@@ -104,10 +110,14 @@ void usart_comm_dir(usart_t* channel, unsigned direction){
 
 
 // configure l'USART pour communication selon protocole RS-232
-void usart_open_channel(usart_t* channel, unsigned baud, unsigned parity, unsigned dir, unsigned flow_ctrl){
+void usart_open_channel(usart_t* channel, unsigned baud, unsigned parity, unsigned dir, int port, unsigned flow_ctrl){
 	switch((uint32_t)channel){ // activation du périphérique USART et du PORT
 	case (uint32_t)USART1:
-		usart_config_port(channel,USART1_PORT,flow_ctrl);
+	  if (port==STD_PORT){
+			usart_config_port(channel,USART1_PORT,flow_ctrl);
+		}else{
+			usart_config_port(channel,USART1_ALT_PORT,flow_ctrl);
+		}
 		set_int_priority(IRQ_USART1,7);
 		enable_interrupt(IRQ_USART1);
 		break;
@@ -158,11 +168,13 @@ char usart_getc(usart_t* channel){
 		
 }
 
+#include "../tvout.h"
 // attend un caractère jusqu'à expiration du délais
 char usart_getc_dly(usart_t* channel,unsigned dly){
-	timer=dly;
-	while (timer && !(channel->SR&USART_SR_RXNE));
-	if (timer) return channel->DR; else return 0;
+	unsigned t0=ntsc_ticks+dly;
+	
+	while ((ntsc_ticks<t0) && !(channel->SR&USART_SR_RXNE));
+	if (ntsc_ticks<t0) return channel->DR; else return 0;
 }
 
 // transmet un caractère à la console
@@ -187,5 +199,9 @@ int usart_cts(usart_t* channel){
 			break;
 	}
 	return cts;
+}
+
+void usart_print(usart_t* channel, const char *str){
+	 while (*str) usart_putc(channel,*str++);
 }
 

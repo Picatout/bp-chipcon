@@ -127,7 +127,12 @@ static uint8_t shift_out(uint8_t byte){
 // à partir de TV_SYNC_handler()
 void read_gamepad(){
     btn_state=shift_out(0xfe);
-    if ((btn_state&(BTN_RIGHT_MASK|BTN_C_MASK))==0)_reset_mcu();
+    if ((btn_state&(BTN_RIGHT_MASK|BTN_C_MASK))==0){
+        while (btn_state!=0xff){
+            btn_state=shift_out(0xfe);
+        };
+        _reset_mcu();
+    }
 }
 
 // véririfie si le bouton est enfoncé.

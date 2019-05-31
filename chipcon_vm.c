@@ -31,6 +31,7 @@
 #include "include/blue_pill.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include "chipcon_vm.h"
 #include "tvout.h"
 #include "graphics.h"
@@ -110,15 +111,21 @@ int rand(){
 
 
 //  CHIP8/SCHIP/XOCHIP  virtual machine
-uint8_t chip_vm(uint16_t program_address){
+uint8_t chip_vm(uint16_t program_address, int debug){
 	uint8_t x,y,n;
 	uint16_t code;
+	char buffer[24];
 	vms.pc=program_address;
 	vms.sp=0;
 	vms.ix=0;
  	while (1){
 		//if (joystick_break()) return CHIP_EXIT_OK;
 		_get_opcode(vms.pc);
+		if (debug){
+			debug_print(itoa(vms.pc,buffer,16));
+			debug_print(itoa((vms.b1<<8)+vms.b2,buffer,16));
+			debug_print("\n");
+		}
 		vms.pc+=2;
 		x=rx(vms.b1);
 		y=ry(vms.b2);
@@ -146,7 +153,7 @@ uint8_t chip_vm(uint16_t program_address){
 				case 0xfd:// 00FD, EXIT   exit interpreter and go back to BP_CHIPCON monitor; SCHIP
 					return CHIP_EXIT_OK;
 				case 0xfe: //00FE,  LOW   switch to CHIP-8 64x32 graphic mode ; SCHIP
-					set_video_mode(VM_CHIP8);
+					//set_video_mode(VM_CHIP8);
 					break; 
 				case 0xff:  //00FF, HIGH  switch to SCHIP 128x64 graphic mode ; SCHIP
 					set_video_mode(VM_SCHIP);
@@ -160,14 +167,14 @@ uint8_t chip_vm(uint16_t program_address){
 			break;
 		case 0x1: // 1NNN JP label  ;saut vers 'label'  adresse=2*NNN
 			vms.pc=caddr(vms.b1,vms.b2);
-			if (video_mode!=VM_CHIP8){
+			if (video_mode==VM_BPCHIP){
 				vms.pc<<=1;
 			}
 			break;
 		case 0x2: // 2NNN  CALL label  ; appelle la sous-routine 'label' adresse=2*NNN
 			vms.stack[++vms.sp]=vms.pc;
 			vms.pc=caddr(vms.b1,vms.b2);
-			if (video_mode!=VM_CHIP8){
+			if (video_mode==VM_BPCHIP){
 				vms.pc<<=1;
 			}
 			break;
@@ -306,14 +313,14 @@ uint8_t chip_vm(uint16_t program_address){
 			break;
 		case 0xa: // ANNN    LD I, NNN  ; I := 2*NNN
 			vms.ix=caddr(vms.b1,vms.b2);
-			if (video_mode!=VM_CHIP8){
+			if (video_mode==VM_BPCHIP){
 				vms.ix<<=1;
 			}
 			vms.sprite_mem=RAM_MEM;
 			break;
 		case 0xb: // BNNN     JP V0, NNN  ;  skip to 2*(NNN+V0)
 			vms.pc=(vms.var[0]<<1)+caddr(vms.b1,vms.b2);
-			if (video_mode!=VM_CHIP8){
+			if (video_mode==VM_BPCHIP){
 				vms.pc<<=1;
 			}
 			break;

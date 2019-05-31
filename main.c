@@ -246,9 +246,9 @@ static void video_test(){
 			case VM_SCHIP:
 				print("SCHIP mode\n128x64 mono");
 				break;
-			case VM_CHIP8:
-				print("CHIP8 mode\n64x32 mono");
-				break;
+//			case VM_CHIP8:
+//				print("CHIP8 mode\n64x32 mono");
+//				break;
 			}
 			vertical_bars();
 			horiz_bars();
@@ -390,13 +390,13 @@ static void print_games_list(unsigned first, unsigned rows){
 static void run_game(unsigned idx){
 	int i;
 	uint16_t addr=0;
-	if (games_list[idx].vmode==VM_CHIP8){
+	if (games_list[idx].vmode==VM_SCHIP){
 		addr=512;
 	}
 	move(games_list[idx].data,&game_ram[addr],games_list[idx].size);
 	set_keymap(games_list[idx].keymap);
 	set_video_mode(games_list[idx].vmode);
-	chip_vm(addr);
+	chip_vm(addr,0);
 	set_video_mode(VM_BPCHIP);
 }
 
@@ -503,6 +503,7 @@ void main(void){
 //	RCC->AHBENR|=RCC_AHBENR_DMA1EN; // activation DMA1
 	config_pin(LED_PORT,LED_PIN,OUTPUT_OD_SLOW);
 	_led_off();
+	usart_open_channel(USART1,115200,PARITY_NONE,USART_DIR_TX,ALT_PORT,FLOW_SOFT);
 	gamepad_init();
 	tvout_init();
 	sound_init();
