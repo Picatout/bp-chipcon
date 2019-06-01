@@ -37,7 +37,7 @@
 #include "graphics.h"
 #include "text.h"
 
-uint8_t sprite_bpp=4;
+bits_per_pixel_t sprite_bpp=FOUR_BPP;
 // palette 4 couleurs pour les sprites 1 ou 2 bits/pixel
 static uint8_t palette[4]={0,15,3,5};
 
@@ -106,7 +106,7 @@ void gfx_plot (int x,int y,uint8_t color){
 void gfx_cls(){
 	int x;
     vmode_params_t *vparams=get_video_params();
-	for (x=0;x<vparams->vres*vparams->bpr;x++) video_buffer[x]=0;
+	for (x=0;x<VIDEO_BUFFER_SIZE;x++) video_buffer[x]=0;
     set_cursor(0,0);
 }
 
@@ -185,10 +185,11 @@ uint8_t gfx_get_pixel(int x, int y){
     return byte&0xf;
 }
 
-static const uint8_t bit_mask[5]={0,128,0xc0,0,0xf0};
-static const uint8_t bit_shift[5]={0,7,6,0,4};
+static const uint8_t bit_mask[3]={0x80,0xc0,0xf0};
+static const uint8_t bit_shift[3]={7,6,4};
+static const uint8_t pixels_per_byte[3]={8,4,2};
 // put sprite on screen using BIT_XOR
-int gfx_sprite(int x, int y, uint8_t width, uint8_t height, const uint8_t *sprite){
+int /* __attribute__((optimize("-O1")))*/ gfx_sprite(int x, int y, uint8_t width, uint8_t height, const uint8_t *sprite){
     register uint8_t color,bmp_byte,mask,shift,ppb;
     register int x0,y0;
     int collision=0;
@@ -196,23 +197,24 @@ int gfx_sprite(int x, int y, uint8_t width, uint8_t height, const uint8_t *sprit
     shift=bit_shift[sprite_bpp];
     bmp_byte=*sprite++;
     mask=bit_mask[sprite_bpp];
-    ppb=8/sprite_bpp;
-    for (y0=y;y0<(y+height);y0++){
+    ppb=pixels_per_byte[sprite_bpp];
+    for (y0=y;y0<(y+height);y0++){ 
         for(x0=x;x0<(x+width);x0++){
-            if (sprite_bpp<4){
-                color=palette[(bmp_byte&mask)>>shift];
+            if (sprite_bpp<FOUR_BPP){
+                color=palette[bmp_byte>>shift];
             }else{
-                color=(bmp_byte&mask)>>shift;
+                color=bmp_byte>>shift;
             }
             collision|=gfx_blit(x0,y0,color,BIT_XOR);
             bmp_byte<<=(8-shift);
             ppb--;
             if (!ppb){
                 bmp_byte=*sprite++;
-                ppb=8/sprite_bpp;
+                ppb=pixels_per_byte[sprite_bpp];
             }
-        }
-    }
+        }//for(x)
+    }//for(y0)
+    usart_putc(USART1,'\n');
     return collision;
 }
 

@@ -302,6 +302,7 @@ static void sound_test(){
 static int debug_print;
 static void run_game(unsigned idx){
 	int i;
+	uint8_t exit_code;
 	uint16_t addr=0;
 	if (games_list[idx].vmode==VM_SCHIP){
 		addr=512;
@@ -309,9 +310,23 @@ static void run_game(unsigned idx){
 	move(games_list[idx].data,&game_ram[addr],games_list[idx].size);
 	set_keymap(games_list[idx].keymap);
 	set_video_mode(games_list[idx].vmode);
-	chip_vm(addr,debug_print);
-	set_video_mode(VM_BPCHIP);
-	set_keymap(default_kmap);
+	exit_code=chip_vm(addr,debug_print);
+	print("exit code: ");
+	switch(exit_code){
+	case CHIP_CONTINUE:
+		print("CHIP CONTINUE");
+		break;
+	case CHIP_EXIT_OK:
+		print("CHIP EXIT OK");
+		break;
+	case CHIP_BAD_OPCODE:
+		print("CHIP BAD OPCODE");
+		break;
+	case CHIP_BREAK:
+		print("CHIP BREAK");
+		break;
+	}//switch
+	game_pause(120);
 }
 
 static void print_games_list(unsigned first, unsigned rows){
@@ -340,6 +355,7 @@ static void select_game(){
 	vparams=get_video_params();
 	rows=vparams->vres/CHAR_HEIGHT;
 	while(loop){
+		if (selected<rows) first=0;else first=selected-rows+1;
 		print_games_list(first,rows);
 		set_cursor(0,(selected-first)*CHAR_HEIGHT);
 		put_char('>');
@@ -347,13 +363,11 @@ static void select_game(){
 		btn_wait_up(btn);
 		switch(btn){
 		case KEY_UP:
-			if (first) first--;
 			if (selected>1) selected--;
 			break;
 		case KEY_DOWN:
-			if ((first+selected-1)<(count-1)){
+			if (selected<count){
 				selected++;
-				if (selected>=rows) first++;
 			}
 			break;
 		case KEY_B:
@@ -363,7 +377,7 @@ static void select_game(){
 			return;	
 		}
 	}
-	run_game(first+selected-1);
+	run_game(selected-1);
 }
 
 static void enable_debug(){

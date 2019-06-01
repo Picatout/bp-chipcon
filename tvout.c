@@ -140,7 +140,7 @@ static uint8_t pixel_delay=BP_PDLY;
 static uint8_t hres=BP_HRES;
 static uint8_t vres=BP_VRES;
 
-uint8_t video_buffer[VRES*BPR];
+uint8_t video_buffer[VIDEO_BUFFER_SIZE];
 
 // use TIMER1 CH1  to generate video synchronization
 // use TIMER1 CH2 for video_out delay
@@ -347,7 +347,7 @@ void wait_sync_end(){
 void set_video_mode(vmode_t mode){
     frame_sync();
     video_mode=mode;
-    if (mode==VM_BPCHIP) sprite_bpp=4;else sprite_bpp=1;
+    if (mode==VM_BPCHIP) sprite_bpp=FOUR_BPP;else sprite_bpp=ONE_BPP;
     video_start=video_params[mode].video_start;
     video_end=video_params[mode].video_end;
     left_margin=video_params[mode].left_margin;

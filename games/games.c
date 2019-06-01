@@ -37,7 +37,6 @@
 #include "dragon1.h"
 #include "dragon2.h"
 #include "field.h"
-#include "maze.h"
 #include "uboat.h"
 
 game_info_t games_list[]={
@@ -55,7 +54,6 @@ game_info_t games_list[]={
     {VM_SCHIP,"dragon 1",DRAGON1_SIZE,dragon1,dragon1_kmap},
     {VM_SCHIP,"dragon 2",DRAGON2_SIZE,dragon2,dragon2_kmap},
     {VM_SCHIP,"field",FIELD_SIZE,field,field_kmap},
-    {VM_SCHIP,"maze",MAZE_SIZE,maze,maze_kmap},
     {VM_SCHIP,"uboat",UBOAT_SIZE,uboat,uboat_kmap},
     {0,"",0,NULL}
 };

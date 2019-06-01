@@ -113,13 +113,13 @@ int rand(){
 //  CHIP8/SCHIP/XOCHIP  virtual machine
 uint8_t chip_vm(uint16_t program_address, int debug){
 #define SLOW_DOWN 5
-	uint8_t x,y,n;
+	uint8_t x,y,n,loop=CHIP_CONTINUE;
 	uint16_t code;
 	char buffer[24];
 	vms.pc=program_address;
 	vms.sp=0;
 	vms.ix=0;
- 	while (1){
+ 	while (loop==CHIP_CONTINUE){
 		if ((video_mode==VM_SCHIP) && !debug)  micro_pause(SLOW_DOWN);
 		_get_opcode(vms.pc);
 		if (debug){
@@ -152,7 +152,8 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 					gfx_scroll_left(4);
 					break;
 				case 0xfd:// 00FD, EXIT   exit interpreter and go back to BP_CHIPCON monitor; SCHIP
-					return CHIP_EXIT_OK;
+					loop=CHIP_EXIT_OK;
+					break;
 				case 0xfe: //00FE,  LOW   switch to CHIP-8 64x32 graphic mode ; SCHIP
 					//set_video_mode(VM_CHIP8);
 					break; 
@@ -163,7 +164,7 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 					set_video_mode(VM_BPCHIP);
 					break;
 				default:
-					return CHIP_BAD_OPCODE;
+					loop=CHIP_BAD_OPCODE;
 			}//switch(b2)
 			break;
 		case 0x1: // 1NNN JP label  ;saut vers 'label'  adresse=2*NNN
@@ -246,7 +247,7 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 				vms.var[15]=n;
 				break;
 			default:
-				return CHIP_BAD_OPCODE;
+				loop=CHIP_BAD_OPCODE;
 			}//switch(vms.b2&0xf)
 			break;
 		case 0x9:
@@ -309,7 +310,7 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 			    vms.var[15]=gfx_get_pixel(x,y);
 				break;  	
 			default:
-				return CHIP_BAD_OPCODE;
+				loop=CHIP_BAD_OPCODE;
 			}//switch(vms.b2&0xf)
 			break;
 		case 0xa: // ANNN    LD I, NNN  ; I := 2*NNN
@@ -363,7 +364,7 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 //			case 0: // F000 NNNN  load i with a 16-bit address, XO-CHIP
 //				break;
 			case 1: // FN01  set sprite bitS  per pixels 1,2,4
-				sprite_bpp=vms.b1&0x3;
+				sprite_bpp=vms.b1%3;
 				break;
 			case 2: // FN02   store 16 bytes starting at i in the audio pattern buffer, XO-CHIP and BP-CHIPCON
 				load_sound_buffer(&game_ram[vms.ix]);
@@ -421,10 +422,13 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 				move((const uint8_t*)block,vms.var,x+1);
 				break;
 			default:
-				return CHIP_BAD_OPCODE;
-				
+				loop=CHIP_BAD_OPCODE;
 			}//switch(vms.b2)
 			break;	
 		}//switch (vms.b1>>4)
 	}//while(1)
+	select_font(FONT_ASCII);
+	set_keymap(default_kmap);
+	set_video_mode(VM_BPCHIP);
+	return loop;
 }//schipp()

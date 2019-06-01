@@ -29,7 +29,7 @@
 #define VRES 112   // vertical resolution
 #define BPP 4     // bits per pixel
 #define BPR (HRES*BPP/8)  // bytes per row
-
+#define VIDEO_BUFFER_SIZE (VRES*BPR)
 
 typedef enum VIDEO_MODES{
    VM_BPCHIP, // 180x112 16 colors (default)
@@ -57,7 +57,7 @@ extern volatile uint16_t sound_timer;
 extern vmode_t video_mode;
 extern volatile uint32_t ntsc_ticks;
 
-extern uint8_t video_buffer[VRES*BPR];
+extern uint8_t video_buffer[VIDEO_BUFFER_SIZE];
 void set_video_mode(vmode_t mode);
 vmode_params_t* get_video_params();
 void tvout_init();
