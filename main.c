@@ -339,7 +339,7 @@ static void run_game(unsigned idx){
 
 static void print_games_list(unsigned first, unsigned rows){
 	int r=1;
-
+	uint16_t line;
 	set_cursor(0,0);
 	print(" ********** GAMES **********");
 	while ((r<rows) && games_list[first].size){
@@ -347,6 +347,13 @@ static void print_games_list(unsigned first, unsigned rows){
 		clear_line();
 		put_char(' ');
 		print(games_list[first].name);
+		line=get_cursor()&0xff;
+		set_cursor(90,line);
+		if (games_list[first].vmode==VM_SCHIP){
+			print("(SCHIP)");
+		}else{
+			print("(BPCHIP)");
+		}
 		first++;
 		r++;
 	}
@@ -378,10 +385,16 @@ static void select_game(){
 				selected++;
 			}
 			break;
+		case KEY_A:
+			selected=1;
+			break;
+		case KEY_C:
+			selected=count;
+			break;				
 		case KEY_B:
 			loop=false;
 			break;	
-		case KEY_C:
+		case KEY_D:
 			return;	
 		}
 	}
