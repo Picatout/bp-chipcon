@@ -27,14 +27,11 @@ void tone(uint16_t freq, uint16_t duration);
 
 void beep(uint16_t duration);
 
-void load_sound_buffer(const uint8_t* buffer);
-
 void sound_stop();
 
 void key_tone(int note, int length,int wait_end);
 
 void noise(int length);
 
-void sound_sampler(uint16_t duration);
 
 #endif //SOUND_H

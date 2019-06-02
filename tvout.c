@@ -180,21 +180,8 @@ void tvout_init(){
     TMR3->CR1|=TMR_CR1_CEN; 
 }
 
-/*
-static void __attribute__((optimize("O1"))) pixel_delay(uint32_t dly){
-    asm("");
-    while (dly--);
-}
-*/
-/*
-#define _wait_tmr1_cnt(cnt) asm volatile ("mov r2,%0\n\t"\
-                                        "mov r0,%1\n\t"\
-                                        "1: ldr r3,[r2,#0]\n\t"\
-                                        "cmp r3,r0\n\t"\
-                                        "bls.n 1b\n\t"\
-                                        ::"r"(TMR1_CNT),"r"(cnt):"r0","r2","r3")
-*/
-#define _jitter_cancel()  __asm__ volatile ("mov r2,%0\n\t"\
+void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
+#define _jitter_cancel()  asm volatile ("mov r2,%0\n\t"\
                                        "ldr r2,[r2,#0]\n\t"\
                                        "and r2,#7\n\t"\
                                        "lsl r2,#1\n\t"\
@@ -204,15 +191,12 @@ static void __attribute__((optimize("O1"))) pixel_delay(uint32_t dly){
                                        ".endr\n"\
                                         ::"r"(TMR1_CNT):"r2")
 
-
-
-#define _pixel_delay(dly)    __asm__ volatile (\
+#define _pixel_delay(dly)    asm volatile (\
                               "mov r2,%0\n"\
                               "1: subs r2,#1\n\t"\
                               "bne.n 1b\n\t"\
                               ::"r" (dly):"r2")
 
-void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
     register uint8_t *video_data;
     register uint16_t *video_port;
     register uint32_t i;

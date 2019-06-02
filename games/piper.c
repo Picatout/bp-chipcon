@@ -5,10 +5,10 @@
 #define KEY_DOWN  6
 #define KEY_LEFT   7
 #define KEY_RIGHT  8
-#define KEY_A  1
-#define KEY_B  15
-#define KEY_C  14
-#define KEY_D  9
+#define KEY_A  0
+#define KEY_B  0xb
+#define KEY_C  1
+#define KEY_D  4
 
 const uint8_t piper_kmap[8]={KEY_A,KEY_C,KEY_B,KEY_D,KEY_RIGHT,KEY_DOWN,KEY_LEFT,KEY_UP};
 

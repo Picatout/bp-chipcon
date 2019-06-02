@@ -292,11 +292,10 @@ static void sound_test(){
 			freq=659;
 			break;
 		}//swtich
-		tone(freq,3);
-		//btn_wait_up(key);
+		tone(freq,30);
 	}
-	btn_wait_up(key);
-	sound_sampler(60);
+	noise(30);
+	while(sound_timer);
 }
 
 static int debug_print;
@@ -307,6 +306,7 @@ static void run_game(unsigned idx){
 	if (games_list[idx].vmode==VM_SCHIP){
 		addr=512;
 	}
+//	fill(game_ram,GAME_SPACE,0);
 	move(games_list[idx].data,&game_ram[addr],games_list[idx].size);
 	set_keymap(games_list[idx].keymap);
 	set_video_mode(games_list[idx].vmode);
@@ -315,18 +315,26 @@ static void run_game(unsigned idx){
 	switch(exit_code){
 	case CHIP_CONTINUE:
 		print("CHIP CONTINUE");
+		i=120;
 		break;
 	case CHIP_EXIT_OK:
 		print("CHIP EXIT OK");
+		i=120;
 		break;
 	case CHIP_BAD_OPCODE:
-		print("CHIP BAD OPCODE");
+	case CHIP_BAD_ADDR:
+		select_console(SERIAL);
+		print_vms("CHIP VM ERROR\n",exit_code);
+		select_console(LOCAL);
+		btn_wait_any();
+		i=1;
 		break;
 	case CHIP_BREAK:
 		print("CHIP BREAK");
+		i=120;
 		break;
 	}//switch
-	game_pause(120);
+	game_pause(i);
 }
 
 static void print_games_list(unsigned first, unsigned rows){
@@ -486,10 +494,6 @@ void main(void){
 	gamepad_init();
 	tvout_init();
 	sound_init();
-	uint8_t sample[16];
-	int i;
-	for (i=0;i<16;i++)sample[i]=rand()&255;
-	load_sound_buffer((const uint8_t*)sample);
 	gfx_cls();
 	menu();
 }

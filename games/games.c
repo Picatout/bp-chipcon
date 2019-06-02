@@ -31,12 +31,10 @@
 #include "piper.h"
 #include "car.h"
 #include "worm3.h"
-#include "race.h"
 #include "spacefig.h"
 #include "piper.h"
-#include "dragon1.h"
-#include "dragon2.h"
-#include "field.h"
+#include "fighter.h"
+#include "copter.h"
 #include "uboat.h"
 
 game_info_t games_list[]={
@@ -48,12 +46,10 @@ game_info_t games_list[]={
     {VM_SCHIP,"ant",ANT_SIZE,ant,ant_kmap},
     {VM_SCHIP,"worm3",WORM3_SIZE,worm3,worm3_kmap},
     {VM_SCHIP,"car",CAR_SIZE,car,car_kmap},
-    {VM_SCHIP,"race",RACE_SIZE,race,race_kmap},
     {VM_SCHIP,"piper",PIPER_SIZE,piper,piper_kmap},
     {VM_SCHIP,"spacefight",SPACEFIG_SIZE,spacefig,spacefig_kmap},
-    {VM_SCHIP,"dragon 1",DRAGON1_SIZE,dragon1,dragon1_kmap},
-    {VM_SCHIP,"dragon 2",DRAGON2_SIZE,dragon2,dragon2_kmap},
-    {VM_SCHIP,"field",FIELD_SIZE,field,field_kmap},
+    {VM_SCHIP,"fighter",FIGHTER_SIZE,fighter,fighter_kmap},
+    {VM_SCHIP,"copter",COPTER_SIZE,copter,copter_kmap},
     {VM_SCHIP,"uboat",UBOAT_SIZE,uboat,uboat_kmap},
     {0,"",0,NULL}
 };

@@ -34,9 +34,10 @@
 #define CODE_BASE_ADDR (0)
 
 #define CHIP_CONTINUE (0)
-#define CHIP_EXIT_OK  (1)
-#define CHIP_BAD_OPCODE (2)
-#define CHIP_BREAK (3)
+#define CHIP_BREAK (1)
+#define CHIP_EXIT_OK  (2)
+#define CHIP_BAD_OPCODE (3)
+#define CHIP_BAD_ADDR (4)
 
 typedef struct vm_state{
 	uint16_t pc;
@@ -59,7 +60,7 @@ typedef struct vm_state{
 #define GAME_SPACE 8192
 extern uint8_t game_ram[GAME_SPACE];
 
-void print_vms(const char *msg);
+void print_vms(const char *msg,uint8_t error_code);
 	
 uint8_t chip_vm(uint16_t program_address, int debug);
 void srand(unsigned n);

@@ -63,10 +63,17 @@ static uint8_t block[32];
 
 uint8_t game_ram[GAME_SPACE];
 
-void print_vms(const char *msg){
-	new_line();
+void print_vms(const char *msg,uint8_t error_code){
 	select_font(FONT_ASCII);
 	print(msg);
+	switch(error_code){
+	case CHIP_BAD_ADDR:
+		print("CHIP BAD ADDRESS\n");
+		break;
+	case CHIP_BAD_OPCODE:
+		print("CHIP BAD OPCODE\n");
+		break;
+	}
 	print("PC:");
 	print_hex(vms.pc-2);
 	print_hex(vms.b2);
@@ -84,15 +91,7 @@ void print_vms(const char *msg){
 	new_line();
 	prompt_btn();
 }
-/*
-static void load_block(int addr,int count, uint8_t *block){
 
-}
-
-static void store_block(int addr,int count, uint8_t *block){
-
-}
-*/
 static uint32_t state=1;
 
 void srand(unsigned n){
@@ -110,16 +109,20 @@ int rand(){
 }
 
 
-//  CHIP8/SCHIP/XOCHIP  virtual machine
+//  SCHIP/BPCHIP  virtual machine
 uint8_t chip_vm(uint16_t program_address, int debug){
 #define SLOW_DOWN 5
-	uint8_t x,y,n,loop=CHIP_CONTINUE;
+	uint8_t x,y,n,exit_code=CHIP_CONTINUE;
 	uint16_t code;
 	char buffer[24];
 	vms.pc=program_address;
 	vms.sp=0;
 	vms.ix=0;
- 	while (loop==CHIP_CONTINUE){
+ 	while (exit_code==CHIP_CONTINUE){
+		if (vms.pc>=GAME_SPACE){
+			exit_code=CHIP_BAD_ADDR;
+			break;
+		} 
 		if ((video_mode==VM_SCHIP) && !debug)  micro_pause(SLOW_DOWN);
 		_get_opcode(vms.pc);
 		if (debug){
@@ -136,7 +139,7 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 				//NOP 
 			}else if ((vms.b2&0xf0)==0xc0){ // 00CN scroll screen down  ; SCHIP
 				gfx_scroll_down(vms.b2&0xf); 
-			}else if ((vms.b2&0xf0)==0xd0){ // 00DN scroll screen up ; XO-CHIP, BP-CHIP
+			}else if ((vms.b2&0xf0)==0xd0){ // 00DN scroll screen up ; BP-CHIP
 				gfx_scroll_up(vms.b2&0xf);					
 			}else switch(vms.b2){
 				case 0xe0: // 00E0, CLS   clear screen  ; CHIP-8
@@ -152,7 +155,7 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 					gfx_scroll_left(4);
 					break;
 				case 0xfd:// 00FD, EXIT   exit interpreter and go back to BP_CHIPCON monitor; SCHIP
-					loop=CHIP_EXIT_OK;
+					exit_code=CHIP_EXIT_OK;
 					break;
 				case 0xfe: //00FE,  LOW   switch to CHIP-8 64x32 graphic mode ; SCHIP
 					//set_video_mode(VM_CHIP8);
@@ -164,7 +167,7 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 					set_video_mode(VM_BPCHIP);
 					break;
 				default:
-					loop=CHIP_BAD_OPCODE;
+					exit_code=CHIP_BAD_OPCODE;
 			}//switch(b2)
 			break;
 		case 0x1: // 1NNN JP label  ;saut vers 'label'  adresse=2*NNN
@@ -191,10 +194,10 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 			case 0:  // 5XY0  SE VX,VY   ;Saute l'instruction suivante si VX == VY ; CHIP-8
 				if (vms.var[x]==vms.var[y]) vms.pc+=2;
 				break;
-			case 2:  // 5XY2  save VX..VY at address pointed by I, I not incremented  ; XO-CHIP, BP-CHIP
+			case 2:  // 5XY2  save VX..VY at address pointed by I, I not incremented  ; BP-CHIP
 				move((const uint8_t*)&vms.var[x<y?x:y],(uint8_t*)&game_ram[vms.ix],abs(y-x)+1);
 				break;
-			case 3: // 5XY3   load VX..VY from adress pointed by I, I not incremented ; XO-CHIP, BP-CHIP
+			case 3: // 5XY3   load VX..VY from adress pointed by I, I not incremented ; BP-CHIP
 				move((const uint8_t*)&game_ram[vms.ix],(uint8_t*)&vms.var[x<y?x:y],abs(y-x)+1);
 				break;
 			}
@@ -247,7 +250,7 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 				vms.var[15]=n;
 				break;
 			default:
-				loop=CHIP_BAD_OPCODE;
+				exit_code=CHIP_BAD_OPCODE;
 			}//switch(vms.b2&0xf)
 			break;
 		case 0x9:
@@ -310,7 +313,7 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 			    vms.var[15]=gfx_get_pixel(x,y);
 				break;  	
 			default:
-				loop=CHIP_BAD_OPCODE;
+				exit_code=CHIP_BAD_OPCODE;
 			}//switch(vms.b2&0xf)
 			break;
 		case 0xa: // ANNN    LD I, NNN  ; I := 2*NNN
@@ -361,14 +364,9 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 				break;
 		case 0xf:
 			switch(vms.b2){
-//			case 0: // F000 NNNN  load i with a 16-bit address, XO-CHIP
-//				break;
 			case 1: // FN01  set sprite bitS  per pixels 1,2,4
 				sprite_bpp=vms.b1%3;
 				break;
-			case 2: // FN02   store 16 bytes starting at i in the audio pattern buffer, XO-CHIP and BP-CHIPCON
-				load_sound_buffer(&game_ram[vms.ix]);
-				break;	
 			case 0x07: // FX07  LD VX, DT   VX := game_timer
 				vms.var[x]=game_timer;
 				break;
@@ -405,24 +403,20 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 				break;
 			case 0x55: // FX55  LD [I], VX  save registers V0..VX in ram pointed by I
 				move((const uint8_t*)vms.var,&game_ram[vms.ix],x+1);
-				//vms.ix+=x+1;
-				//store_block(vms.ix,x+1,vms.var);
 				break;
 			case 0x65: // FX65 LD VX,[I]  load registers V0-VX from ram pointed by I
-				//load_block(vms.ix,x+1,vms.var);
 				move((const uint8_t*)&game_ram[vms.ix],(uint8_t*)vms.var,x+1);
-				//vms.ix+=x+1;
 				break;
-			case 0x75: // FX75 LD R,VX  ; save registers V0-VX in mcu flash  ; SCHIP
-				//flash_write_block(PERSIST_STORE,vms.var,x+1);
-				move((const uint8_t*)vms.var,block,x+1);
+			case 0x75: // FX75 LD R,VX  ; save registers V0-VX in mcu flash  ; SCHIP, BPCHIP
+				flash_write_block(PERSIST_STORE,vms.var,x+1);
+				//move((const uint8_t*)vms.var,block,x+1);
 				break;
 			case 0x85: // FX85 LD VX, R  restore V0..VX from mcu flash
-				//flash_read_block((const uint8_t*)PERSIST_STORE,vms.var,x+1);
-				move((const uint8_t*)block,vms.var,x+1);
+				flash_read_block((const uint8_t*)PERSIST_STORE,vms.var,x+1);
+				//move((const uint8_t*)block,vms.var,x+1);
 				break;
 			default:
-				loop=CHIP_BAD_OPCODE;
+				exit_code=CHIP_BAD_OPCODE;
 			}//switch(vms.b2)
 			break;	
 		}//switch (vms.b1>>4)
@@ -430,5 +424,5 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 	select_font(FONT_ASCII);
 	set_keymap(default_kmap);
 	set_video_mode(VM_BPCHIP);
-	return loop;
+	return exit_code;
 }//schipp()

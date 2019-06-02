@@ -22,6 +22,11 @@
 #include "include/ascii.h"
 #include "fonts.h"
 
+typedef enum{
+    LOCAL,
+    SERIAL,
+}console_t;
+
 #define print_hex(i)  print_int(i,16)
 
 // détermine la couleur des caractères
@@ -44,8 +49,6 @@ void print(const char* str);
 void print_int(int n,uint8_t base);
 // déplace le curseur ver la gauche
 void cursor_left();
-// défile un text à l'écran
-void text_scroller(const uint8_t *text, uint8_t speed);
 // affiche un prompt
 void prompt_btn();
 // efface l'écran
@@ -56,5 +59,8 @@ void println(const char *text);
 void show_cursor(int show);
 // efface la ligne où est le curseur texte
 void clear_line();
+// select text output console
+// serial console usefull for debugging
+void select_console(console_t con);
 
 #endif

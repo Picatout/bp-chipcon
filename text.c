@@ -30,8 +30,9 @@
 #include "graphics.h"
 #include "gamepad.h"
 
-uint8_t font=FONT_ASCII;
-uint8_t xpos=0, ypos=0;
+static uint8_t font=FONT_ASCII;
+static uint8_t xpos=0, ypos=0;
+static console_t console;
 
 #define BG 0 // background
 #define FG 1 // foreground
@@ -52,32 +53,35 @@ void select_font(uint8_t font_id){
 
 
 void new_line(){
-	xpos=0;
-	vmode_params_t *vparams=get_video_params();	
-	switch (font){
-	case FONT_SHEX:
-		if ((ypos+SHEX_HEIGHT)<=(vparams->vres-SHEX_HEIGHT+1)){
-			ypos+=SHEX_HEIGHT;
-		}else{
-			gfx_scroll_up(SHEX_HEIGHT);
-		}
-		break;
-	case FONT_LHEX:
-		if ((ypos+LHEX_HEIGHT)<=(vparams->vres-LHEX_HEIGHT+1)){
-			ypos+=LHEX_HEIGHT;
-		}else{
-			gfx_scroll_up(LHEX_HEIGHT);
-		}
-		break;
-	case FONT_ASCII:
-		if ((ypos+CHAR_HEIGHT)<=(vparams->vres-CHAR_HEIGHT+1)){
-			ypos+=CHAR_HEIGHT;
-		}else{
-			gfx_scroll_up(CHAR_HEIGHT);
-		}
-		break;	
-	}//swtich
-
+	if (console==LOCAL){
+		xpos=0;
+		vmode_params_t *vparams=get_video_params();	
+		switch (font){
+		case FONT_SHEX:
+			if ((ypos+SHEX_HEIGHT)<=(vparams->vres-SHEX_HEIGHT+1)){
+				ypos+=SHEX_HEIGHT;
+			}else{
+				gfx_scroll_up(SHEX_HEIGHT);
+			}
+			break;
+		case FONT_LHEX:
+			if ((ypos+LHEX_HEIGHT)<=(vparams->vres-LHEX_HEIGHT+1)){
+				ypos+=LHEX_HEIGHT;
+			}else{
+				gfx_scroll_up(LHEX_HEIGHT);
+			}
+			break;
+		case FONT_ASCII:
+			if ((ypos+CHAR_HEIGHT)<=(vparams->vres-CHAR_HEIGHT+1)){
+				ypos+=CHAR_HEIGHT;
+			}else{
+				gfx_scroll_up(CHAR_HEIGHT);
+			}
+			break;	
+		}//swtich
+	}else{
+		usart_putc(USART1,'\n');
+	}
 }
 
 static void draw_char(int x,int y,int w, int h, const char* glyph){
@@ -97,6 +101,7 @@ static void draw_char(int x,int y,int w, int h, const char* glyph){
 }
 
 void put_char(uint8_t c){
+	if (console==LOCAL){
 	switch(font){
 	case FONT_SHEX:	
 		if (c<16){
@@ -125,6 +130,9 @@ void put_char(uint8_t c){
 			}
 		}
 		break;		
+	}
+	}else{
+		usart_putc(USART1,c);
 	}
 }
 
@@ -181,7 +189,8 @@ void print_int(int i,uint8_t base){
     if (base==10 && sign){
         fmt[--idx]='-';
     }else if (base==16){
-        fmt[--idx]='$';
+        if((16-idx&1))fmt[--idx]='0';
+		fmt[--idx]='$';
     }
     print(&fmt[idx]);
 }
@@ -200,44 +209,18 @@ void cursor_left(){
 	}
 }
 
-void text_scroller(const uint8_t *text, uint8_t speed){
-	uint8_t c,j;
-
-	gfx_cls();
-	select_font(FONT_ASCII);
-	c=*text++;
-	while (c){
-		set_cursor(0,4*CHAR_HEIGHT);
-		while (c && c!='\n'){
-			put_char(c);
-			c=*text++;
-			if (btn_query_down(KEY_B)) {goto break_out;}
-		}
-		for (j=0;j<CHAR_HEIGHT;j++){
-			game_pause(speed);
-			gfx_scroll_up(1);
-			if (btn_query_down(KEY_B)) {goto break_out;}
-		}
-		c=*text++;
-	}//while
-	for (c=0;c<4*CHAR_HEIGHT;c++){
-		game_pause(speed);
-		gfx_scroll_up(1);
-		if (btn_query_down(KEY_B)) { break;}
-	}//for
-break_out:	
-	gfx_cls();
-	btn_wait_up(KEY_B); 
-}
-
 void prompt_btn(){
 	print("press button");
 }
 
 void clear_screen(){
-	gfx_cls();
-	xpos=0;
-	ypos=0;
+	if (console==LOCAL){
+		gfx_cls();
+		xpos=0;
+		ypos=0;
+	}else{
+		usart_putc(USART1,FF);
+	}
 }
 
 // affiche un curseur texte
@@ -260,3 +243,8 @@ void clear_line(){
 //	set_cursor(0,ypos-CHAR_HEIGHT);
 }
 
+// select text output console
+// serial console usefull for debugging
+void select_console(console_t con){
+	console=con;
+}
