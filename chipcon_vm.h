@@ -33,11 +33,19 @@
 
 #define CODE_BASE_ADDR (0)
 
-#define CHIP_CONTINUE (0)
-#define CHIP_BREAK (1)
-#define CHIP_EXIT_OK  (2)
-#define CHIP_BAD_OPCODE (3)
-#define CHIP_BAD_ADDR (4)
+typedef enum VM_EXIT_CODE{
+	CHIP_CONTINUE,
+	CHIP_EXIT_OK,
+	CHIP_BAD_OPCODE,
+	CHIP_BAD_ADDR,
+}vm_exit_code_t;
+
+typedef enum VM_DEBUG{
+	DEBUG_NOT,   // no debug print
+	DEBUG_PC_CODE, // print PC and OPCODE
+	DEBUG_VM_STATE, // print all machine state
+	DEBUG_SSTEP, // level2 + pause.
+}vm_debug_t;
 
 typedef struct vm_state{
 	uint16_t pc;
@@ -62,7 +70,7 @@ extern uint8_t game_ram[GAME_SPACE];
 
 void print_vms(const char *msg,uint8_t error_code);
 	
-uint8_t chip_vm(uint16_t program_address, int debug);
+vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level);
 void srand(unsigned n);
 int rand();
 

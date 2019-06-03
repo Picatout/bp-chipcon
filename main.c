@@ -38,6 +38,7 @@
 #include "games/games.h"
 #include "chipcon_vm.h"
 #include "include/gen_fn.h"
+#include "basic.h"
 
 //const void* TPA_TOP=(void*)_TPA_TOP;
 
@@ -298,7 +299,9 @@ static void sound_test(){
 	while(sound_timer);
 }
 
-static int debug_print;
+// niveau de support pour débogage.
+vm_debug_t debug_level;
+
 static void run_game(unsigned idx){
 	int i;
 	uint8_t exit_code;
@@ -306,20 +309,15 @@ static void run_game(unsigned idx){
 	if (games_list[idx].vmode==VM_SCHIP){
 		addr=512;
 	}
-//	fill(game_ram,GAME_SPACE,0);
 	move(games_list[idx].data,&game_ram[addr],games_list[idx].size);
 	set_keymap(games_list[idx].keymap);
 	set_video_mode(games_list[idx].vmode);
-	exit_code=chip_vm(addr,debug_print);
+	exit_code=chip_vm(addr,debug_level);
 	print("exit code: ");
 	switch(exit_code){
-	case CHIP_CONTINUE:
-		print("CHIP CONTINUE");
-		i=120;
-		break;
 	case CHIP_EXIT_OK:
 		print("CHIP EXIT OK");
-		i=120;
+		i=0;
 		break;
 	case CHIP_BAD_OPCODE:
 	case CHIP_BAD_ADDR:
@@ -328,10 +326,6 @@ static void run_game(unsigned idx){
 		select_console(LOCAL);
 		btn_wait_any();
 		i=1;
-		break;
-	case CHIP_BREAK:
-		print("CHIP BREAK");
-		i=120;
 		break;
 	}//switch
 	game_pause(i);
@@ -401,35 +395,26 @@ static void select_game(){
 	run_game(selected-1);
 }
 
-static void enable_debug(){
+static void select_debug_level(){
 	uint8_t btn;
 	gfx_cls();
-	print(" *** VM debug support ***\n");
-	print(" enable debug print\n");
-	print(" disable debug print");
-	if (debug_print){
-		set_cursor(0,CHAR_HEIGHT);
-		put_char('*');
-	}else{
-		set_cursor(0,2*CHAR_HEIGHT);
-		put_char('*');
-	}
+	print(" **** VM debug support ****\n");
+	print(" No debug support#\n");
+	print(" Print PC and OPCODE\n");
+	print(" Print all VM states.\n");
+	print(" Single step\n");
 	while (1){
+		set_cursor(0,CHAR_HEIGHT*(debug_level+1));
+		put_char('*');
 		btn=btn_wait_any();
+		set_cursor(0,CHAR_HEIGHT*(debug_level+1));
+		put_char(' ');
 		switch(btn){
 		case KEY_UP:
-			set_cursor(0,2*CHAR_HEIGHT);
-			put_char(' ');
-			set_cursor(0,CHAR_HEIGHT);
-			put_char('*');
-			debug_print=1;
+			if (debug_level) debug_level--;
 			break;
 		case KEY_DOWN:
-			set_cursor(0,CHAR_HEIGHT);
-			put_char(' ');
-			set_cursor(0,2*CHAR_HEIGHT);
-			put_char('*');
-			debug_print=0;
+			if (debug_level<DEBUG_SSTEP) debug_level++;
 			break;
 		case KEY_B:
 			return;	
@@ -437,12 +422,13 @@ static void enable_debug(){
 	}
 }
 
-#define MENU_ITEMS (4)
+#define MENU_ITEMS (5)
 static const char *menu_list[MENU_ITEMS]={
 	" Games list",
 	" Debug support",
 	" Video test",
 	" Sound test",
+	" BASIC",
 };
 
 static void display_menu(){
@@ -478,7 +464,7 @@ static void menu(){
 				select_game();
 				break;
 			case 1:
-				enable_debug();
+				select_debug_level();
 				break;	
 			case 2:
 				video_test();
@@ -486,6 +472,9 @@ static void menu(){
 			case 3:
 				sound_test();
 				break;	
+			case 4:
+				basic();
+				break;
 			}
 			//set_video_mode(VM_BPCHIP);
 			display_menu();
@@ -494,13 +483,9 @@ static void menu(){
 	}//while
 }
 
-//const uint8_t sample[16]={0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA};
 void main(void){
 	set_sysclock();
-//	config_systicks();
-//	rtc_init(1000,RTC_SECIE|RTC_ALRIE);
 	RCC->APB2ENR=RCC_APB2ENR_IOPAEN|RCC_APB2ENR_IOPBEN|RCC_APB2ENR_IOPCEN|RCC_APB2ENR_AFIOEN|RCC_APB2ENR_TIM1EN;
-//	RCC->AHBENR|=RCC_AHBENR_DMA1EN; // activation DMA1
 	config_pin(LED_PORT,LED_PIN,OUTPUT_OD_SLOW);
 	_led_off();
 	usart_open_channel(USART1,115200,PARITY_NONE,USART_DIR_TX,ALT_PORT,FLOW_SOFT);

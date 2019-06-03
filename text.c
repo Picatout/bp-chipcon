@@ -51,6 +51,11 @@ void select_font(uint8_t font_id){
 	font=font_id;
 }
 
+// get current font id
+uint8_t get_font(){
+	return font;
+}
+
 
 void new_line(){
 	if (console==LOCAL){

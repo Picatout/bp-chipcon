@@ -195,8 +195,6 @@ void usart_putc(usart_t* channel,char c);
 // print string to usart channel
 void usart_print(usart_t* channel, const char *str);
 
-#define debug_print(s)  usart_print(USART1,s)
-
 // vérifie l'état de la ligne CTS
 int usart_cts(usart_t* channel);
 

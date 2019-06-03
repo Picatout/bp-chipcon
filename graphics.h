@@ -33,7 +33,7 @@
 
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
-
+#include <stdint.h>
 
 typedef enum BLIT_OP{
     BIT_OR,

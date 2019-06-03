@@ -63,8 +63,12 @@ static uint8_t block[32];
 
 uint8_t game_ram[GAME_SPACE];
 
+// print virtual machine states
 void print_vms(const char *msg,uint8_t error_code){
+	uint8_t orig_font;
+	orig_font=get_font();
 	select_font(FONT_ASCII);
+	new_line();
 	print(msg);
 	switch(error_code){
 	case CHIP_BAD_ADDR:
@@ -89,7 +93,7 @@ void print_vms(const char *msg,uint8_t error_code){
 		print_hex(vms.var[i]);
 	}
 	new_line();
-	prompt_btn();
+	select_font(orig_font);
 }
 
 static uint32_t state=1;
@@ -110,11 +114,11 @@ int rand(){
 
 
 //  SCHIP/BPCHIP  virtual machine
-uint8_t chip_vm(uint16_t program_address, int debug){
+vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 #define SLOW_DOWN 5
 	uint8_t x,y,n,exit_code=CHIP_CONTINUE;
-	uint16_t code;
 	char buffer[24];
+
 	vms.pc=program_address;
 	vms.sp=0;
 	vms.ix=0;
@@ -123,14 +127,28 @@ uint8_t chip_vm(uint16_t program_address, int debug){
 			exit_code=CHIP_BAD_ADDR;
 			break;
 		} 
-		if ((video_mode==VM_SCHIP) && !debug)  micro_pause(SLOW_DOWN);
+		if ((video_mode==VM_SCHIP) && !dbg_level)  micro_pause(SLOW_DOWN);
 		_get_opcode(vms.pc);
-		if (debug){
-			debug_print(itoa(vms.pc,buffer,16));
-			debug_print(itoa((vms.b1<<8)+vms.b2,buffer,16));
-			debug_print("\n");
-		}
 		vms.pc+=2;
+		switch(dbg_level){
+		case DEBUG_PC_CODE: // print PC and OPCODE
+			_debug_print(itoa(vms.pc,buffer,16));
+			_debug_print(itoa((vms.b1<<8)+vms.b2,buffer,16));
+			_debug_print("\n");
+			break;
+		case DEBUG_VM_STATE: // print all vm states.
+			select_console(SERIAL);
+			print_vms("actual vm state\n",CHIP_CONTINUE);
+			select_console(LOCAL);
+			break;
+		case DEBUG_SSTEP:	// single step, print all vm_states and pause.
+			select_console(SERIAL);
+			print_vms("actual vm state\n",CHIP_CONTINUE);
+			prompt_btn();
+			select_console(LOCAL);
+			btn_wait_any();
+			break;
+		}//switch(dbg_level)
 		x=rx(vms.b1);
 		y=ry(vms.b2);
 	    switch (vms.b1>>4){

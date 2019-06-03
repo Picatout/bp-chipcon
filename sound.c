@@ -21,7 +21,7 @@
 #include "chipcon_vm.h"
 
 void sound_init(){
-    AFIO->MAPR&=~AFIO_MAPR_TIM2_REMAP_MASK;
+    AFIO->MAPR&=AFIO_MAPR_TIM2_REMAP_MASK;
     AFIO->MAPR|=3<<AFIO_MAPR_TIM2_REMAP_POS;
     config_pin(PORTB,10,OUTPUT_ALT_PP_SLOW);
     RCC->APB1ENR|=RCC_APB1ENR_TIM2EN;

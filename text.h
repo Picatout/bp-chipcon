@@ -20,12 +20,15 @@
 #define TEXT_H
 
 #include "include/ascii.h"
+#include "include/usart.h"
 #include "fonts.h"
 
 typedef enum{
     LOCAL,
     SERIAL,
 }console_t;
+
+#define _debug_print(str)  usart_print(USART1, str)
 
 #define print_hex(i)  print_int(i,16)
 
@@ -62,5 +65,7 @@ void clear_line();
 // select text output console
 // serial console usefull for debugging
 void select_console(console_t con);
+// get current font id
+uint8_t get_font();
 
 #endif
