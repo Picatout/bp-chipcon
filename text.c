@@ -107,35 +107,35 @@ static void draw_char(int x,int y,int w, int h, const char* glyph){
 
 void put_char(uint8_t c){
 	if (console==LOCAL){
-	switch(font){
-	case FONT_SHEX:	
-		if (c<16){
-			draw_char(xpos,ypos,SHEX_WIDTH,SHEX_HEIGHT,&font_hex_4x6[c*SHEX_HEIGHT]);
-			xpos+=SHEX_WIDTH;
-			if (xpos>(HRES-SHEX_WIDTH+1)){
-				new_line();
+		switch(font){
+		case FONT_SHEX:	
+			if (c<16){
+				draw_char(xpos,ypos,SHEX_WIDTH,SHEX_HEIGHT,&font_hex_4x6[c*SHEX_HEIGHT]);
+				xpos+=SHEX_WIDTH;
+				if (xpos>(HRES-SHEX_WIDTH+1)){
+					new_line();
+				}
 			}
-		}
-		break;
-	case FONT_LHEX:
-		if (c<16){
-			draw_char(xpos,ypos,LHEX_WIDTH,LHEX_HEIGHT,&font_hex_8x10[c*LHEX_HEIGHT]);
-			xpos+=LHEX_WIDTH;
-			if (xpos>(HRES-LHEX_WIDTH+1)){
-				new_line();
+			break;
+		case FONT_LHEX:
+			if (c<16){
+				draw_char(xpos,ypos,LHEX_WIDTH,LHEX_HEIGHT,&font_hex_8x10[c*LHEX_HEIGHT]);
+				xpos+=LHEX_WIDTH;
+				if (xpos>(HRES-LHEX_WIDTH+1)){
+					new_line();
+				}
 			}
-		}
-		break;
-	case FONT_ASCII:
-		if ((c>31) && (c<(FONT_SIZE+32))){
-			draw_char(xpos,ypos,CHAR_WIDTH,CHAR_HEIGHT,&font_6x8[(c-32)*CHAR_HEIGHT]);
-			xpos+=CHAR_WIDTH;
-			if (xpos>(HRES-CHAR_WIDTH+1)){
-				new_line();
+			break;
+		case FONT_ASCII:
+			if ((c>31) && (c<(FONT_SIZE+32))){
+				draw_char(xpos,ypos,CHAR_WIDTH,CHAR_HEIGHT,&font_6x8[(c-32)*CHAR_HEIGHT]);
+				xpos+=CHAR_WIDTH;
+				if (xpos>(HRES-CHAR_WIDTH+1)){
+					new_line();
+				}
 			}
+			break;		
 		}
-		break;		
-	}
 	}else{
 		usart_putc(USART1,c);
 	}
@@ -253,3 +253,11 @@ void clear_line(){
 void select_console(console_t con){
 	console=con;
 }
+
+//read a character from serial port
+char get_char(){
+	char c;
+	while (!(c=usart_getc(USART1)));
+	return c;
+}
+

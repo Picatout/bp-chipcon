@@ -33,6 +33,12 @@
 #define _usart_select(n)  USART##n_
 #define _usart_sfr_sel(n,s) USART##n_##s 
 
+#define RX_QUEUE_SIZE 16
+
+static char rx_queue[RX_QUEUE_SIZE];
+static uint8_t head;
+static uint8_t tail;
+
 // configuration dse broches
 void usart_config_port(usart_t* channel, gpio_t *port, unsigned flow_ctrl){
 	switch((uint32_t)channel){ // activation du périphérique USART et du PORT
@@ -160,8 +166,11 @@ int usart_stat(usart_t* channel){
 
 // reçoit un caractère de la console
 char usart_getc(usart_t* channel){
-	if (channel->SR&USART_SR_RXNE){
-		return channel->DR;
+	char c;
+	if (head!=tail){
+		c=rx_queue[head++];
+		head&=(RX_QUEUE_SIZE-1);
+		return c;
 	}else{
 		return 0;
 	}
@@ -172,9 +181,14 @@ char usart_getc(usart_t* channel){
 // attend un caractère jusqu'à expiration du délais
 char usart_getc_dly(usart_t* channel,unsigned dly){
 	unsigned t0=ntsc_ticks+dly;
-	
-	while ((ntsc_ticks<t0) && !(channel->SR&USART_SR_RXNE));
-	if (ntsc_ticks<t0) return channel->DR; else return 0;
+	char c;
+
+	while ((ntsc_ticks<t0) && !(head==tail));
+	if (ntsc_ticks<t0){
+			c=rx_queue[head++];
+			head&=(RX_QUEUE_SIZE-1);
+			return c;
+	}else return 0;
 }
 
 // transmet un caractère à la console
@@ -205,3 +219,10 @@ void usart_print(usart_t* channel, const char *str){
 	 while (*str) usart_putc(channel,*str++);
 }
 
+
+void __attribute__((__interrupt__))USART1_handler(){
+		if (USART1->SR&USART_SR_RXNE){
+				rx_queue[tail++]=USART1->DR;
+				tail&=(RX_QUEUE_SIZE-1);
+		}
+}

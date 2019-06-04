@@ -67,5 +67,7 @@ void clear_line();
 void select_console(console_t con);
 // get current font id
 uint8_t get_font();
+//read a character from serial port
+char get_char();
 
 #endif
