@@ -45,7 +45,7 @@
 //#include "joystick.h"
 //#include "tone.h"
 
-#define PERSIST_STORE ((uint8_t*)(FLASH_SIZE-1024))
+#define PERSIST_STORE (0x10000)
 
 #define _get_opcode(addr) ({vms.b1=game_ram[addr];vms.b2=game_ram[addr+1];})
 #define caddr(b1,b2)  (((b1<<8)|b2)&0xfff)
@@ -426,11 +426,11 @@ vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 				move((const uint8_t*)&game_ram[vms.ix],(uint8_t*)vms.var,x+1);
 				break;
 			case 0x75: // FX75 LD R,VX  ; save registers V0-VX in mcu flash  ; SCHIP, BPCHIP
-				flash_write_block(PERSIST_STORE,vms.var,x+1);
+				flash_write_block((uint8_t*)(PERSIST_STORE+vms.ix*2),vms.var,x+1);
 				//move((const uint8_t*)vms.var,block,x+1);
 				break;
 			case 0x85: // FX85 LD VX, R  restore V0..VX from mcu flash
-				flash_read_block((const uint8_t*)PERSIST_STORE,vms.var,x+1);
+				flash_read_block((const uint8_t*)(PERSIST_STORE+vms.ix*2),vms.var,x+1);
 				//move((const uint8_t*)block,vms.var,x+1);
 				break;
 			default:
