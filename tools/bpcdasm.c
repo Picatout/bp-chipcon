@@ -541,7 +541,7 @@ int main(int argc, char *argv[]){
 				
 				break;
 			case 0x85: // FX85 (modes schip et xchip seulement) charge les registres V0..VX à partir de rpl (X <= 7)
-				sprintf(line+strlen(line),"LD V%X, R\n",r1(b1),r1(b1));
+				sprintf(line+strlen(line),"LD V%X, R\n",r1(b1));
 				
 				break;
 			default:

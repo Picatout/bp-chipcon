@@ -25,7 +25,7 @@
 ; '|' alternative
 
 source_code ::= instruction_line*
-insttruction_line ::= mnemonic_instruction|directive_instruction|label
+instruction_line ::= mnemonic_instruction|directive_instruction|label
 mnemonic_instruction ::=(label) mnemonic (mneno_arg_list) 
 mnemonic_arg_list ::= mnemo_arg|mmeno_arg [','mnemo_arg]*
 mnemo_arg ::= register|expression

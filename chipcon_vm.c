@@ -276,7 +276,7 @@ vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 			case 0x0: // 9XY0  SNE VX,VY  ; skip if VX <> VY
 				if (vms.var[x]!=vms.var[y]) vms.pc+=2;
 				break;
-			case 0x1: // 9XY1  TONE VX, VY ; play a tempered scale note. VX=note, VY=length
+			case 0x1: // 9XY1  TONE VX, VY ; play a tempered scale note. VX=note, VY=length; BP-CHIP
 				key_tone(vms.var[x],vms.var[y],false);
 				break;
 			case 0x2: // 9XY2  PRT VX, VY ; print text pointed by I at position x,y. I is incremented ; BP-CHIP
@@ -286,10 +286,10 @@ vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 				vms.ix+=strlen((const char*)&game_ram[vms.ix])+1;
 				//while (game_ram[vms.ix++]);
 				break;
-			case 0x3: // 9XY3 PIXI VX, VY  ; invert pixel at coordinates VX,VY
+			case 0x3: // 9XY3 PIXI VX, VY  ; invert pixel at coordinates VX,VY; BP-CHIP
 				gfx_blit(vms.var[x],vms.var[y],0,BIT_INVERT);
 				break;
-			case 0x4: // 9NN4  NOISE NN ; noise length NN
+			case 0x4: // 9NN4  NOISE NN ; noise length NN ; BP-CHIP
 				noise((x<<4)+y);
 				break;
 			case 0x5: // 9XY5 TONE VX, VY, WAIT ; play tempered scale note, wait end. VX=note, VY=length ; BP-CHIP
@@ -301,47 +301,47 @@ vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 			case 0x7: // 9X07, POP VX  ; pop VX from stack ; BP-CHIP
 				vms.var[x]=vms.stack[vms.sp--];
 				break;
-			case 0x8: // 9X08, SCRX  ;  VX=HRES screen width in pixels.
+			case 0x8: // 9X08, SCRX  ;  VX=HRES screen width in pixels. ; BP-CHIP
 				{ 	vmode_params_t *vparams=get_video_params();
 					vms.var[x]=vparams->hres;
 				}
 				break;
-			case 0x9: // 9X09, SCRY  ; VX=VRES  screen height in pixels
+			case 0x9: // 9X09, SCRY  ; VX=VRES  screen height in pixels  ; BP-CHIP
 				{
 					vmode_params_t *vparams=get_video_params();
 					vms.var[x]=vparams->vres;
 				}
 				break;
-			case 0xA: // 9XNA, BSET VX,N  ; set VX bit N
+			case 0xA: // 9XNA, BSET VX,N  ; set VX bit N  ; BP-CHIP
 			    vms.var[x] |= (1<<(y&0x7));
 			    break;
-		    case 0xB: // 9XNB  BCLR VX,N  ; clear VX bit N
+		    case 0xB: // 9XNB  BCLR VX,N  ; clear VX bit N  ; BP-CHIP
 			    vms.var[x] &= ~(1<<(y&0x7));
 			    break;
-			case 0xC: // 9XNC  BINV VX,N  ; invert VX bit N
+			case 0xC: // 9XNC  BINV VX,N  ; invert VX bit N ; BP-CHIP
    			    vms.var[x] ^= (1<<(y&0x7));
 				break;
-			case 0xD: // 9XND  BTSS VX,N  ; skip if VX bit N==1
+			case 0xD: // 9XND  BTSS VX,N  ; skip if VX bit N==1 ; BP-CHIP
 			    if (vms.var[x]&(1<<(y&0x7))) vms.pc+=2;
 				break;
-			case 0xE: // 9XNE  BTSC VX,N  ; skip if VX bit N==0
+			case 0xE: // 9XNE  BTSC VX,N  ; skip if VX bit N==0 ; BP-CHIP
 			    if (!(vms.var[x]&(1<<(y&0x7)))) vms.pc+=2;
 				break;
-			case 0xF: // 9XYF GPIX,  VF=pixel((vx),(vy))
+			case 0xF: // 9XYF GPIX,  VF=pixel((vx),(vy))  ; BP-CHIP
 			    vms.var[15]=gfx_get_pixel(x,y);
 				break;  	
 			default:
 				exit_code=CHIP_BAD_OPCODE;
 			}//switch(vms.b2&0xf)
 			break;
-		case 0xa: // ANNN    LD I, NNN  ; I := 2*NNN
+		case 0xa: // ANNN    LD I, NNN  ; I := NNN ; BP-CHIP I=2*NNN
 			vms.ix=caddr(vms.b1,vms.b2);
 			if (video_mode==VM_BPCHIP){
 				vms.ix<<=1;
 			}
 			vms.sprite_mem=RAM_MEM;
 			break;
-		case 0xb: // BNNN     JP V0, NNN  ;  skip to 2*(NNN+V0)
+		case 0xb: // BNNN     JP V0, NNN  ;  skip to (NNN+V0) ; BP-CHIP  destination= 2*(NNN+V0)
 			vms.pc=(vms.var[0]<<1)+caddr(vms.b1,vms.b2);
 			if (video_mode==VM_BPCHIP){
 				vms.pc<<=1;

@@ -28,6 +28,25 @@
 *              ajout� opcodes PUSH, POP, SCRX, SCRY, SCU
 *              doubl� espace d'adressage en divisant NNN/2 avant encodage
 *              supprim� directive ORG et ajoute directive END
+*   2019-06-04  Modified for BP-CHIPCON project.
+*               extra opcodes:
+* 					00DN  SCU  N scroll up screen
+*                   9XY1  TONE VX, VY ; play a tempered scale note.
+*					9XY2  PRT VX, VY ; print text pointed by I at position x,y.
+*					9XY3  PIXI VX, VY  ; invert pixel at coordinates VX,VY
+*					9NN4  NOISE NN ; noise length NN
+*					9XY5  TONE VX, VY, WAIT ; play tempered scale note, wait end. VX=note, VY=length
+*					9X06, PUSH VX  ; push VX on stack
+*					9X07, POP VX  ; pop VX from stack
+*					9X08, SCRX  ;  VX=HRES screen width in pixels.
+*					9X09, SCRY  ; VX=VRES  screen height in pixels
+*					9XNA, BSET VX,N  ; set VX bit N.
+*					9XNB  BCLR VX,N  ; clear VX bit N.
+*					9XNC  BINV VX,N  ; invert VX bit N.
+*					9XND  BTSS VX,N  ; skip if VX bit N==1.
+*					9XNE  BTSC VX,N  ; skip if VX bit N==0.
+*					9XYF  GPIX,  VF=pixel((vx),(vy)).
+*					   
 */
 
 #include <stdlib.h>
@@ -37,14 +56,16 @@
 #include <ctype.h>
 #include <stdint.h>
 
-typedef struct data_node{
-	char *name;
-	union {
+typedef union node_value{
 		uint16_t addr;
 		uint16_t pc;
 		uint16_t value;
 		char *defn;
-	};
+}node_value_t;
+
+typedef struct data_node{
+	char *name;
+	node_value_t value;
 	struct data_node *next;
 }node_t;
 
@@ -63,19 +84,19 @@ node_t *define_list=NULL;
 #define add_label(name,addr)   add_node(name,addr,label_list)
 #define add_forward_ref(name,pc) add_node(name,pc,forward_list)
 #define add_symbol(name,value)  add_node(name,value,symbol_list)
-#define add_define(name,str) add_node(name,(unsigned)str,define_list)
+#define add_define(name,str) add_node(name,str,define_list)
 #define search_label(name)   search_list(name,label_list)
 #define search_ref(name)  search_list(name,forward_list)
 #define search_symbol(name) search_list(name,symbol_list)
 #define search_define(name) search_list(name,define_list)
 
 
-FILE *bin=NULL,  // fichier binaire g�n�r� par l'assembleur
-     *ppf=NULL,  // fichier optionnel g�n�r� par le pr�-processeur
-	 *lbl=NULL;  // fichier des �tiquettes avec l'adresse.
+FILE *bin=NULL,  // fichier binaire généré par l'assembleur
+     *ppf=NULL,  // fichier optionnel généré par le pré-processeur
+	 *lbl=NULL;  // fichier des étiquettes avec l'adresse.
 	 
 
-int pc; // compteur ordinal
+uint16_t pc; // compteur ordinal
 int line_no; //no de ligne en cours d'analyse
 int code_size=0; 
 bool file_done=false;
@@ -92,11 +113,11 @@ char line[256]; // contient la ligne � analyser
 const char *mnemonics[KW_COUNT]={"NOP","CLS","RET","SCR","SCL","EXIT","LOW","HIGH","SCD","JP","CALL",
 						 "SHR","SHL","SKP","SKNP","SE","SNE","ADD","SUB","SUBN","OR","AND","XOR",
 						 "RND","TONE","PRT","PIXI","LD","DRW","NOISE","PUSH","POP","SCRX","SCRY",
-						 "SCU","BSET","BCLR","BINV","BTSS","BTSC","SAVE","RSTR","GPIX"};
+						 "SCU","BSET","BCLR","BINV","BTSS","BTSC","GPIX"};
 
 typedef enum Mnemo {eNOP,eCLS,eRET,eSCR,eSCL,eEXIT,eLOW,eHIGH,eSCD,eJP,eCALL,eSHR,eSHL,eSKP,eSKNP,eSE,eSNE,eADD,
                     eSUB,eSUBN,eOR,eAND,eXOR,eRND,eTONE,ePRT,ePIXI,eLD,eDRW,eNOISE,ePUSH,ePOP,eSCRX,eSCRY,
-					eSCU,eBSET,eBCLR,eBINV,eBTSS,eBTSC,eSAVE,eRSTR,eGPIX} mnemo_t;
+					eSCU,eBSET,eBCLR,eBINV,eBTSS,eBTSC,eGPIX} mnemo_t;
 						 
 #define DIR_COUNT (7)						 
 const char *directives[]={"DB","DW","ASCII","EQU","DEFN","END","ORG"};
@@ -252,17 +273,24 @@ unsigned token_to_i(){
 	}
 }
 
+void new_node(node_t *list){
+	node_t *new;
+	new=malloc(sizeof(node_t));
+	new->next=list;
+	list=new;
+}
 
-node_t *add_node(char *name, unsigned value, node_t *list){
+void add
+void add_node(char *name, node_value_t value, node_t *list){
 	node_t *n;
 	
 	n=malloc(sizeof(node_t));
-	n->next=NULL;
-	if (list) n->next=list; else list=n;
 	n->value=value;
 	n->name=malloc(strlen(name)+1);
 	strcpy(n->name,name);
-	return n;
+	n->next=list;
+	list=n;
+	//return list;
 }
 
 node_t *search_list(char *name, node_t *list){
@@ -294,12 +322,6 @@ void op0(mnemo_t code){
 	case eCLS: // CLS
 		b2=0xe0;
 		break;
-	case eSAVE: // SAVE
-       b2=0xe1;
-       break;
-    case eRSTR:  // RSTR
-       b2=0xe2;
-       break;	   
 	case eRET: // RET
 		b2=0xee;
 		break;
@@ -389,19 +411,19 @@ void op1(mnemo_t code){
 			if (tok_id!=eSYMBOL) error(eBADARG);
 			n=search_label(tok_value);
 			if (n){
-				b1|=(n->addr>>9)&0xf;
-				b2=(n->addr>>1)&0xff;
+				b1|=(n->value.addr>>9)&0xf;
+				b2=(n->value.addr>>1)&0xff;
 			}else{
-				forward_list=add_forward_ref(tok_value,pc);
+				add_forward_ref(tok_value,pc);
 			}
 		}else{
 			n=search_label(tok_value);
 			if (n){
-				b1|=(n->addr>>9)&0xf;
-				b2=(n->addr>>1)&0xff;
+				b1|=(n->value.addr>>9)&0xf;
+				b2=(n->value.addr>>1)&0xff;
 			}else{
 			    b2=0;
-				forward_list=add_forward_ref(tok_value,pc);
+				add_forward_ref(tok_value,pc);
 			}
 		}
 		break;
@@ -571,7 +593,7 @@ void op2(unsigned code){
 			b2|=3;
 		}else error(eSYNTAX);
 		break;
-	case eGPIX: // GPIX VX,VY
+	case eGPIX: // GPIX VX,VY 9XYF
 		if (reg2){ 
 			b1|=0x90;
 			b2|=0xf;
@@ -815,7 +837,7 @@ load_done:
 
 void usage(){
 	puts("BP-CHIP assembler");
-	puts("USAGE: bpasm source binary [-p pp_file] [-s labels_file]");
+	puts("USAGE: bpcasm source binary [-p pp_file] [-s labels_file]");
 	puts("'source' is BP-CHIP assembly source file.");
 	puts("'binary' is generated binary file to be executed on BP-CHIPCON console.");
 	puts("'-p' generate a pre-processing 'pp_file'.");
@@ -1196,8 +1218,6 @@ void assemble_line(){
 				switch(i){
 				case eNOP:
 				case eCLS:
-				case eSAVE:
-				case eRSTR:
 				case eRET:
 				case eSCR:
 				case eSCL:
