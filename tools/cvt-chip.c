@@ -13,6 +13,16 @@ void usage(){
   exit(EXIT_FAILURE);
 }
 
+static char lowercase(char c){
+	if ((c>='A')&& (c<='Z')) c+=32;
+	return c;
+}
+
+static char uppercase(char c){
+	if ((c>='a')&& (c<='z')) c-=32;
+	return c;
+}
+
 int main(int argc, char *argv[]){
 	FILE *inp, *hf, *cf;
 	unsigned char c;
@@ -20,7 +30,6 @@ int main(int argc, char *argv[]){
 	int size,  i;
 	if (argc<2) usage();
 	fname=argv[1];
-	printf("%s\n", fname);
 	inp=fopen(fname,"rb");
 	if (!inp) {
 		printf("failed to open %s file.\n",fname);
@@ -28,15 +37,14 @@ int main(int argc, char *argv[]){
 	}
 	i=strlen(fname)-1;
 	while (i && fname[i]!='/'){--i;}
-	i++;
+	if (i) i++;
 	strcpy(c_file,&fname[i]);
-	printf("%s\n",c_file); 
 	i=0;
 	while (c_file[i] && c_file[i]!='.'){
-		array_name[i]=tolower(c_file[i]);
-		header_var[i]=toupper(c_file[i]);
-		h_file[i]=tolower(c_file[i]);
-		c_file[i]=tolower(c_file[i]);
+		array_name[i]=lowercase(c_file[i]);
+		header_var[i]=uppercase(c_file[i]);
+		h_file[i]=lowercase(c_file[i]);
+		c_file[i]=lowercase(c_file[i]);
 		i++;
 	}
 	array_name[i]=0;
@@ -49,6 +57,8 @@ int main(int argc, char *argv[]){
 	i++;
 	h_file[i]=0;
 	c_file[i]=0;
+	puts(c_file);
+	puts(h_file);
 	hf=fopen(h_file,"w");
 	if (!hf){
 		printf("failed to create %s file.\n",h_file);
@@ -78,7 +88,7 @@ int main(int argc, char *argv[]){
 				"#define KEY_B  15\n"\
 				"#define KEY_C  14\n"\
 				"#define KEY_D  9\n\n");
-	fprintf(cf,"const uint8_t %s_kmap[8]={KEY_A,KEY_C,KEY_B,KEY_D,KEY_RIGHT,KEY_DOWN,KEY_LEFT,KEY_UP};\n\n",array_name);
+	fprintf(cf,"const uint8_t %s_kmap[8]={KEY_A,KEY_B,KEY_C,KEY_D,KEY_RIGHT,KEY_DOWN,KEY_LEFT,KEY_UP};\n\n",array_name);
 	fprintf(cf,"const uint8_t %s[%s_SIZE] _GAME={",array_name,header_var);
 	fseek(inp,0,SEEK_SET);
 	i=0;

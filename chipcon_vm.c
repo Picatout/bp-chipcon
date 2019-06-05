@@ -80,8 +80,7 @@ void print_vms(const char *msg,uint8_t error_code){
 	}
 	print("PC:");
 	print_hex(vms.pc-2);
-	print_hex(vms.b2);
-	print_hex(vms.b1);
+	print_hex((vms.b1<<8)+vms.b2);
 	new_line();
 	print("I:");
 	print_hex(vms.ix);
@@ -132,7 +131,7 @@ vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 		vms.pc+=2;
 		switch(dbg_level){
 		case DEBUG_PC_CODE: // print PC and OPCODE
-			_debug_print(itoa(vms.pc,buffer,16));
+			_debug_print(itoa(vms.pc-2,buffer,16));
 			_debug_print(itoa((vms.b1<<8)+vms.b2,buffer,16));
 			_debug_print("\n");
 			break;

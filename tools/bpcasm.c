@@ -1,33 +1,34 @@
 /*
-* Copyright 2014, Jacques Desch�nes
-* This file is part of CHIPcon.
+* Copyright 2014, Jacques Deschênes
+* This file is part of BP-CHIPCON.
 *
-*     CHIPcon is free software: you can redistribute it and/or modify
+*     BP-CHIPCON is free software: you can redistribute it and/or modify
 *     it under the terms of the GNU General Public License as published by
 *     the Free Software Foundation, either version 3 of the License, or
 *     (at your option) any later version.
 *
-*     CHIPcon is distributed in the hope that it will be useful,
+*     BP-CHIPCON is distributed in the hope that it will be useful,
 *     but WITHOUT ANY WARRANTY; without even the implied warranty of
 *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 *     GNU General Public License for more details.
 *
 *     You should have received a copy of the GNU General Public License
-*     along with CHIPcon.  If not, see <http://www.gnu.org/licenses/>.
+*     along with BP-CHIPCON.  If not, see <http://www.gnu.org/licenses/>.
 */
 /*
-*   Nom:  ccasm.c
-*   Description: assembleur pour la console CHIPcon
+*   Nom:  bpcasm.c
+*   Description: assembleur pour la console BP-CHIPCON
 *   auteur: Jacques Deschenes
 *   Date:  2014-10-28
 *   REVISIONS:
 *   2015-02-16  added ORG directive
 *				assembly begin at 0 instead of 512
-*   2015-08-10 adapt� pour CHIPcon v2
-*              renomm� cc2asm.exe
-*              ajout� opcodes PUSH, POP, SCRX, SCRY, SCU
-*              doubl� espace d'adressage en divisant NNN/2 avant encodage
-*              supprim� directive ORG et ajoute directive END
+*   2015-08-10 adapté pour BP-CHIPCON v2
+*              renommé cc2asm.exe
+*              ajouté opcodes PUSH, POP, SCRX, SCRY, SCU
+*              doublé espace d'adressage en divisant NNN/2 avant encodage
+*              supprimé directive ORG et ajoute directive END
+*
 *   2019-06-04  Modified for BP-CHIPCON project.
 *               extra opcodes:
 * 					00DN  SCU  N scroll up screen
@@ -53,19 +54,30 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#include <ctype.h>
 #include <stdint.h>
 
-typedef union node_value{
+static void itoa(int n, char *buffer,int base){
+	if (base==10){
+		sprintf(buffer,"%d ",n);
+	}else
+	{
+		sprintf(buffer,"%X ",n);
+	}
+}
+
+static char uppercase(char c){
+	if ((c>='a')&& (c<='z')) c-=32;
+	return c;
+}
+
+typedef struct data_node{
+	const char *name;
+	union {
 		uint16_t addr;
 		uint16_t pc;
 		uint16_t value;
-		char *defn;
-}node_value_t;
-
-typedef struct data_node{
-	char *name;
-	node_value_t value;
+		const char *defn;
+	};
 	struct data_node *next;
 }node_t;
 
@@ -81,10 +93,47 @@ node_t *forward_list=NULL;
 node_t *symbol_list=NULL;
 node_t *define_list=NULL;
 
-#define add_label(name,addr)   add_node(name,addr,label_list)
-#define add_forward_ref(name,pc) add_node(name,pc,forward_list)
-#define add_symbol(name,value)  add_node(name,value,symbol_list)
-#define add_define(name,str) add_node(name,str,define_list)
+node_t *new_node(const char* name){
+	node_t *node;
+
+	node=malloc(sizeof(node_t));
+	node->name=malloc(strlen(name)+1);
+	strcpy((char*)node->name,name);
+	return node;
+}
+
+void add_label(const char *name, uint16_t addr){
+	node_t *new;
+	new=new_node(name);
+	new->next=label_list;
+	new->addr=addr;
+	label_list=new;
+}
+
+void add_forward_ref(const char* name, uint16_t pc){
+	node_t *new;
+	new=new_node(name);
+	new->next=forward_list;
+	new->pc=pc;
+	forward_list=new;
+}
+
+void add_symbol(const char *name, uint16_t value){
+	node_t *new;
+	new=new_node(name);
+	new->next=symbol_list;
+	new->value=value;
+	symbol_list=new;
+}
+
+void add_define(const char *name, const char *str){
+	node_t *new;
+	new=new_node(name);
+	new->next=define_list;
+	new->defn=str;
+	define_list=new;
+}
+
 #define search_label(name)   search_list(name,label_list)
 #define search_ref(name)  search_list(name,forward_list)
 #define search_symbol(name) search_list(name,symbol_list)
@@ -96,7 +145,7 @@ FILE *bin=NULL,  // fichier binaire généré par l'assembleur
 	 *lbl=NULL;  // fichier des étiquettes avec l'adresse.
 	 
 
-uint16_t pc; // compteur ordinal
+int pc; // compteur ordinal
 int line_no; //no de ligne en cours d'analyse
 int code_size=0; 
 bool file_done=false;
@@ -105,10 +154,10 @@ bool file_done=false;
 unsigned char binary[MEM_SIZE];
 
 
-int inp; // pointeur d'analyse ligne d'entr�e
-char line[256]; // contient la ligne � analyser
+int inp; // pointeur d'analyse ligne d'entrée
+char line[256]; // contient la ligne à analyser
 
-#define KW_COUNT (43)
+#define KW_COUNT (41)
 
 const char *mnemonics[KW_COUNT]={"NOP","CLS","RET","SCR","SCL","EXIT","LOW","HIGH","SCD","JP","CALL",
 						 "SHR","SHL","SKP","SKNP","SE","SNE","ADD","SUB","SUBN","OR","AND","XOR",
@@ -127,6 +176,7 @@ typedef enum dir_id {eDB,eDW,eASCII,eEQU,eDEFN,eEND,eORG} directive_t;
 // search word in a list 
 int search_word(char *target, const char *list[], int list_count){
 	int i=0;
+
 	while (i<list_count){
 		if (!strcmp(target,list[i])) break;
 		i++;
@@ -161,27 +211,6 @@ bool identifier(char *name){
 	return true;
 }
 
-char *itoa(int n, char* buffer,int base){
-	char d,sign=0;
-	char temp[16];
-	int i=15;
-	temp[15]=0;
-	if (base=10 && n<0){
-		sign=1;
-		n=-n;
-	}
-	while (n){
-		d=n%base+'0';
-		if (d>'9') d+=7;
-		temp[--i]=d;
-		n/=base;
-	}
-	if (i==15) temp[--i]='0';
-	if (sign) temp[--i]='-';
-	strcpy(buffer,&temp[i]);
-	return buffer;
-}
-
 bool separator(char c){
 	strchr("()[]+-*/%,",c);
 }
@@ -192,7 +221,7 @@ bool match_vx(char *w){
 
 
 void memory_overflow(){
-	printf("BP-CHIP program memory overflow at line %d\n", line_no);
+	printf("BP-CHIPCON program memory overflow at line %d\n", line_no);
 }
 
 
@@ -236,7 +265,7 @@ void store_code(unsigned char b1, unsigned char b2){
 	}
 }
 
-//convertie une chaine hexad�cimale
+//convertie une chaine hexadécimale
 //en entier positif
 int htoi(char *hnbr){
 	unsigned int n=0;
@@ -260,40 +289,34 @@ int btoi(char *bnbr){
 	return n;
 }
 
-//convertie un token num�rique
+//convertie un token numérique
 // en entier positif
 unsigned token_to_i(){
 	switch(tok_value[0]){
-	case '#':
-		return htoi(tok_value+1);
 	case '$':
+		return htoi(tok_value+1);
+	case '#':
 		return btoi(tok_value+1);
 	default:
 		return atoi(tok_value);
 	}
 }
 
-void new_node(node_t *list){
-	node_t *new;
-	new=malloc(sizeof(node_t));
-	new->next=list;
-	list=new;
-}
-
-void add
-void add_node(char *name, node_value_t value, node_t *list){
+/*
+node_t *add_node(char *name, unsigned value, node_t *list){
 	node_t *n;
 	
 	n=malloc(sizeof(node_t));
+	n->next=NULL;
+	if (list) n->next=list; else list=n;
 	n->value=value;
 	n->name=malloc(strlen(name)+1);
 	strcpy(n->name,name);
-	n->next=list;
-	list=n;
-	//return list;
+	return n;
 }
+*/
 
-node_t *search_list(char *name, node_t *list){
+node_t *search_list(const char *name, node_t *list){
 	node_t *node;
 	node=list;
 	while (node){
@@ -411,16 +434,16 @@ void op1(mnemo_t code){
 			if (tok_id!=eSYMBOL) error(eBADARG);
 			n=search_label(tok_value);
 			if (n){
-				b1|=(n->value.addr>>9)&0xf;
-				b2=(n->value.addr>>1)&0xff;
+				b1|=(n->addr>>9)&0xf;
+				b2=(n->addr>>1)&0xff;
 			}else{
 				add_forward_ref(tok_value,pc);
 			}
 		}else{
 			n=search_label(tok_value);
 			if (n){
-				b1|=(n->value.addr>>9)&0xf;
-				b2=(n->value.addr>>1)&0xff;
+				b1|=(n->addr>>9)&0xf;
+				b2=(n->addr>>1)&0xff;
 			}else{
 			    b2=0;
 				add_forward_ref(tok_value,pc);
@@ -445,7 +468,7 @@ void op1(mnemo_t code){
 				b2=(n->addr>>1)&0xff;
 			}else{
 				b2=0;
-				forward_list=add_forward_ref(tok_value,pc);
+				add_forward_ref(tok_value,pc);
 			}
 		}
 		break;
@@ -593,7 +616,7 @@ void op2(unsigned code){
 			b2|=3;
 		}else error(eSYNTAX);
 		break;
-	case eGPIX: // GPIX VX,VY 9XYF
+	case eGPIX: // GPIX VX,VY
 		if (reg2){ 
 			b1|=0x90;
 			b2|=0xf;
@@ -715,7 +738,7 @@ void load(){
 		c=tok_value[0];
 		next_token();
 		if (tok_id!=eCOMMA) error(eSYNTAX);
-		switch (c){ // 2i�me argument
+		switch (c){ // 2iéme argument
 		case 'I': // LD I,label  ANNN
 			b1=0xa0;
 			b2=0;
@@ -735,7 +758,7 @@ void load(){
 					b2=(n->addr>>1)&0xff;
 				}else{
 				    b2=0;
-					forward_list=add_forward_ref(tok_value,pc);
+					add_forward_ref(tok_value,pc);
 				}
 			}
 			break;
@@ -836,10 +859,10 @@ load_done:
 }
 
 void usage(){
-	puts("BP-CHIP assembler");
-	puts("USAGE: bpcasm source binary [-p pp_file] [-s labels_file]");
-	puts("'source' is BP-CHIP assembly source file.");
-	puts("'binary' is generated binary file to be executed on BP-CHIPCON console.");
+	puts("PICVisionPortable assembler");
+	puts("USAGE: pvpasm source binary [-p pp_file] [-s labels_file]");
+	puts("'source' is BP-CHIPCON(V2) assembly source file.");
+	puts("'binary' is generated binary file to be executed on BP-CHIPCON(V2) console.");
 	puts("'-p' generate a pre-processing 'pp_file'.");
 	puts("'-s' generate a list of labels file.");
     puts("\t'labels_file' this file can be loaded in cc2emul");
@@ -949,30 +972,30 @@ void next_token(){
 				tok_id=eSTRING;
 				state=5;
 				break;
-			case '#':
+			case '$':
 				tok_id=eNUMBER;
 				tok_value[i++]=line[inp];
-				state=1; // nombre hexad�cimal
+				state=1; // nombre hexadécimal
 				break;
-			case '$':
+			case '#':
 				tok_id=eNUMBER;
 				tok_value[i++]=line[inp];
 				state=2; // nombre binaire
 			default:
 				if (letter(line[inp])||(line[inp]=='_')){
 					tok_id=eSYMBOL;
-					tok_value[i++]=toupper(line[inp]);
-					state=4; // symbole alphanum�rique
+					tok_value[i++]=uppercase(line[inp]);
+					state=4; // symbole alphanumérique
 				}else if (digit(line[inp])){
 					tok_id=eNUMBER;
 					tok_value[i++]=line[inp];
-					state=3; // nombre d�cimal
+					state=3; // nombre décimal
 				}
 			}//switch
 			break;
-		case 1: // nombre hexad�cimal
-			if (hex(toupper(line[inp]))){
-				tok_value[i++]=toupper(line[inp]);
+		case 1: // nombre hexadécimal
+			if (hex(uppercase(line[inp]))){
+				tok_value[i++]=uppercase(line[inp]);
 			}else if (separator(line[inp])){
 				inp--;
 				state=5;
@@ -990,7 +1013,7 @@ void next_token(){
 				error(eSYNTAX);
 			}
 			break;
-		case 3: // nombre d�cimal
+		case 3: // nombre décimal
 			if (digit(line[inp])){
 				tok_value[i++]=line[inp];
 			}else if (separator(line[inp])){
@@ -1000,9 +1023,9 @@ void next_token(){
 				error(eSYNTAX);
 			}
 			break;
-		case 4: // symbole alphanum�rique
+		case 4: // symbole alphanumérique
 			if (alnum(line[inp]) || line[inp]=='_'){
-				tok_value[i++]=toupper(line[inp]);
+				tok_value[i++]=uppercase(line[inp]);
 			}else if (line[inp]==':'){
 				tok_id=eLABEL;
 				inp--;
@@ -1060,7 +1083,7 @@ void set_origin(){
 
 void data_ascii(){
 	unsigned i=0;
-	
+
 	next_token();
 	if (tok_id!=eSTRING) error(eSYNTAX);
 	while ((pc<MEM_SIZE-1) && tok_value[i]){
@@ -1079,9 +1102,8 @@ void equate(){
 	if (tok_id==eSYMBOL){
 		symbol=search_symbol(tok_value);
 		if (!symbol){ 
-			symbol = add_symbol(tok_value,0);
-			symbol->value=expression();
-			symbol_list=symbol;
+			add_symbol(tok_value,0);
+			symbol_list->value=expression();
 		}else{
 			symbol->value=expression();
 		}
@@ -1101,29 +1123,12 @@ void define(){
 	if (inp>start){
 		line[inp]=0;
 		defn_str=malloc(strlen(&line[start])+1);
-		for (i=0;line[start+i];i++){ *(defn_str+i)=toupper(line[start+i]);}
+		for (i=0;line[start+i];i++){ *(defn_str+i)=uppercase(line[start+i]);}
 		*(defn_str+i)=0;
-		define_list=add_define(tok_value,defn_str);
+		add_define(tok_value,defn_str);
 	}
 }
 
-/*
-void setPC(){ // ORG directive
-	unsigned n,mark;
-	mark=inp;
-	next_token();
-	if (tok_id!=eNUMBER){
-		inp=mark;
-		error(eBADARG);
-	}else{
-		pc=token_to_i()&0x1fff;
-		inp=mark;
-		if (pc&1){ 
-		    error(eALIGN);
-	    }
-	}
-}//f()
-*/
 
 unsigned factor(){
 	unsigned n;
@@ -1209,7 +1214,7 @@ unsigned expression(){
 
 void assemble_line(){
 	int i;
-
+		
 		next_token();
 		while (tok_id){
 			if (!(tok_id==eSYMBOL || tok_id==eLABEL)) error(eSYNTAX);
@@ -1272,7 +1277,7 @@ void assemble_line(){
 				}
 			}else if ((i=search_word(tok_value,directives,DIR_COUNT))<DIR_COUNT){
 				// directive d'assembleur
-				// les directives 'EQU','DEFN' et les LABELS  sont trait� par preprocess() 
+				// les directives 'EQU','DEFN' et les LABELS  sont traité par preprocess() 
 				switch(i){
 				case 0: // DB
 					data_byte();
@@ -1316,7 +1321,7 @@ void fix_forward_ref(){
 }
 
 // traitement des directives et substitution des DEFN
-// retourne 'true' si l'analyse de cette ligne est compl�t�e.
+// retourne 'true' si l'analyse de cette ligne est complétée.
 // sinon 'false'
 bool preprocess(){
 	char ppline[256];
@@ -1331,7 +1336,7 @@ bool preprocess(){
 		if (!(tok_id==eSYMBOL || tok_id==eLABEL)) error(eSYNTAX);
 		if (tok_id==eLABEL){
 			inp++;
-			label_list=add_label(tok_value,pc);
+			add_label(tok_value,pc);
 			next_token();
 			if (tok_id==eNONE) return true;
 			if (!(tok_id==eSYMBOL)) error(eSYNTAX);
@@ -1404,13 +1409,13 @@ bool preprocess(){
 
 
 void add_predefined(){
-	symbol_list=add_symbol("UP",2);
-	symbol_list=add_symbol("DOWN",4);
-	symbol_list=add_symbol("LEFT",8);
-	symbol_list=add_symbol("RIGHT",16);
-	symbol_list=add_symbol("FIRE_BTN",32);
-	define_list=add_define("W","V0"); // working register
-	define_list=add_define("C","VF"); // carry register
+	add_symbol("UP",2);
+	add_symbol("DOWN",4);
+	add_symbol("LEFT",8);
+	add_symbol("RIGHT",16);
+	add_symbol("FIRE_BTN",32);
+	add_define("W","V0"); // working register
+	add_define("C","VF"); // carry register
 }
 
 int main(int argc, char **argv){

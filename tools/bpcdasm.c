@@ -1,23 +1,23 @@
 /*
 * Copyright 2014, Jacques Deschênes
-* This file is part of CHIPcon.
+* This file is part of BP-CHIPCON.
 *
-*     CHIPcon is free software: you can redistribute it and/or modify
+*     BP-CHIPCON is free software: you can redistribute it and/or modify
 *     it under the terms of the GNU General Public License as published by
 *     the Free Software Foundation, either version 3 of the License, or
 *     (at your option) any later version.
 *
-*     CHIPcon is distributed in the hope that it will be useful,
+*     BP-CHIPCON is distributed in the hope that it will be useful,
 *     but WITHOUT ANY WARRANTY; without even the implied warranty of
 *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 *     GNU General Public License for more details.
 *
 *     You should have received a copy of the GNU General Public License
-*     along with CHIPcon.  If not, see <http://www.gnu.org/licenses/>.
+*     along with BP-CHIPCON.  If not, see <http://www.gnu.org/licenses/>.
 */
 /*
-*  nom: cc-dasm.c
-*  Description: déassembleur pour programme CHIPcon (supporte programme SCHIP)
+*  nom: bpcdasm.c
+*  Description: déassembleur pour programme BP-CHIPCON (supporte programme SCHIP)
 */
 #include <stdlib.h>
 #include <stdio.h>
