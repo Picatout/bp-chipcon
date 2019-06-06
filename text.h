@@ -28,7 +28,7 @@ typedef enum{
     SERIAL,
 }console_t;
 
-#define _debug_print(str)  usart_print(USART1, str)
+#define _debug_print(str)  usart_print(CHN1, str)
 
 #define print_hex(i)  print_int(i,16)
 

@@ -84,11 +84,11 @@ int main(int argc, char *argv[]){
 			   "#define KEY_DOWN  6\n"\
 			   "#define KEY_LEFT   7\n"\
 			   "#define KEY_RIGHT  8\n"\
-				"#define KEY_A  1\n"\
-				"#define KEY_B  15\n"\
-				"#define KEY_C  14\n"\
-				"#define KEY_D  9\n\n");
-	fprintf(cf,"const uint8_t %s_kmap[8]={KEY_A,KEY_B,KEY_C,KEY_D,KEY_RIGHT,KEY_DOWN,KEY_LEFT,KEY_UP};\n\n",array_name);
+				"#define KEY_A  10\n"\
+				"#define KEY_B  11\n"\
+				"#define KEY_C  12\n"\
+				"#define KEY_D  13\n\n");
+	fprintf(cf,"const uint8_t %s_kmap[8]={KEY_A,KEY_C,KEY_B,KEY_D,KEY_RIGHT,KEY_DOWN,KEY_LEFT,KEY_UP};\n\n",array_name);
 	fprintf(cf,"const uint8_t %s[%s_SIZE] _GAME={",array_name,header_var);
 	fseek(inp,0,SEEK_SET);
 	i=0;

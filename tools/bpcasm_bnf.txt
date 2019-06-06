@@ -52,9 +52,10 @@ ascii ::= ASCII set between [32-127]
 register ::= 'V[hex_digit]'|'R'|'DT'|'ST'|'I'|'[''I'']'
 comment ::= ';' text to end of line
 
-mnemonic ::= 'SCD'|'CLS'|'RET'|'SCR'|'SCL'|'EXIT'|'LOW'|'HIGH'|'JP'|'CALL'|
-			 'SE'|'SNE'|'LD'|'ADD'|'OR'|'AND'|'XOR'|'SUB'|'SHR'|'SUBN'|'SHL'|
-			 'RND'|'DRW'|'TONE'|'PRT'|'SKP'|'SKNP'
+mnemonic ::= 'NOP','CLS','RET','SCR','SCL','EXIT','LOW','HIGH','SCD','JP','CALL',
+			 'SHR','SHL','SKP','SKNP','SE','SNE','ADD','SUB','SUBN','OR','AND','XOR',
+			 'RND','TONE','PRT','PIXI','LD','DRW','NOISE','PUSH','POP','SCRX','SCRY',
+			 'SCU','BSET','BCLR','BINV','BTSS','BTSC','GPIX'
 
 directive ::= 'DB'|'DW'|'ASCII'|'EQU'
 

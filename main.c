@@ -399,7 +399,7 @@ static void select_debug_level(){
 	uint8_t btn;
 	gfx_cls();
 	print(" **** VM debug support ****\n");
-	print(" No debug support#\n");
+	print(" No debug support\n");
 	print(" Print PC and OPCODE\n");
 	print(" Print all VM states.\n");
 	print(" Single step\n");
@@ -488,7 +488,7 @@ void main(void){
 	RCC->APB2ENR=RCC_APB2ENR_IOPAEN|RCC_APB2ENR_IOPBEN|RCC_APB2ENR_IOPCEN|RCC_APB2ENR_AFIOEN|RCC_APB2ENR_TIM1EN;
 	config_pin(LED_PORT,LED_PIN,OUTPUT_OD_SLOW);
 	_led_off();
-	usart_open_channel(USART1,115200,PARITY_NONE,USART_DIR_BIDI,ALT_PORT,FLOW_SOFT);
+	usart_open_channel(CHN1,115200,PARITY_NONE,USART_DIR_BIDI,ALT_PORT,FLOW_SOFT);
 	gamepad_init();
 	tvout_init();
 	sound_init();

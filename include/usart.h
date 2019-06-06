@@ -33,6 +33,13 @@
 
 #define USART_COUNT 3 // 3 périphériques
 
+typedef enum USART_CHANNEL{
+	CHN1,
+	CHN2,
+	CHN3,
+}usart_channel_t;
+
+
 #define USART1_BASE_ADR 0x40013800
 #define USART2_BASE_ADR 0x40004400
 #define USART3_BASE_ADR 0x40004800
@@ -170,35 +177,35 @@ typedef struct{
  ************************/
  
 // configuration dse broches
-void usart_config_port(usart_t* channel, gpio_t *port, unsigned flow_ctrl);
+void usart_config_port(usart_channel_t channel, gpio_t *port, unsigned flow_ctrl);
  
 // vitesse de transmission
-void usart_set_baud(usart_t* channel, unsigned baud); 
+void usart_set_baud(usart_channel_t channel, unsigned baud); 
 // direction communication 
-void usart_comm_dir(usart_t* channel, unsigned direction);
+void usart_comm_dir(usart_channel_t channel, unsigned direction);
 
 // configure l'USART pour comminication selon protocole RS-232
 // 8 bit 1 stop pas de parité
-void usart_open_channel(usart_t* channel, unsigned baud, unsigned parity, unsigned dir, int port, unsigned flow_ctrl);
+void usart_open_channel(usart_channel_t channel, unsigned baud, unsigned parity, unsigned dir, int port, unsigned flow_ctrl);
 
 // status récepction
 // retourne 0 si pas de caractère disponible
 // retourne -1 si caractère disponible
-int usart_stat(usart_t* channel);
+int usart_stat(usart_channel_t channel);
 
 // reçoit un caractère de la console
-char usart_getc(usart_t* channel);
+char usart_getc(usart_channel_t channel);
 
 // transmet un caractère à la console
-void usart_putc(usart_t* channel,char c);
+void usart_putc(usart_channel_t channel,char c);
 
 // print string to usart channel
-void usart_print(usart_t* channel, const char *str);
+void usart_print(usart_channel_t channel, const char *str);
 
 // vérifie l'état de la ligne CTS
-int usart_cts(usart_t* channel);
+int usart_cts(usart_channel_t channel);
 
 // attend un caractère jusqu'à expiration du délais
-char usart_getc_dly(usart_t* channel,unsigned dly);
+char usart_getc_dly(usart_channel_t channel,unsigned dly);
 		
 #endif // USART_H

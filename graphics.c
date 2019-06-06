@@ -214,7 +214,6 @@ int /* __attribute__((optimize("-O1")))*/ gfx_sprite(int x, int y, uint8_t width
             }
         }//for(x)
     }//for(y0)
-    usart_putc(USART1,'\n');
     return collision;
 }
 

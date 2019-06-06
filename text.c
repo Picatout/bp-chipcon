@@ -85,7 +85,7 @@ void new_line(){
 			break;	
 		}//swtich
 	}else{
-		usart_putc(USART1,'\n');
+		usart_putc(CHN1,'\n');
 	}
 }
 
@@ -137,7 +137,7 @@ void put_char(uint8_t c){
 			break;		
 		}
 	}else{
-		usart_putc(USART1,c);
+		usart_putc(CHN1,c);
 	}
 }
 
@@ -224,7 +224,7 @@ void clear_screen(){
 		xpos=0;
 		ypos=0;
 	}else{
-		usart_putc(USART1,FF);
+		usart_putc(CHN1,FF);
 	}
 }
 
@@ -257,7 +257,7 @@ void select_console(console_t con){
 //read a character from serial port
 char get_char(){
 	char c;
-	while (!(c=usart_getc(USART1)));
+	while (!(c=usart_getc(CHN1)));
 	return c;
 }
 

@@ -27,7 +27,7 @@
  *  - game copied from flash to game_ram array
  */ 
 
-// doit-�tre inclus avant <util/delay.h>
+// doit-être inclus avant <util/delay.h>
 #include "include/blue_pill.h"
 
 #include <stdlib.h>
@@ -143,9 +143,9 @@ vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 		case DEBUG_SSTEP:	// single step, print all vm_states and pause.
 			select_console(SERIAL);
 			print_vms("actual vm state\n",CHIP_CONTINUE);
-			prompt_btn();
+			print("vt100 keyboard to continue\n");
+			get_char();
 			select_console(LOCAL);
-			btn_wait_any();
 			break;
 		}//switch(dbg_level)
 		x=rx(vms.b1);
@@ -347,7 +347,7 @@ vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 			}
 			break;
 		case 0xc: //CXKK  RND VX,KK  ; VX=random_number&KK
-			vms.var[x]=rand()&vms.b2;
+			vms.var[x]=rand()%vms.b2;
 			break;
 		case 0xd: //DXYN DRW VX,VY   draw a sprite, SCHIP and BP-CHIP can draw 16x16 sprites
 			n=vms.b2&0xf;
