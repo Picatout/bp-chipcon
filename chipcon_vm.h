@@ -53,6 +53,7 @@ typedef struct vm_state{
 	uint8_t  sp;
 	uint8_t  sprite_mem;
 	uint8_t  var[16];
+	uint16_t  s; // mcu flash sector register
 	union {
 		uint16_t opcode;	
 	struct{	

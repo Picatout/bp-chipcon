@@ -47,7 +47,7 @@
 *					9XND  BTSS VX,N  ; skip if VX bit N==1.
 *					9XNE  BTSC VX,N  ; skip if VX bit N==0.
 *					9XYF  GPIX,  VF=pixel((vx),(vy)).
-*					   
+*					FN74  LD S,N  load flash sector register.   
 */
 
 #include <stdlib.h>
@@ -330,6 +330,13 @@ int parse_vx(){
 	next_token();
 	if (!(tok_id==eSYMBOL && tok_value[0]=='V' && hex(tok_value[1]))) error(eBADARG);
 	return tok_value[1]<='9'?tok_value[1]-'0':tok_value[1]-'A'+10;
+}
+
+int parse_n(){ // n -> {0..9}
+	next_token();
+	if (tok_id==eCOMMA) next_token();
+	if (tok_id!=eNUMBER) error(eSYNTAX);
+	return (tok_value[0]-'0')%10;
 }
 
 // codes sans arguments
@@ -720,6 +727,7 @@ void load_indirect(){
 // LD B,VX   FX33
 // LD [I],VX FX55  
 // LD VX,[I] FX65
+// LD S,K    FN74
 // LD R,VX   FX75
 // LD VX,R   FX85
 // LD VX,K   FX0A
@@ -734,7 +742,7 @@ void load(){
 		return;
 	}
 	if (!((tok_id==eSYMBOL) && ((strlen(tok_value)==1)||(strlen(tok_value)==2)))) error(eSYNTAX);
-	if (strlen(tok_value)==1){ // LD I|R|B|F, ...
+	if (strlen(tok_value)==1){ // LD I|R|B|F|S, ...
 		c=tok_value[0];
 		next_token();
 		if (tok_id!=eCOMMA) error(eSYNTAX);
@@ -774,6 +782,10 @@ void load(){
 			b1=0xf0|parse_vx();
 			b2=0x33;
 			break;
+		case 'S': // LD S, N  FN74
+			b1=0xf0|parse_n();
+			b2=0x74;
+			break;	
 		default:
 			error(eSYNTAX);
 		}

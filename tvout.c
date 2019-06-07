@@ -64,17 +64,6 @@
 #define BP_END BP_START+VIDEO_LINES
 #define BP_LEFT LEFT_MARGIN+200 // left margin delay
 #define BP_PDLY (1) // pixel delay
-/*
-//XOCHIP
-#define XO_VRES 64
-#define XO_HRES 128
-#define XO_BPR (XO_HRES/2)
-#define XO_RPT (VIDEO_LINES/XO_VRES)  // 3 scan lines per row
-#define XO_START (FIRST_VIDEO_LINE+(VIDEO_LINES-XO_VRES*XO_RPT)/2)
-#define XO_END XO_START+XO_VRES*XO_RPT
-#define XO_LEFT LEFT_MARGIN+200
-#define XO_PDLY (2)
-*/
 //SCHIP
 #define SCHIP_VRES 64
 #define SCHIP_HRES 128
@@ -84,17 +73,6 @@
 #define SCHIP_END SCHIP_START+SCHIP_VRES*SCHIP_RPT
 #define SCHIP_LEFT LEFT_MARGIN+200
 #define SCHIP_PDLY (2)
-/*
-//CHIP8
-#define CHIP8_VRES 32
-#define CHIP8_HRES 64
-#define CHIP8_BPR (CHIP8_HRES/2)
-#define CHIP8_RPT (VIDEO_LINES/CHIP8_VRES) // 7 scan lines per row
-#define CHIP8_START (FIRST_VIDEO_LINE+(VIDEO_LINES-CHIP8_VRES*CHIP8_RPT)/2)
-#define CHIP8_END (CHIP8_START+CHIP8_VRES*CHIP8_RPT)
-#define CHIP8_LEFT LEFT_MARGIN+60
-#define CHIP8_PDLY (7)
-*/
 
 enum TASK_ENUM{
     PRE_SYNC,

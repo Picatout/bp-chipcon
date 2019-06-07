@@ -199,6 +199,7 @@ void flash_disable(){
 	flash_sync();
 	row_buff.flags=0;
 	FLASH->CR|=FLASH_CR_LOCK;
+	RCC->CR&=~RCC_CR_HSION;
 }
 
 
@@ -246,7 +247,7 @@ void flash_read_block(const uint8_t *address, uint8_t *buffer,int size){
 //		size     nombre d'octets à écrire.
 int flash_write_block(uint8_t *address, const uint8_t *buffer, int size){
 	int i;
-	if ((void*)address<ffa) return 0;
+	if ((void*)address<(void*)0x10000) return 0;
 	if (!flash_enable()) return 0;	
 	for (i=0;i<size;i++){
 		if (!flash_write_byte(address++,*buffer++)){

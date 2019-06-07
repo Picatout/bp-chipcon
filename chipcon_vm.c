@@ -46,6 +46,8 @@
 //#include "tone.h"
 
 #define PERSIST_STORE (0x10000)
+#define FLASH_SECTOR_SIZE (8192)
+#define R_STORE (0x1FFF0)
 
 #define _get_opcode(addr) ({vms.b1=game_ram[addr];vms.b2=game_ram[addr+1];})
 #define caddr(b1,b2)  (((b1<<8)|b2)&0xfff)
@@ -121,6 +123,7 @@ vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 	vms.pc=program_address;
 	vms.sp=0;
 	vms.ix=0;
+	vms.s=0;
  	while (exit_code==CHIP_CONTINUE){
 		if (vms.pc>=GAME_SPACE){
 			exit_code=CHIP_BAD_ADDR;
@@ -424,13 +427,22 @@ vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 			case 0x65: // FX65 LD VX,[I]  load registers V0-VX from ram pointed by I
 				move((const uint8_t*)&game_ram[vms.ix],(uint8_t*)vms.var,x+1);
 				break;
+			case 0x74: // FX74 LD FS, N	; load flash sector register ; BPCHIP
+				vms.s=(x&0x7)*FLASH_SECTOR_SIZE; // flash sector {0..7}
+				break;			
 			case 0x75: // FX75 LD R,VX  ; save registers V0-VX in mcu flash  ; SCHIP, BPCHIP
-				flash_write_block((uint8_t*)(PERSIST_STORE+vms.ix*2),vms.var,x+1);
-				//move((const uint8_t*)vms.var,block,x+1);
-				break;
-			case 0x85: // FX85 LD VX, R  restore V0..VX from mcu flash
-				flash_read_block((const uint8_t*)(PERSIST_STORE+vms.ix*2),vms.var,x+1);
-				//move((const uint8_t*)block,vms.var,x+1);
+				if (video_mode==VM_BPCHIP){
+					flash_write_block((uint8_t*)(PERSIST_STORE+vms.s+vms.ix),vms.var,x+1);
+				}else{
+					flash_write_block((uint8_t*)(R_STORE),vms.var,x+1);
+				}
+				break;	
+			case 0x85: // FX85 LD VX, R  restore V0..VX from mcu flash ; SCHIP, BPCHIP
+				if (video_mode==VM_BPCHIP){
+					flash_read_block((uint8_t*)(PERSIST_STORE+vms.s+vms.ix),vms.var,x+1);
+				}else{
+					flash_read_block((uint8_t*)(R_STORE),vms.var,x+1);
+				}
 				break;
 			default:
 				exit_code=CHIP_BAD_OPCODE;
