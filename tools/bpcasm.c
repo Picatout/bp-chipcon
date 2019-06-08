@@ -32,6 +32,7 @@
 *   2019-06-04  Modified for BP-CHIPCON project.
 *               extra opcodes:
 * 					00DN  SCU  N scroll up screen
+*					00F9  PALT ; load palette with values pointed by I
 *                   9XY1  TONE VX, VY ; play a tempered scale note.
 *					9XY2  PRT VX, VY ; print text pointed by I at position x,y.
 *					9XY3  PIXI VX, VY  ; invert pixel at coordinates VX,VY
@@ -158,16 +159,16 @@ unsigned char binary[MEM_SIZE];
 int inp; // pointeur d'analyse ligne d'entrée
 char line[256]; // contient la ligne à analyser
 
-#define KW_COUNT (42)
+#define KW_COUNT (43)
 
 const char *mnemonics[KW_COUNT]={"NOP","CLS","RET","SCR","SCL","EXIT","LOW","HIGH","SCD","JP","CALL",
 						 "SHR","SHL","SKP","SKNP","SE","SNE","ADD","SUB","SUBN","OR","AND","XOR",
 						 "RND","TONE","PRT","PIXI","LD","DRW","NOISE","PUSH","POP","SCRX","SCRY",
-						 "SCU","BSET","BCLR","BINV","BTSS","BTSC","GPIX","BPP"};
+						 "SCU","BSET","BCLR","BINV","BTSS","BTSC","GPIX","BPP","PALT"};
 
 typedef enum Mnemo {eNOP,eCLS,eRET,eSCR,eSCL,eEXIT,eLOW,eHIGH,eSCD,eJP,eCALL,eSHR,eSHL,eSKP,eSKNP,eSE,eSNE,eADD,
                     eSUB,eSUBN,eOR,eAND,eXOR,eRND,eTONE,ePRT,ePIXI,eLD,eDRW,eNOISE,ePUSH,ePOP,eSCRX,eSCRY,
-					eSCU,eBSET,eBCLR,eBINV,eBTSS,eBTSC,eGPIX,eBPP} mnemo_t;
+					eSCU,eBSET,eBCLR,eBINV,eBTSS,eBTSC,eGPIX,eBPP,ePALT} mnemo_t;
 						 
 #define DIR_COUNT (7)						 
 const char *directives[]={"DB","DW","ASCII","EQU","DEFN","END","ORG"};
@@ -370,6 +371,9 @@ void op0(mnemo_t code){
 		break;
 	case eHIGH: // HIGH
 		b2=0xff;
+		break;
+	case ePALT: // PALT
+		b2=0xf9;
 		break;
 	}
 	store_code(b1,b2);
@@ -1246,6 +1250,7 @@ void assemble_line(){
 				case eEXIT:
 				case eLOW:
 				case eHIGH:
+				case ePALT:
 					op0(i);
 					break;
 				case eBPP:	

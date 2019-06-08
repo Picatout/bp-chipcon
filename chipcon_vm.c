@@ -186,6 +186,9 @@ vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 				case 0xfa: // 00FA BPRES  switch to BPCHIP 180x112 graphic mode; BPCHIP
 					set_video_mode(VM_BPCHIP);
 					break;
+				case 0xf9: // 00F9 PALET load palette with color pointed by I
+					set_palette((const uint8_t*)&game_ram[vms.ix]);
+					break;	
 				default:
 					exit_code=CHIP_BAD_OPCODE;
 			}//switch(b2)

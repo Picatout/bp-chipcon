@@ -70,6 +70,11 @@ sprite_test:
     bpp 2
     ld i, sprite2
     drw v0,v1,8
+    ld i,pal1
+    palt
+    ld v0,70
+    ld i, sprite2
+    drw v0,v1,8
     ret
 
 sprite:
@@ -92,7 +97,9 @@ sprite2:
     db $3f,$fc
     db $0f,$f0
 
-
+pal1:
+    db 0,15,2,10
+    
 msg:   
     ascii   "hello world\n"
 buffer:
