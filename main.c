@@ -38,7 +38,6 @@
 #include "games/games.h"
 #include "chipcon_vm.h"
 #include "include/gen_fn.h"
-#include "basic.h"
 
 //const void* TPA_TOP=(void*)_TPA_TOP;
 
@@ -122,10 +121,12 @@ typedef struct ball{
 #define BALL_COUNT 2
 ball_t balls[BALL_COUNT];
 
-void draw_balls(){
+static const uint8_t pal2[4]={0,9,2,10};
+static void draw_balls(){
 	int i;
 	frame_sync();
 	for (i=0;i<BALL_COUNT;i++){
+		if (!i) set_palette(DEFAULT_PALETTE);else set_palette(pal2);
 		gfx_sprite(balls[i].x,balls[i].y,8,8,balls[i].ball_sprite);
 	}
 	wait_sync_end();
@@ -147,7 +148,7 @@ unsigned distance(ball_t *ball1, ball_t *ball2){
 	return isqrt(abs(ball1->x*ball2->x+ball1->y*ball2->y));
 }
 
-void move_balls(){
+static void move_balls(){
 	int i;
 	vmode_params_t *vparams=get_video_params();
 	for (i=0;i<BALL_COUNT;i++){
@@ -178,7 +179,7 @@ void move_balls(){
 }
 
 
-void init_balls(){
+static void init_balls(){
 	int i;
 	vmode_params_t *vparams=get_video_params();
 	srand(ntsc_ticks);
@@ -206,7 +207,7 @@ static void color_bars(){
 			if (x%8==0){
 				c--;
 			}
-			gfx_plot(x,y,c);
+			gfx_blit(x,y,c,BIT_SET);
 		}
 	}
 		
@@ -217,8 +218,8 @@ static void vertical_bars(){
 	int y;
 	vmode_params_t* vparams=get_video_params();
 	for (y=2*CHAR_HEIGHT;y<vparams->vres;y++){
-		gfx_plot(0,y,15);
-		gfx_plot(vparams->hres-1,y,15);
+		gfx_blit(0,y,15,BIT_SET);
+		gfx_blit(vparams->hres-1,y,15,BIT_SET);
 	}
 }
 
@@ -226,8 +227,8 @@ static void horiz_bars(){
 	int x;
 	vmode_params_t* vparams=get_video_params();
 	for (x=0;x<vparams->hres;x++){
-		gfx_plot(x,0,15);
-		gfx_plot(x,vparams->vres-1,15);
+		gfx_blit(x,0,15,BIT_SET);
+		gfx_blit(x,vparams->vres-1,15,BIT_SET);
 	}
 }
 
@@ -279,7 +280,7 @@ static void sound_test(){
 	gfx_cls();
 	print("press buttons\n");
 	while (key!=KEY_B){
-		key=btn_wait_any();
+		key=btn_any_down();
 		switch(key){
 		case KEY_UP:
 			freq=440;
@@ -306,8 +307,9 @@ static void sound_test(){
 			freq=659;
 			break;
 		}//swtich
-		tone(freq,30);
+		tone(freq,3);
 	}
+	btn_wait_up(key);
 	noise(30);
 	while(sound_timer);
 }
@@ -325,6 +327,7 @@ static void run_game(unsigned idx){
 	move(games_list[idx].data,&game_ram[addr],games_list[idx].size);
 	set_keymap(games_list[idx].keymap);
 	set_video_mode(games_list[idx].vmode);
+	set_palette(DEFAULT_PALETTE);
 	exit_code=chip_vm(addr,debug_level);
 	print("exit code: ");
 	switch(exit_code){
@@ -435,13 +438,12 @@ static void select_debug_level(){
 	}
 }
 
-#define MENU_ITEMS (5)
+#define MENU_ITEMS (4)
 static const char *menu_list[MENU_ITEMS]={
 	" Games list",
 	" Debug support",
 	" Video test",
 	" Sound test",
-	" BASIC",
 };
 
 static void display_menu(){
@@ -485,9 +487,6 @@ static void menu(){
 			case 3:
 				sound_test();
 				break;	
-			case 4:
-				basic();
-				break;
 			}
 			//set_video_mode(VM_BPCHIP);
 			display_menu();

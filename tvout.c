@@ -72,7 +72,7 @@
 #define SCHIP_START (FIRST_VIDEO_LINE+(VIDEO_LINES-SCHIP_VRES*SCHIP_RPT)/2)
 #define SCHIP_END SCHIP_START+SCHIP_VRES*SCHIP_RPT
 #define SCHIP_LEFT LEFT_MARGIN+200
-#define SCHIP_PDLY (2)
+#define SCHIP_PDLY (3)
 
 enum TASK_ENUM{
     PRE_SYNC,
@@ -187,12 +187,12 @@ void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
     _jitter_cancel();
     TMR3->CCER|=CHROMA_CFG;
     for (i=0;i<byte_per_row;i++){
+        _pixel_delay(pixel_delay);
         *video_port=(*video_data)>>4;
         _pixel_delay(pixel_delay);
         //__asm__ volatile("nop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\t");
         *video_port=(*video_data++)&0xf;
         //__asm__ volatile("nop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\t");
-        _pixel_delay(pixel_delay);
     }
     PORTA->ODR=0;
     TMR3->CCER&=~(TMR_CCER_CC3E);

@@ -223,3 +223,9 @@ uint8_t* get_keymap(){
     return buttons;
 }
 
+// wait for any button to be down
+uint8_t btn_any_down(){
+    while (btn_state==0xff);
+    return buttons[btn_idx(btn_state^0xff)];
+    
+}

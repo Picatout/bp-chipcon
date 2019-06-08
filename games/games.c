@@ -37,9 +37,11 @@
 #include "copter.h"
 #include "uboat.h"
 #include "test.h"
+#include "lem.h"
 
 game_info_t games_list[]={
     {VM_BPCHIP,"test",TEST_SIZE,test,test_kmap},
+    {VM_BPCHIP,"lem",LEM_SIZE,lem,lem_kmap},
     {VM_SCHIP,"blinky",BLINKY_SIZE,blinky,blinky_kmap},
     {VM_SCHIP,"mines",MINES_SIZE,mines,mines_kmap},
     {VM_SCHIP,"joust 2.3",JOUST23_SIZE,joust23,joust23_kmap},

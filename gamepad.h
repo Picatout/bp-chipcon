@@ -77,5 +77,6 @@ void btn_set_value(uint8_t btn,uint8_t value);
 void set_keymap(const uint8_t *kmap);
 // retourne la table de transcription
 uint8_t* get_keymap();
-
+// check if any btn down
+uint8_t btn_any_down();
 #endif //GAMEPAD_H

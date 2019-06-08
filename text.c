@@ -99,7 +99,7 @@ static void draw_char(int x,int y,int w, int h, const char* glyph){
 		for (x0=x;x0<(x+w);x0++){
 			bit=byte&mask;
 			if (bit)c=text_colors[FG];else c=text_colors[BG];
-			gfx_plot(x0,y0,c);
+			gfx_blit(x0,y0,c,BIT_SET);
 			mask>>=1;
 		}
 	}
@@ -233,7 +233,7 @@ void show_cursor(int show){
 	int x,y;
 	uint8_t color=show?15:0;
 		for (x=xpos;x<xpos+CHAR_WIDTH;x++){
-			gfx_plot(x,ypos+CHAR_HEIGHT-1,color);
+			gfx_blit(x,ypos+CHAR_HEIGHT-1,color,BIT_SET);
 		}
 }
 

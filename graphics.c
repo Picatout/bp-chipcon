@@ -41,6 +41,7 @@ bits_per_pixel_t sprite_bpp=FOUR_BPP;
 // palette 4 couleurs pour les sprites 1 ou 2 bits/pixel
 static uint8_t palette[4]={0,15,3,5};
 
+const uint8_t DEFAULT_PALETTE[4]={0,15,3,5};
 
 void set_palette(const uint8_t new[4]){
     palette[0]=new[0];
@@ -85,6 +86,7 @@ int gfx_blit(int x, int y, uint8_t color, blit_op_t op){
     return !((byte&~mask)^color==0);
 }
 
+/*
 void gfx_plot (int x,int y,uint8_t color){
 	register int idx;
     register uint8_t byte;
@@ -102,7 +104,7 @@ void gfx_plot (int x,int y,uint8_t color){
     }
     video_buffer[idx]=byte;
 }
-
+*/
 void gfx_cls(){
 	int x;
     vmode_params_t *vparams=get_video_params();
