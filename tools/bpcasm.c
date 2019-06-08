@@ -39,15 +39,16 @@
 *					9XY5  TONE VX, VY, WAIT ; play tempered scale note, wait end. VX=note, VY=length
 *					9X06, PUSH VX  ; push VX on stack
 *					9X07, POP VX  ; pop VX from stack
-*					9X08, SCRX  ;  VX=HRES screen width in pixels.
-*					9X09, SCRY  ; VX=VRES  screen height in pixels
+*					9X08, SCRX VX ;  VX=HRES screen width in pixels.
+*					9X09, SCRY VX ;  VX=VRES  screen height in pixels
 *					9XNA, BSET VX,N  ; set VX bit N.
 *					9XNB  BCLR VX,N  ; clear VX bit N.
 *					9XNC  BINV VX,N  ; invert VX bit N.
 *					9XND  BTSS VX,N  ; skip if VX bit N==1.
 *					9XNE  BTSC VX,N  ; skip if VX bit N==0.
 *					9XYF  GPIX,  VF=pixel((vx),(vy)).
-*					FN74  LD S,N  load flash sector register.   
+*                   FN01  BPP N set sprite bits  per pixels {1,2,4}  
+*					FN74  LD S,N  load flash sector register. 
 */
 
 #include <stdlib.h>
@@ -157,16 +158,16 @@ unsigned char binary[MEM_SIZE];
 int inp; // pointeur d'analyse ligne d'entrée
 char line[256]; // contient la ligne à analyser
 
-#define KW_COUNT (41)
+#define KW_COUNT (42)
 
 const char *mnemonics[KW_COUNT]={"NOP","CLS","RET","SCR","SCL","EXIT","LOW","HIGH","SCD","JP","CALL",
 						 "SHR","SHL","SKP","SKNP","SE","SNE","ADD","SUB","SUBN","OR","AND","XOR",
 						 "RND","TONE","PRT","PIXI","LD","DRW","NOISE","PUSH","POP","SCRX","SCRY",
-						 "SCU","BSET","BCLR","BINV","BTSS","BTSC","GPIX"};
+						 "SCU","BSET","BCLR","BINV","BTSS","BTSC","GPIX","BPP"};
 
 typedef enum Mnemo {eNOP,eCLS,eRET,eSCR,eSCL,eEXIT,eLOW,eHIGH,eSCD,eJP,eCALL,eSHR,eSHL,eSKP,eSKNP,eSE,eSNE,eADD,
                     eSUB,eSUBN,eOR,eAND,eXOR,eRND,eTONE,ePRT,ePIXI,eLD,eDRW,eNOISE,ePUSH,ePOP,eSCRX,eSCRY,
-					eSCU,eBSET,eBCLR,eBINV,eBTSS,eBTSC,eGPIX} mnemo_t;
+					eSCU,eBSET,eBCLR,eBINV,eBTSS,eBTSC,eGPIX,eBPP} mnemo_t;
 						 
 #define DIR_COUNT (7)						 
 const char *directives[]={"DB","DW","ASCII","EQU","DEFN","END","ORG"};
@@ -375,7 +376,7 @@ void op0(mnemo_t code){
 }
 
 // codes avec 1 arguments
-//"SCD","JP","CALL","SHR","SHL","SKP","SKNP", NOISE, PUSH, POP, SCRX,SCRY, SCU
+//"SCD","JP","CALL","SHR","SHL","SKP","SKNP", NOISE, PUSH, POP, SCRX,SCRY, SCU, BPP
 void op1(mnemo_t code){
 	unsigned b1,b2;
 	node_t *n;
@@ -383,6 +384,10 @@ void op1(mnemo_t code){
   
  	
 	switch (code){
+	case eBPP: // BPP N
+		b1=0xf0|expression()&0xf;
+		b2=1;
+		break;	
 	case eSCD: // SCD
 		b2=expression();
 		b1=0;
@@ -1243,6 +1248,7 @@ void assemble_line(){
 				case eHIGH:
 					op0(i);
 					break;
+				case eBPP:	
 			    case eSCD:
 				case eJP:
 				case eCALL:

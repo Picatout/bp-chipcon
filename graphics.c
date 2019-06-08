@@ -189,11 +189,11 @@ static const uint8_t bit_mask[3]={0x80,0xc0,0xf0};
 static const uint8_t bit_shift[3]={7,6,4};
 static const uint8_t pixels_per_byte[3]={8,4,2};
 // put sprite on screen using BIT_XOR
-int /* __attribute__((optimize("-O1")))*/ gfx_sprite(int x, int y, uint8_t width, uint8_t height, const uint8_t *sprite){
+int gfx_sprite(int x, int y, uint8_t width, uint8_t height, const uint8_t *sprite){
     register uint8_t color,bmp_byte,mask,shift,ppb;
     register int x0,y0;
     int collision=0;
-
+    
     shift=bit_shift[sprite_bpp];
     bmp_byte=*sprite++;
     mask=bit_mask[sprite_bpp];

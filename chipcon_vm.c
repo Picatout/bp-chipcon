@@ -352,7 +352,7 @@ vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 		case 0xc: //CXKK  RND VX,KK  ; VX=random_number&KK
 			vms.var[x]=rand()%vms.b2;
 			break;
-		case 0xd: //DXYN DRW VX,VY   draw a sprite, SCHIP and BP-CHIP can draw 16x16 sprites
+		case 0xd: //DXYN DRW VX,VY,N   draw a sprite, SCHIP and BP-CHIP can draw 16x16 sprites
 			n=vms.b2&0xf;
 			if (!n){
 				if (vms.sprite_mem==RAM_MEM){
@@ -384,8 +384,8 @@ vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 				break;
 		case 0xf:
 			switch(vms.b2){
-			case 1: // FN01  set sprite bitS  per pixels 1,2,4
-				sprite_bpp=vms.b1%3;
+			case 1: // FN01 BPP N set sprite bitS  per pixels 1,2,4
+				sprite_bpp=(vms.b1&0xf)/2; 
 				break;
 			case 0x07: // FX07  LD VX, DT   VX := game_timer
 				vms.var[x]=game_timer;

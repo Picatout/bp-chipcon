@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define TEST_SIZE (100)
+#define TEST_SIZE (202)
 
 extern const uint8_t test_kmap[8];
 extern const uint8_t test[TEST_SIZE];
