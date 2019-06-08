@@ -58,18 +58,20 @@ tone_test:
     ret
     jp .-4
 
+; draw 3 balls of different color.
 sprite_test:
     scrx v0
     scry v1
     shr  v0
     shr  v1
-    ld i, sprite
+    ld i, sprite ; this is a 4 bpp sprite
     drw v0,v1,8
     ld v0,80
     ld v1,50
     bpp 2
-    ld i, sprite2
+    ld i, sprite2 ; this is a 2 bpp sprite
     drw v0,v1,8
+; change the palette and draw same sprite in different color.    
     ld i,pal1
     palt
     ld v0,70
@@ -77,7 +79,7 @@ sprite_test:
     drw v0,v1,8
     ret
 
-sprite:
+sprite: ; 4 bits per pixel sprite (8x8 ball)
 	db $00,$77,$77,$00
 	db $07,$77,$77,$70
 	db $77,$77,$77,$77
@@ -87,7 +89,7 @@ sprite:
 	db $07,$77,$77,$70
 	db $00,$77,$77,$00
 
-sprite2:
+sprite2: ; 2 bits per pixel sprite (8x8 ball)
     db $0f,$f0
     db $3f,$fc
     db $ff,$ff
@@ -97,9 +99,9 @@ sprite2:
     db $3f,$fc
     db $0f,$f0
 
-pal1:
+pal1: ; palette values
     db 0,15,2,10
-    
+
 msg:   
     ascii   "hello world\n"
 buffer:

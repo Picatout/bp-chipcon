@@ -881,7 +881,7 @@ load_done:
 
 void usage(){
 	puts("PICVisionPortable assembler");
-	puts("USAGE: pvpasm source binary [-p pp_file] [-s labels_file]");
+	puts("USAGE: pvpasm source [binary] [-p pp_file] [-s labels_file]");
 	puts("'source' is BP-CHIPCON(V2) assembly source file.");
 	puts("'binary' is generated binary file to be executed on BP-CHIPCON(V2) console.");
 	puts("'-p' generate a pre-processing 'pp_file'.");
@@ -1445,9 +1445,11 @@ int main(int argc, char **argv){
 	FILE *src;
 	char *ppf_name;
 	char *lbl_name;
+	char *bin_name;
+	char *ext;
 	int i;
 	
-	if (argc < 3) usage();
+	if (argc < 2) usage();
 	for (i=1;i<argc;i++){
 		switch (i){
 		case 1:
@@ -1457,11 +1459,11 @@ int main(int argc, char **argv){
 			}
 			break;
 		case 2:
-			if (!(bin=fopen(argv[2],"wb"))){
-				printf("Failed to open %s\n",argv[2]); 
-				exit(EXIT_FAILURE);
+			if (argv[2][0]!='-'){
+				bin_name=malloc(strlen(argv[2])+1);
+				strcpy(bin_name,argv[2]);
+				break;
 			}
-			break;
 		default:
 			if (argv[i][0]!='-') usage();
 			if (argv[i][1]=='p'){
@@ -1489,6 +1491,17 @@ int main(int argc, char **argv){
 			}else usage();
 			break;
 		}
+	}
+	if (!bin_name){
+		bin_name=malloc(strlen(argv[1])+4);
+		strcpy(bin_name,argv[1]);
+		ext=strchr(bin_name,'.');
+		if (!ext)ext=bin_name+strlen(bin_name);
+		strcpy(ext,".bin");
+	}
+	if (!(bin=fopen(bin_name,"wb"))){
+		printf("Failed to open %s\n",bin_name); 
+		exit(EXIT_FAILURE);
 	}
 	add_predefined();
 	pc=0;
