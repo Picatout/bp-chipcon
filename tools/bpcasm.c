@@ -1443,25 +1443,26 @@ void add_predefined(){
 
 int main(int argc, char **argv){
 	FILE *src;
-	char *ppf_name;
-	char *lbl_name;
-	char *bin_name;
-	char *ext;
+	unsigned char *ppf_name;
+	unsigned char *lbl_name;
+	unsigned char *src_name;
+	unsigned char *bin_name=NULL;
+	unsigned char *ext;
 	int i;
 	
 	if (argc < 2) usage();
 	for (i=1;i<argc;i++){
 		switch (i){
 		case 1:
-			if (!(src=fopen(argv[1],"r"))){
-				printf("Failed to open %s\n",argv[1]); 
+			src_name=argv[1];
+			if (!(src=fopen(src_name,"r"))){
+				printf("Failed to open %s\n",src_name); 
 				exit(EXIT_FAILURE);
 			}
 			break;
 		case 2:
 			if (argv[2][0]!='-'){
-				bin_name=malloc(strlen(argv[2])+1);
-				strcpy(bin_name,argv[2]);
+				bin_name=argv[2];
 				break;
 			}
 		default:
@@ -1492,16 +1493,20 @@ int main(int argc, char **argv){
 			break;
 		}
 	}
+	printf("source: %s\n",src_name);
 	if (!bin_name){
-		bin_name=malloc(strlen(argv[1])+4);
-		strcpy(bin_name,argv[1]);
+		i=strlen(src_name)+1;
+		bin_name=malloc(i); 
+		strcpy(bin_name,src_name);
 		ext=strchr(bin_name,'.');
-		if (!ext)ext=bin_name+strlen(bin_name);
+		if (!ext)ext=&bin_name[strlen(bin_name)];
 		strcpy(ext,".bin");
 	}
 	if (!(bin=fopen(bin_name,"wb"))){
 		printf("Failed to open %s\n",bin_name); 
 		exit(EXIT_FAILURE);
+	}else{
+		printf("binary file: %s\n",bin_name);
 	}
 	add_predefined();
 	pc=0;
