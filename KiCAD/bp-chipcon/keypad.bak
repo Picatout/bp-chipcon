@@ -207,7 +207,7 @@ Wire Wire Line
 	4750 3350 5100 3350
 Wire Wire Line
 	5100 3350 5100 2875
-Text Label 5625 3825 0    50   ~ 0
+Text Label 6250 3825 0    50   ~ 0
 OUT
 Text Label 3400 4300 2    50   ~ 0
 CLOCK
@@ -368,4 +368,23 @@ Wire Wire Line
 Wire Wire Line
 	2400 3000 2400 2875
 Connection ~ 2400 3000
+$Comp
+L device:R R15
+U 1 1 5CE5EE6D
+P 5825 3675
+F 0 "R15" H 5895 3721 50  0000 L CNN
+F 1 "10K" H 5895 3630 50  0000 L CNN
+F 2 "" V 5755 3675 50  0001 C CNN
+F 3 "" H 5825 3675 50  0001 C CNN
+	1    5825 3675
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5625 3825 5825 3825
+Connection ~ 5625 3825
+Wire Wire Line
+	5825 3825 6250 3825
+Connection ~ 5825 3825
+Text Label 5825 3525 2    50   ~ 0
++3.3v
 $EndSCHEMATC

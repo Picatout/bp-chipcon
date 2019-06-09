@@ -721,17 +721,17 @@ $EndComp
 Text Label 2225 5775 2    50   ~ 0
 3.3V
 Text Label 2225 6075 2    39   ~ 0
-SPI2_SCK
+GP_CLK
 Text Label 2225 5875 2    39   ~ 0
-SPI2_MOSI
+GP_RX
 Text Label 2225 5975 2    39   ~ 0
-SPI2_MISO
+GP_TX
 Text Label 4825 4200 0    39   ~ 0
-SPI2_MOSI
+GP_TX
 Text Label 4825 4300 0    39   ~ 0
-SPI2_MOSI
+GP_RX
 Text Label 4825 4400 0    39   ~ 0
-SPI2_SCK
+GP_CLK
 NoConn ~ 4275 5050
 NoConn ~ 4375 5050
 NoConn ~ 4175 5050
