@@ -283,7 +283,7 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
         }
         break;  
     case WAIT_FIELD_END:
-        if (scan_line==263){
+          if (scan_line==263){
             if (flags&F_EVEN){ // half length
                 TMR1->ARR=SYNC_LINE;
             }
@@ -293,6 +293,7 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
             slice=0;
             task=0;
         }
+      
         break;
     }//switch task
     TMR1->SR&=~TMR_SR_UIF;

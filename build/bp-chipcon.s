@@ -7440,9 +7440,9 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
     3324:	3301      	adds	r3, #1
     3326:	b29b      	uxth	r3, r3
     3328:	8093      	strh	r3, [r2, #4]
-            slice=0;
             task=0;
         }
+      
         break;
     }//switch task
     TMR1->SR&=~TMR_SR_UIF;
@@ -7572,7 +7572,7 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
     3400:	b29b      	uxth	r3, r3
     3402:	8093      	strh	r3, [r2, #4]
     3404:	e791      	b.n	332a <TV_SYNC_handler+0x122>
-        if (scan_line==263){
+          if (scan_line==263){
     3406:	4b10      	ldr	r3, [pc, #64]	; (3448 <TV_SYNC_handler+0x240>)
     3408:	885b      	ldrh	r3, [r3, #2]
     340a:	b29b      	uxth	r3, r3
