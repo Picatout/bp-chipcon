@@ -49,7 +49,7 @@
 #define BURST_START ((uint16_t)(5.0e-6*(float)FCLK))
 #define BURST_END ((uint16_t)(7.3e-6*(float)FCLK))
 #define LEFT_MARGIN (750) 
-#define FIRST_VIDEO_LINE (22)
+#define FIRST_VIDEO_LINE (30)
 #define VIDEO_LINES (224)
 #define CHROMA_CFG  (TMR_CCER_CC3E) 
 ///////////////////////////
@@ -229,9 +229,10 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
             TMR1->CCR1=SERRATION;    
             slice++;
             break;
-        }else if (slice==6){
+        }else if (slice==5){
             task++;
-            if (!(flags&F_EVEN)){
+            scan_line=9;
+            if ((flags&F_EVEN)){
                 break;
             }
         }else{
@@ -243,7 +244,6 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
         TMR1->ARR=HPERIOD;
         TMR1->CCR1=HPULSE;
         flags&=~F_VSYNC;
-        scan_line>>=2;
         task++;
         break;
     case READ_PAD:

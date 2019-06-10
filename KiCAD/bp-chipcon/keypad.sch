@@ -224,9 +224,9 @@ KEY_VDD
 Text HLabel 4750 3350 2    50   Input ~ 0
 KEY_CLK
 Text HLabel 4750 3225 2    50   Output ~ 0
-KEY_OUT
+KEY_DOUT
 Text HLabel 4775 3125 2    50   Input ~ 0
-KEY_IN
+KEY_DIN
 $Comp
 L switches:SW_Push SW2
 U 1 1 5CE47E3E

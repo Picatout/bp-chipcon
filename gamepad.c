@@ -33,9 +33,9 @@
 #include "tvout.h"
 
 #define GAMEPAD_PORT PORTB
-#define SEND_PIN  (15)
-#define RX_PIN (14)
 #define CLK_PIN (13)
+#define MOSI_PIN  (14)
+#define MISO_PIN (15)
 
 volatile uint8_t  btn_state;
 
@@ -81,9 +81,9 @@ void set_keymap(const uint8_t *kmap){
 
 // initialisation matérielle.
 void gamepad_init(){
-    config_pin(GAMEPAD_PORT,SEND_PIN,OUTPUT_PP_SLOW);
+    config_pin(GAMEPAD_PORT,MOSI_PIN,OUTPUT_PP_SLOW);
     config_pin(GAMEPAD_PORT,CLK_PIN,OUTPUT_PP_SLOW);
-    config_pin(GAMEPAD_PORT,RX_PIN,INPUT_PULL);
+//    config_pin(GAMEPAD_PORT,MISO_PIN,INPUT_PULL);
     btn_state=0xff;
     set_keymap(default_kmap);
 }
@@ -104,18 +104,18 @@ static uint8_t shift_out(uint8_t byte){
 
     while (mask){
         if (byte&mask){
-            GAMEPAD_PORT->ODR|=(1<<SEND_PIN);
+            GAMEPAD_PORT->ODR|=(1<<MOSI_PIN);
         }else{
-            GAMEPAD_PORT->ODR&=~(1<<SEND_PIN);
+            GAMEPAD_PORT->ODR&=~(1<<MOSI_PIN);
         }
         GAMEPAD_PORT->ODR|=(1<<CLK_PIN);
         _clk_delay();
         GAMEPAD_PORT->ODR&=~(1<<CLK_PIN);
         rx_byte>>=1;
-        if (GAMEPAD_PORT->IDR&=(1<<RX_PIN)) rx_byte|=128;    
+        if (GAMEPAD_PORT->IDR&(1<<MISO_PIN)) rx_byte|=128;    
         mask<<=1;
     }
-    GAMEPAD_PORT->ODR|=(1<<SEND_PIN);
+    GAMEPAD_PORT->ODR|=(1<<MOSI_PIN);
     GAMEPAD_PORT->ODR|=(1<<CLK_PIN);
     _clk_delay();
     GAMEPAD_PORT->ODR&=~(1<<CLK_PIN);

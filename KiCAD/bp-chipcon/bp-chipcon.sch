@@ -360,7 +360,7 @@ F 3 "~" V 1200 1510 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Text Notes 775  1525 0    50   ~ 0
-2xAAA\nAlkaline
+2xAA\nAlkaline
 Text Notes 1200 1200 2    50   ~ 0
 Vbat\n3 volt\n
 $Comp
@@ -689,8 +689,8 @@ F1 "keypad.sch" 50
 F2 "KEY_VDD" U L 2450 5775 50 
 F3 "KEY_GND" U L 2450 6175 50 
 F4 "KEY_CLK" I L 2450 6075 50 
-F5 "KEY_IN" I L 2450 5875 50 
-F6 "KEY_OUT" O L 2450 5975 50 
+F5 "KEY_DIN" I L 2450 5875 50 
+F6 "KEY_DOUT" O L 2450 5975 50 
 $EndSheet
 $Comp
 L power:GND #PWR015
@@ -708,13 +708,13 @@ Text Label 2225 5775 2    50   ~ 0
 Text Label 2225 6075 2    39   ~ 0
 GP_CLK
 Text Label 2225 5875 2    39   ~ 0
-GP_RX
+GP_MOSI
 Text Label 2225 5975 2    39   ~ 0
-GP_TX
-Text Label 4825 4200 0    39   ~ 0
-GP_TX
+GP_MISO
 Text Label 4825 4300 0    39   ~ 0
-GP_RX
+GP_MOSI
+Text Label 4825 4200 0    39   ~ 0
+GP_MISO
 Text Label 4825 4400 0    39   ~ 0
 GP_CLK
 NoConn ~ 4275 5050
