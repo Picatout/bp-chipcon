@@ -49,7 +49,7 @@
 #define BURST_START ((uint16_t)(5.0e-6*(float)FCLK))
 #define BURST_END ((uint16_t)(7.3e-6*(float)FCLK))
 #define LEFT_MARGIN (750) 
-#define FIRST_VIDEO_LINE (30)
+#define FIRST_VIDEO_LINE (40)
 #define VIDEO_LINES (224)
 #define CHROMA_CFG  (TMR_CCER_CC3E) 
 ///////////////////////////
@@ -75,10 +75,7 @@
 #define SCHIP_PDLY (2)
 
 enum TASK_ENUM{
-    PRE_SYNC,
     VSYNC,
-    POST_SYNC,
-    VSYNC_END,
     READ_PAD,
     SOUND_TMR,
     GAME_TMR,
@@ -95,7 +92,7 @@ enum TASK_ENUM{
 static volatile uint16_t task; // active task number
 static volatile uint16_t flags; // boolean flags.
 static volatile uint16_t slice; //  task slice
-static volatile uint16_t scan_line; // scan line counter
+static volatile int16_t scan_line; // scan line counter
 volatile uint16_t game_timer;
 volatile uint16_t sound_timer;
 volatile uint32_t ntsc_ticks;
@@ -155,7 +152,9 @@ void tvout_init(){
     TMR3->BDTR|=TMR_BDTR_MOE;
     TMR3->EGR|=TMR_EGR_UG;
     TMR3->SR=0;
-    TMR3->CR1|=TMR_CR1_CEN; 
+    TMR3->CR1|=TMR_CR1_CEN;
+    flags|=F_EVEN;
+    scan_line=0; 
 }
 
 void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
@@ -204,47 +203,34 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
     scan_line++;
     ntsc_ticks++;
     switch (task){
-    case PRE_SYNC:
-        if (!slice){
+    case VSYNC:
+        switch(scan_line){
+        case 1:
             // set pre-sync pulse
             TMR1->ARR=SYNC_LINE;
             TMR1->CCR1=SERRATION;
-            slice++;
-        }else{
-            next_task(6);
-        }
-        break;
-    case VSYNC:
-        if (!slice){
+            break;
+        case 7:
             // set vsync pulse
             TMR1->CCR1=SYNC_PULSE;
-            slice++;
-        }else{
-            next_task(6);
-        }
-        break;
-    case POST_SYNC:
-        if (!slice){
-            // set post-sync pulse
-            TMR1->CCR1=SERRATION;    
-            slice++;
             break;
-        }else if (slice==5){
-            task++;
-            scan_line=9;
-            if ((flags&F_EVEN)){
-                break;
+        case 13:
+            // set post-sync pulse    
+            TMR1->CCR1=SERRATION;
+            break;
+        case 18:
+            if (!(flags&F_EVEN)){
+sync_end:                
+                TMR1->ARR=HPERIOD;
+                TMR1->CCR1=HPULSE;
+                flags&=~F_VSYNC;
+                task++;
             }
-        }else{
-            slice++;
             break;
-        }
-    case VSYNC_END:
-        // set normal horizontal line pulse
-        TMR1->ARR=HPERIOD;
-        TMR1->CCR1=HPULSE;
-        flags&=~F_VSYNC;
-        task++;
+        case 19:
+            goto sync_end;
+            break;
+        }//switch(scan_line)
         break;
     case READ_PAD:
         read_gamepad();
@@ -283,17 +269,17 @@ void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
         }
         break;  
     case WAIT_FIELD_END:
-          if (scan_line==263){
-            if (flags&F_EVEN){ // half length
-                TMR1->ARR=SYNC_LINE;
-            }
+        if (scan_line==271 && !(flags&F_EVEN)){
+            goto frame_end;
+        }else
+        if (scan_line==272){
+            TMR1->ARR=SYNC_LINE;
+frame_end:            
             flags^=F_EVEN;
             flags|=F_VSYNC;
+            task=VSYNC;
             scan_line=0;
-            slice=0;
-            task=0;
         }
-      
         break;
     }//switch task
     TMR1->SR&=~TMR_SR_UIF;
