@@ -271,14 +271,15 @@ sync_end:
     case WAIT_FIELD_END:
         if (scan_line==271 && !(flags&F_EVEN)){
             goto frame_end;
-        }else
-        if (scan_line==272){
-            TMR1->ARR=SYNC_LINE;
+        }else{
+            if (scan_line==272){
+                TMR1->ARR=SYNC_LINE;
 frame_end:            
-            flags^=F_EVEN;
-            flags|=F_VSYNC;
-            task=VSYNC;
-            scan_line=0;
+                flags^=F_EVEN;
+                flags|=F_VSYNC;
+                task=VSYNC;
+                scan_line=0;
+            }
         }
         break;
     }//switch task
