@@ -6,7 +6,6 @@
 #define BLINKY_SIZE (2528)
 
 extern const uint8_t blinky_kmap[8];
-
 extern const uint8_t blinky[BLINKY_SIZE];
 
 #endif // BLINKY_H

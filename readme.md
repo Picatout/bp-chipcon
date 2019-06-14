@@ -1,5 +1,5 @@
 
-[english version](readme(en).md)
+[english](readme(en).md)
 
 BP-CHIPCON
 =

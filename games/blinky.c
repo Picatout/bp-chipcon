@@ -1,14 +1,14 @@
 #include "games.h"
 #include "blinky.h"
 
-#define KEY_UP    3
-#define KEY_DOWN  6
-#define KEY_LEFT   7
-#define KEY_RIGHT  8
+#define KEY_UP    2
+#define KEY_DOWN  4
+#define KEY_LEFT   8
+#define KEY_RIGHT  16
 #define KEY_A  1
-#define KEY_B  15
-#define KEY_C  14
-#define KEY_D  9
+#define KEY_B  32
+#define KEY_C  64
+#define KEY_D  128
 
 const uint8_t blinky_kmap[8]={KEY_A,KEY_C,KEY_B,KEY_D,KEY_RIGHT,KEY_DOWN,KEY_LEFT,KEY_UP};
 
