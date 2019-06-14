@@ -96,7 +96,7 @@ I created 3 tools to support BPCHIP games.
 Embedding SCHIP binary
 -
 
-Many SCHIP binaries are available freely on internet. I already embedded 13 of them in the project. Here I detail the procedure to embedded such a file in the project.
+Many SCHIP binaries are available freely on internet. I already embedded 13 of them in the project. Here I detail the procedure to embed such a file in the project.
 
 The first step is to use **cvt-chip** tool to produce the **C** language required files. Exemple to embed **BLINKY**.
 From the tools directory:
@@ -118,7 +118,7 @@ At the beginning of the file are the following 8 constants that correspond to th
 
 ![gamepad constants](gamepad-constant.png)
 
-For the game to be accessible through the games list another step is required that consist in editing the **games.c** file. Looking at this file it is quite obvious how to had the new game information to it.
+For the game to be accessible through the games list another step is required that consist in editing the **games.c** file. Looking at this file it is quite obvious how to add the new game information to it.
 
 ![games.c file](games.png)
 
