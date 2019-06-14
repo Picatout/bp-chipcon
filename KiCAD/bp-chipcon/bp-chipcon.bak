@@ -711,9 +711,9 @@ Text Label 2225 5875 2    39   ~ 0
 GP_MOSI
 Text Label 2225 5975 2    39   ~ 0
 GP_MISO
-Text Label 4825 4200 0    39   ~ 0
-GP_MOSI
 Text Label 4825 4300 0    39   ~ 0
+GP_MOSI
+Text Label 4825 4200 0    39   ~ 0
 GP_MISO
 Text Label 4825 4400 0    39   ~ 0
 GP_CLK

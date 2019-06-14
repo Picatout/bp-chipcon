@@ -505,5 +505,10 @@ void main(void){
 	gamepad_init();
 	sound_init();
 	gfx_cls();
+	while(1){
+		_debug_print("HELLO WORLD!\n");
+		game_pause(1);
+		//usart_putc(CHN1,usart_getc(CHN1));
+	}
 	menu();
 }

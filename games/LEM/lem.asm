@@ -35,8 +35,8 @@
 ;;;;;;;;;;;;;;;;;
 equ PAD_WIDTH	20 ; largeur de la plateforme d'alunissage
 equ LEM_WIDTH	16 ; largeur du LEM
-equ K_RIGHT_JET	16 ; touche de contrôle du jet de droite
-equ K_LEFT_JET	8 ; touche de contrôle du jet de gauche
+equ K_RIGHT_JET	8 ; touche de contrôle du jet de droite
+equ K_LEFT_JET	16 ; touche de contrôle du jet de gauche
 equ K_UP_JET	2 ; touche de controle du jet vertical
 
 ;;;;;;;;;;;;;;;
@@ -47,7 +47,7 @@ defn ypos VD    ; coordonnée y du LEM
 defn hspeed VC  ; vitesse horizontale du LEM
 defn vspeed VB  ; vitesse verticale du LEM
 defn fuel VA    ; niveau de carburant
-defn score V9   ; nombre d'alunissage r�ussis
+defn score V9   ; nombre d'alunissage réussis
 defn set V8     ; nombre de tentative d'alunissage
 defn pad V7    ; position du pad d'alunissage
 
@@ -64,7 +64,7 @@ defn pad V7    ; position du pad d'alunissage
 next_set:
 	add set,1
 ;position initiale du LEM
-;centre haut de l'�cran
+;centre haut de l'écran
     scrx xpos
     ld w, pad_width
 	sub xpos, w
@@ -73,7 +73,7 @@ next_set:
 ; vitesses initiales nulles 
 	ld hspeed,0
 	ld vspeed,0
-;r�servoir carburant plein
+;réservoir carburant plein
 	ld fuel, 100
 ; dessine la surface de la lune
 	call moonscape
@@ -86,13 +86,13 @@ main:
 	jp move_lem ; plus de carburant ignore le clavier
 ; lecture clavier
 	ld w, K_RIGHT_JET
-	sknp w ; jet de droite allum�
+	sknp w ; jet de droite allumé
 	jp right_jet
 	ld w, K_LEFT_JET
-	sknp w ; jet de gauche allum�
+	sknp w ; jet de gauche allumé
 	jp left_jet
 	ld w, K_UP_JET
-	sknp w ; fus�e principale allum�e
+	sknp w ; fusée principale allumée
 	jp up_jet
 	jp move_lem
 right_jet:
@@ -100,7 +100,7 @@ right_jet:
 	add hspeed,-1  
 	add fuel,-1  
 	jp update_fuel
-; acc�laration vers la droite
+; accélaration vers la droite
 left_jet:
 	call prt_fuel_level
 	add hspeed, 1   
@@ -111,27 +111,31 @@ up_jet:
 	call prt_fuel_level
 	add vspeed, -2  
 	se fuel, 1
-	add fuel, -1  ; r�acteur plus puissant consomme 2 unit�s de carburant
+	add fuel, -1  ; réacteur plus puissant consomme 2 unités de carburant
 	add fuel, -1   
 update_fuel:
 	noise 4
 	call prt_fuel_level
-; d�placement LEM
+; déplacement LEM
 move_lem:
 	call prt_fuel_level ; efface niveau de carburant
 	call drw_lem ; efface LEM
 ; mise à jour position LEM
-	add xpos, hspeed  
-	btss xpos,7
-	jp .+4
-	scrx xpos
-	ld w,1
-	sub xpos,w
-	jp .+5
+	add xpos, hspeed
+	btsc hspeed,7
+	jp move_left
+move_right:
 	scrx w
-	sub w,xpos
-	sne C,1
+	sub w,xpos  
+	sne C,0
 	ld xpos,0
+	jp move_vertical
+move_left:
+	ld w,-LEM_WIDTH
+	sub w,xpos
+	sne C,0
+	scrx xpos
+move_vertical:
 	add ypos, vspeed 
 	add vspeed, 1  ; gravitée
 	call drw_lem
@@ -141,11 +145,11 @@ move_lem:
 	call prt_fuel_level
 	sne fuel, 0
 	jp fuel_empty
-; d�lais
+; délais
 	ld w,20
 	call delay 
 	jp main
-; r�servoir vide
+; réservoir vide
 fuel_empty:
 	call prt_fuel_level
 	ld w, 10
@@ -159,7 +163,7 @@ fuel_empty:
 	call delay
 	jp main
 
-;d�lais
+;délais
 ; arguments:
 ; 	w = nombre de frame
 delay:
@@ -170,9 +174,9 @@ delay:
 	ret
 	
 ; il y a eu collision avec le sol	
-; condition succ�s: 
-;   LEM enti�rement sur le pad
-;   vitesse inf�rieure � 3
+; condition succès: 
+;   LEM entièrement sur le pad
+;   vitesse inférieure à 3
 collision:
 	call prt_fuel_level
 	ld w,2
@@ -185,7 +189,7 @@ collision:
 	jp crash  ; vitesse horizontale trop grande
 	se xpos, pad
 	jp crash    ; hors du pad
-; alunissage r�ussi
+; alunissage réussi
 	add score,1
 	ld i, success_msg
 	ld v1,0
@@ -241,11 +245,11 @@ display_score:
 ; affiche le nombre contenu dans la variable bcd
 ; utilise la police 4x6
 ; arguments: 
-; 	v1 position x (incr�ment� de 4 apr�s chaque caract�re)
+; 	v1 position x (incrémenté de 4 apràs chaque caractère)
 ;   v2 position y	
 ; variable locales:
 ;	v3 index dans le tableau bcd
-;	w contient le digit � afficher
+;	w contient le digit à afficher
 display_bcd:
 	ld v3, 0
 	ld i, bcd
@@ -263,7 +267,7 @@ display_bcd:
 ;variables locales:
 ;	v1 position y du pixel
 ;   v3 variable temporaire
-;   v4 position � droite du pad
+;   v4 position à droite du pad
 ;	v5 position x du pixel
 moonscape:
 	ld v5,0
@@ -286,10 +290,10 @@ scape_loop:
 	ld v3,v5
 	sub v3,pad 
 	se C,1
-	jp rand_y  ; � gauche du pad
+	jp rand_y  ; à gauche du pad
 	ld v3,v5
 	sub v3,v4
-	se C,1  ; � droite du pad
+	se C,1  ; à droite du pad
 	jp put_pixel ; sur le pad
 rand_y:
 	scry w
@@ -318,10 +322,10 @@ put_pixel:
 ; affiche le niveau de carburant
 ; utilise la police 8x10
 ; variables locales:
-;	v1  position x (incr�ment� de 8 apr�s chaque caract�re)
+;	v1  position x (incrémenté de 8 après chaque caractère)
 ;	v2	position y
 ;   w  chiffre � afficher
-;   v3  index dans le tableau bcd (incr�ment� de 1 apr�s chaque caract�re)
+;   v3  index dans le tableau bcd (incrément; de 1 après chaque caractère)
 prt_fuel_level:
 	ld v1,0
 	ld v2,0

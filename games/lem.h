@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define LEM_SIZE (566)
+#define LEM_SIZE (568)
 
 extern const uint8_t lem_kmap[8];
 extern const uint8_t lem[LEM_SIZE];
