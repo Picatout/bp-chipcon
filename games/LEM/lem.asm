@@ -122,19 +122,19 @@ move_lem:
 	call drw_lem ; efface LEM
 ; mise à jour position LEM
 	add xpos, hspeed
+	scrx w
+	add w,-1
+	sub w,xpos
+	se C,0
+	jp move_vertical	
 	btsc hspeed,7
 	jp move_left
 move_right:
-	scrx w
-	sub w,xpos  
-	sne C,0
 	ld xpos,0
 	jp move_vertical
 move_left:
-	ld w,-LEM_WIDTH
-	sub w,xpos
-	sne C,0
 	scrx xpos
+	add w,-1
 move_vertical:
 	add ypos, vspeed 
 	add vspeed, 1  ; gravitée
@@ -162,6 +162,7 @@ fuel_empty:
 	tone w,v1
 	call delay
 	jp main
+
 
 ;délais
 ; arguments:
@@ -241,7 +242,7 @@ display_score:
 	ld b, set
 	call display_bcd
 	ret
-	
+
 ; affiche le nombre contenu dans la variable bcd
 ; utilise la police 4x6
 ; arguments: 

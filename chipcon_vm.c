@@ -118,7 +118,9 @@ int rand(){
 vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 #define SLOW_DOWN 5
 	uint8_t x,y,n,exit_code=CHIP_CONTINUE;
-	char buffer[24];
+	char c,buffer[24];
+	int gx,gy;
+	vmode_params_t *vparams;
 
 	vms.pc=program_address;
 	vms.sp=0;
@@ -144,11 +146,19 @@ vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 			select_console(LOCAL);
 			break;
 		case DEBUG_SSTEP:	// single step, print all vm_states and pause.
+single_step:		
 			select_console(SERIAL);
-			print_vms("actual vm state\n",CHIP_CONTINUE);
-			print("vt100 keyboard to continue\n");
-			get_char();
+			print_vms("vm state\n",CHIP_CONTINUE);
+			print("<CTRL-Q> to quit, any to step.\n");
+			c=get_char();
+			if (c==CTRL_Q) dbg_level=DEBUG_BOC;
 			select_console(LOCAL);
+			break;
+		case DEBUG_BOC: // break on VT100 CTRL_C
+			if (usart_getc(CHN1)==CTRL_C){
+				dbg_level=DEBUG_SSTEP;
+				goto single_step;
+			}
 			break;
 		}//switch(dbg_level)
 		x=rx(vms.b1);
@@ -307,13 +317,14 @@ vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 				vms.var[x]=vms.stack[vms.sp--];
 				break;
 			case 0x8: // 9X08, SCRX  ;  VX=HRES screen width in pixels. ; BP-CHIP
-				{ 	vmode_params_t *vparams=get_video_params();
+				{ 	
+					vparams=get_video_params();
 					vms.var[x]=vparams->hres;
 				}
 				break;
 			case 0x9: // 9X09, SCRY  ; VX=VRES  screen height in pixels  ; BP-CHIP
 				{
-					vmode_params_t *vparams=get_video_params();
+					vparams=get_video_params();
 					vms.var[x]=vparams->vres;
 				}
 				break;
@@ -357,18 +368,20 @@ vm_exit_code_t chip_vm(uint16_t program_address, vm_debug_t dbg_level){
 			break;
 		case 0xd: //DXYN DRW VX,VY,N   draw a sprite, SCHIP and BP-CHIP can draw 16x16 sprites
 			n=vms.b2&0xf;
+			gx=(int)(unsigned)vms.var[x];
+			gy=(int)(unsigned)vms.var[y];
 			if (!n){
 				if (vms.sprite_mem==RAM_MEM){
-					vms.var[15]=gfx_sprite((int8_t)vms.var[x],(int8_t)vms.var[y],16,16,(const uint8_t*)&game_ram[vms.ix]);
+					vms.var[15]=gfx_sprite(gx,gy,16,16,(const uint8_t*)&game_ram[vms.ix]);
 				}else{
-					vms.var[15]=gfx_sprite((int8_t)vms.var[x],(int8_t)vms.var[y],16,16,(const uint8_t*)(uint32_t)vms.ix);
+					vms.var[15]=gfx_sprite(gx,gy,16,16,(const uint8_t*)(uint32_t)vms.ix);
 				}
 
 			}else{
 				if (vms.sprite_mem==RAM_MEM){
-					vms.var[15]=gfx_sprite((int8_t)vms.var[x],(int8_t)vms.var[y],8,n,(const uint8_t*)&game_ram[vms.ix]);
+					vms.var[15]=gfx_sprite(gx,gy,8,n,(const uint8_t*)&game_ram[vms.ix]);
 				}else{
-					vms.var[15]=gfx_sprite((int8_t)vms.var[x],(int8_t)vms.var[y],8,n,(const uint8_t*)(uint32_t)vms.ix);
+					vms.var[15]=gfx_sprite(gx,gy,8,n,(const uint8_t*)(uint32_t)vms.ix);
 				}
 			}
 			

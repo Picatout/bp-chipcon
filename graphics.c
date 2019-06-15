@@ -105,6 +105,7 @@ void gfx_plot (int x,int y,uint8_t color){
     video_buffer[idx]=byte;
 }
 */
+
 void gfx_cls(){
 	int x;
     vmode_params_t *vparams=get_video_params();

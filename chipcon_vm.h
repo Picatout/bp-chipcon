@@ -45,6 +45,7 @@ typedef enum VM_DEBUG{
 	DEBUG_PC_CODE, // print PC and OPCODE
 	DEBUG_VM_STATE, // print all machine state
 	DEBUG_SSTEP, // level2 + pause.
+	DEBUG_BOC, // break on command.
 }vm_debug_t;
 
 typedef struct vm_state{

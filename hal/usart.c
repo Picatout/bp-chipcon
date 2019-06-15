@@ -168,7 +168,7 @@ void usart_open_channel(usart_channel_t channel, unsigned baud, unsigned parity,
 // retourne 0 si pas de caractère disponible
 // retourne -1 si caractère disponible
 int usart_stat(usart_channel_t channel){
-	return channels[channel]->SR&USART_SR_RXNE;
+	return usart_queue[channel].head!=usart_queue[channel].tail;
 }
 
 // reçoit un caractère de la console
