@@ -180,20 +180,22 @@ void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
     TMR3->CCER|=CHROMA_CFG;
     while(TMR1->CNT<BURST_END); //(uint16_t)(8.0e-6*(float)FCLK));
     TMR3->CCER&=~CHROMA_CFG;
-    video_port=(uint16_t*)&PORTA->ODR;
-    video_data=&video_buffer[slice/lines_repeat*byte_per_row];
-    while(TMR1->CNT<left_margin);
-    _jitter_cancel();
-    TMR3->CCER|=CHROMA_CFG;
-    for (i=0;i<byte_per_row;i++){
-        _pixel_delay(pixel_delay);
-        *video_port=(*video_data)>>4;
-        _pixel_delay(pixel_delay);
-        //__asm__ volatile("nop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\t");
-        *video_port=(*video_data++)&0xf;
-        //__asm__ volatile("nop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\t");
+    if (flags & F_VIDEO){
+        video_port=(uint16_t*)&PORTA->ODR;
+        video_data=&video_buffer[slice/lines_repeat*byte_per_row];
+        while(TMR1->CNT<left_margin);
+        _jitter_cancel();
+        TMR3->CCER|=CHROMA_CFG;
+        for (i=0;i<byte_per_row;i++){
+            _pixel_delay(pixel_delay);
+            *video_port=(*video_data)>>4;
+            _pixel_delay(pixel_delay);
+            //__asm__ volatile("nop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\t");
+            *video_port=(*video_data++)&0xf;
+            //__asm__ volatile("nop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\t");
+        }
+        PORTA->ODR=0;
     }
-    PORTA->ODR=0;
     TMR3->CCER&=~(TMR_CCER_CC3E);
     TMR1->SR&=~TMR_SR_CC2IF;
 }
@@ -224,6 +226,8 @@ sync_end:
                 TMR1->ARR=HPERIOD;
                 TMR1->CCR1=HPULSE;
                 flags&=~F_VSYNC;
+                TMR1->SR&=~TMR_SR_CC2IF;
+                TMR1->DIER|=TMR_DIER_CC2IE;
                 task++;
             }
             break;
@@ -253,8 +257,6 @@ sync_end:
         break;
     case WAIT_FIRST_VIDEO:
         if (scan_line==video_start){
-            TMR1->SR&=~TMR_SR_CC2IF;
-            TMR1->DIER|=TMR_DIER_CC2IE;
             flags |= F_VIDEO;
             task++;
             slice=0;
@@ -263,7 +265,6 @@ sync_end:
     case WAIT_VIDEO_END:
         slice++;
         if (scan_line==video_end){
-            TMR1->DIER&=~TMR_DIER_CC2IE;
             flags &=~F_VIDEO;
             task++;
         }
@@ -279,6 +280,7 @@ frame_end:
                 flags|=F_VSYNC;
                 task=VSYNC;
                 scan_line=0;
+                TMR1->DIER&=~TMR_DIER_CC2IE;
             }
         }
         break;

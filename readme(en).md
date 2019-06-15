@@ -148,5 +148,5 @@ BP-CHIPCON as no PC emulator yet, although I may eventually adpapt the one I cre
 
 The only support to debug a game is trhough VT100 virtual console running on the PC and connected to the console via its serial port. There is no flow control and the setting is **115200 8N1**. 
 
-This far from ideal as one has to recompile the console firware each time a game bug is corrected.
+This far from ideal as one has to recompile the console firmware each time a game bug is corrected.
 

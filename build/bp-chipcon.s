@@ -15,7 +15,7 @@ Disassembly of section .text:
       70:	45 02 00 00 9d 2b 00 00 9d 2b 00 00 49 02 00 00     E....+...+..I...
       80:	9d 2b 00 00 9d 2b 00 00 9d 2b 00 00 9d 2b 00 00     .+...+...+...+..
       90:	9d 2b 00 00 9d 2b 00 00 9d 2b 00 00 4d 02 00 00     .+...+...+..M...
-      a0:	9d 2b 00 00 f1 31 00 00 9d 2b 00 00 09 31 00 00     .+...1...+...1..
+      a0:	9d 2b 00 00 f9 31 00 00 9d 2b 00 00 09 31 00 00     .+...1...+...1..
       b0:	c5 29 00 00 51 02 00 00 55 02 00 00 9d 2b 00 00     .)..Q...U....+..
       c0:	9d 2b 00 00 9d 2b 00 00 9d 2b 00 00 9d 2b 00 00     .+...+...+...+..
       d0:	9d 2b 00 00 97 37 00 00 cd 37 00 00 0d 38 00 00     .+...7...7...8..
@@ -107,7 +107,7 @@ Disassembly of section .text:
      194:	20004e99 	.word	0x20004e99
      198:	2000022e 	.word	0x2000022e
      19c:	20000000 	.word	0x20000000
-     1a0:	00009bf0 	.word	0x00009bf0
+     1a0:	00009c20 	.word	0x00009c20
      1a4:	20000231 	.word	0x20000231
      1a8:	e000ed14 	.word	0xe000ed14
 
@@ -7142,309 +7142,313 @@ void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
     register uint16_t *video_port;
     register uint32_t i;
     TMR3->CCER|=CHROMA_CFG;
-    3112:	4a2f      	ldr	r2, [pc, #188]	; (31d0 <TV_OUT_handler+0xc8>)
+    3112:	4a31      	ldr	r2, [pc, #196]	; (31d8 <TV_OUT_handler+0xd0>)
     3114:	6a13      	ldr	r3, [r2, #32]
     3116:	f443 7380 	orr.w	r3, r3, #256	; 0x100
     311a:	6213      	str	r3, [r2, #32]
     while(TMR1->CNT<BURST_END); //(uint16_t)(8.0e-6*(float)FCLK));
-    311c:	492d      	ldr	r1, [pc, #180]	; (31d4 <TV_OUT_handler+0xcc>)
+    311c:	492f      	ldr	r1, [pc, #188]	; (31dc <TV_OUT_handler+0xd4>)
     311e:	f240 2209 	movw	r2, #521	; 0x209
     3122:	6a4b      	ldr	r3, [r1, #36]	; 0x24
     3124:	4293      	cmp	r3, r2
     3126:	d9fc      	bls.n	3122 <TV_OUT_handler+0x1a>
     TMR3->CCER&=~CHROMA_CFG;
-    3128:	4a29      	ldr	r2, [pc, #164]	; (31d0 <TV_OUT_handler+0xc8>)
+    3128:	4a2b      	ldr	r2, [pc, #172]	; (31d8 <TV_OUT_handler+0xd0>)
     312a:	6a13      	ldr	r3, [r2, #32]
     312c:	f423 7380 	bic.w	r3, r3, #256	; 0x100
     3130:	6213      	str	r3, [r2, #32]
-    video_port=(uint16_t*)&PORTA->ODR;
-    video_data=&video_buffer[slice/lines_repeat*byte_per_row];
-    3132:	4b29      	ldr	r3, [pc, #164]	; (31d8 <TV_OUT_handler+0xd0>)
-    3134:	889d      	ldrh	r5, [r3, #4]
-    3136:	b2ad      	uxth	r5, r5
-    3138:	4b28      	ldr	r3, [pc, #160]	; (31dc <TV_OUT_handler+0xd4>)
-    313a:	7818      	ldrb	r0, [r3, #0]
-    313c:	785a      	ldrb	r2, [r3, #1]
-    313e:	fb95 f5f2 	sdiv	r5, r5, r2
-    3142:	4a27      	ldr	r2, [pc, #156]	; (31e0 <TV_OUT_handler+0xd8>)
-    3144:	fb00 2505 	mla	r5, r0, r5, r2
-    while(TMR1->CNT<left_margin);
-    3148:	8859      	ldrh	r1, [r3, #2]
-    314a:	4a22      	ldr	r2, [pc, #136]	; (31d4 <TV_OUT_handler+0xcc>)
-    314c:	6a53      	ldr	r3, [r2, #36]	; 0x24
-    314e:	428b      	cmp	r3, r1
-    3150:	d3fc      	bcc.n	314c <TV_OUT_handler+0x44>
-    _jitter_cancel();
-    3152:	4b24      	ldr	r3, [pc, #144]	; (31e4 <TV_OUT_handler+0xdc>)
-    3154:	461a      	mov	r2, r3
-    3156:	6812      	ldr	r2, [r2, #0]
-    3158:	f002 0207 	and.w	r2, r2, #7
-    315c:	ea4f 0242 	mov.w	r2, r2, lsl #1
-    3160:	4497      	add	pc, r2
-    3162:	bf00      	nop
-    3164:	bf00      	nop
-    3166:	bf00      	nop
-    3168:	bf00      	nop
-    316a:	bf00      	nop
+    if (flags & F_VIDEO){
+    3132:	4b2b      	ldr	r3, [pc, #172]	; (31e0 <TV_OUT_handler+0xd8>)
+    3134:	881b      	ldrh	r3, [r3, #0]
+    3136:	f013 0f04 	tst.w	r3, #4
+    313a:	d03f      	beq.n	31bc <TV_OUT_handler+0xb4>
+        video_port=(uint16_t*)&PORTA->ODR;
+        video_data=&video_buffer[slice/lines_repeat*byte_per_row];
+    313c:	4b28      	ldr	r3, [pc, #160]	; (31e0 <TV_OUT_handler+0xd8>)
+    313e:	889d      	ldrh	r5, [r3, #4]
+    3140:	b2ad      	uxth	r5, r5
+    3142:	4b28      	ldr	r3, [pc, #160]	; (31e4 <TV_OUT_handler+0xdc>)
+    3144:	7818      	ldrb	r0, [r3, #0]
+    3146:	785a      	ldrb	r2, [r3, #1]
+    3148:	fb95 f5f2 	sdiv	r5, r5, r2
+    314c:	4a26      	ldr	r2, [pc, #152]	; (31e8 <TV_OUT_handler+0xe0>)
+    314e:	fb00 2505 	mla	r5, r0, r5, r2
+        while(TMR1->CNT<left_margin);
+    3152:	8859      	ldrh	r1, [r3, #2]
+    3154:	4a21      	ldr	r2, [pc, #132]	; (31dc <TV_OUT_handler+0xd4>)
+    3156:	6a53      	ldr	r3, [r2, #36]	; 0x24
+    3158:	428b      	cmp	r3, r1
+    315a:	d3fc      	bcc.n	3156 <TV_OUT_handler+0x4e>
+        _jitter_cancel();
+    315c:	4b23      	ldr	r3, [pc, #140]	; (31ec <TV_OUT_handler+0xe4>)
+    315e:	461a      	mov	r2, r3
+    3160:	6812      	ldr	r2, [r2, #0]
+    3162:	f002 0207 	and.w	r2, r2, #7
+    3166:	ea4f 0242 	mov.w	r2, r2, lsl #1
+    316a:	4497      	add	pc, r2
     316c:	bf00      	nop
     316e:	bf00      	nop
     3170:	bf00      	nop
-    TMR3->CCER|=CHROMA_CFG;
-    3172:	4a17      	ldr	r2, [pc, #92]	; (31d0 <TV_OUT_handler+0xc8>)
-    3174:	6a13      	ldr	r3, [r2, #32]
-    3176:	f443 7380 	orr.w	r3, r3, #256	; 0x100
-    317a:	6213      	str	r3, [r2, #32]
-    for (i=0;i<byte_per_row;i++){
-    317c:	b1b0      	cbz	r0, 31ac <TV_OUT_handler+0xa4>
-    317e:	462b      	mov	r3, r5
-        _pixel_delay(pixel_delay);
-    3180:	4916      	ldr	r1, [pc, #88]	; (31dc <TV_OUT_handler+0xd4>)
-        *video_port=(*video_data)>>4;
-    3182:	4819      	ldr	r0, [pc, #100]	; (31e8 <TV_OUT_handler+0xe0>)
-        _pixel_delay(pixel_delay);
-    3184:	790c      	ldrb	r4, [r1, #4]
-    3186:	4622      	mov	r2, r4
-    3188:	3a01      	subs	r2, #1
-    318a:	d1fd      	bne.n	3188 <TV_OUT_handler+0x80>
-        *video_port=(*video_data)>>4;
-    318c:	781a      	ldrb	r2, [r3, #0]
-    318e:	0912      	lsrs	r2, r2, #4
-    3190:	8002      	strh	r2, [r0, #0]
-        _pixel_delay(pixel_delay);
-    3192:	790c      	ldrb	r4, [r1, #4]
-    3194:	4622      	mov	r2, r4
-    3196:	3a01      	subs	r2, #1
-    3198:	d1fd      	bne.n	3196 <TV_OUT_handler+0x8e>
-        //__asm__ volatile("nop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\t");
-        *video_port=(*video_data++)&0xf;
-    319a:	f813 2b01 	ldrb.w	r2, [r3], #1
-    319e:	f002 020f 	and.w	r2, r2, #15
-    31a2:	8002      	strh	r2, [r0, #0]
-    for (i=0;i<byte_per_row;i++){
-    31a4:	1b5c      	subs	r4, r3, r5
-    31a6:	780a      	ldrb	r2, [r1, #0]
-    31a8:	4294      	cmp	r4, r2
-    31aa:	d3eb      	bcc.n	3184 <TV_OUT_handler+0x7c>
-        //__asm__ volatile("nop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\t");
+    3172:	bf00      	nop
+    3174:	bf00      	nop
+    3176:	bf00      	nop
+    3178:	bf00      	nop
+    317a:	bf00      	nop
+        TMR3->CCER|=CHROMA_CFG;
+    317c:	4a16      	ldr	r2, [pc, #88]	; (31d8 <TV_OUT_handler+0xd0>)
+    317e:	6a13      	ldr	r3, [r2, #32]
+    3180:	f443 7380 	orr.w	r3, r3, #256	; 0x100
+    3184:	6213      	str	r3, [r2, #32]
+        for (i=0;i<byte_per_row;i++){
+    3186:	b1b0      	cbz	r0, 31b6 <TV_OUT_handler+0xae>
+    3188:	462b      	mov	r3, r5
+            _pixel_delay(pixel_delay);
+    318a:	4916      	ldr	r1, [pc, #88]	; (31e4 <TV_OUT_handler+0xdc>)
+            *video_port=(*video_data)>>4;
+    318c:	4818      	ldr	r0, [pc, #96]	; (31f0 <TV_OUT_handler+0xe8>)
+            _pixel_delay(pixel_delay);
+    318e:	790c      	ldrb	r4, [r1, #4]
+    3190:	4622      	mov	r2, r4
+    3192:	3a01      	subs	r2, #1
+    3194:	d1fd      	bne.n	3192 <TV_OUT_handler+0x8a>
+            *video_port=(*video_data)>>4;
+    3196:	781a      	ldrb	r2, [r3, #0]
+    3198:	0912      	lsrs	r2, r2, #4
+    319a:	8002      	strh	r2, [r0, #0]
+            _pixel_delay(pixel_delay);
+    319c:	790c      	ldrb	r4, [r1, #4]
+    319e:	4622      	mov	r2, r4
+    31a0:	3a01      	subs	r2, #1
+    31a2:	d1fd      	bne.n	31a0 <TV_OUT_handler+0x98>
+            //__asm__ volatile("nop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\t");
+            *video_port=(*video_data++)&0xf;
+    31a4:	f813 2b01 	ldrb.w	r2, [r3], #1
+    31a8:	f002 020f 	and.w	r2, r2, #15
+    31ac:	8002      	strh	r2, [r0, #0]
+        for (i=0;i<byte_per_row;i++){
+    31ae:	1b5c      	subs	r4, r3, r5
+    31b0:	780a      	ldrb	r2, [r1, #0]
+    31b2:	4294      	cmp	r4, r2
+    31b4:	d3eb      	bcc.n	318e <TV_OUT_handler+0x86>
+            //__asm__ volatile("nop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\t");
+        }
+        PORTA->ODR=0;
+    31b6:	2200      	movs	r2, #0
+    31b8:	4b0e      	ldr	r3, [pc, #56]	; (31f4 <TV_OUT_handler+0xec>)
+    31ba:	60da      	str	r2, [r3, #12]
     }
-    PORTA->ODR=0;
-    31ac:	2200      	movs	r2, #0
-    31ae:	4b0f      	ldr	r3, [pc, #60]	; (31ec <TV_OUT_handler+0xe4>)
-    31b0:	60da      	str	r2, [r3, #12]
     TMR3->CCER&=~(TMR_CCER_CC3E);
-    31b2:	4a07      	ldr	r2, [pc, #28]	; (31d0 <TV_OUT_handler+0xc8>)
-    31b4:	6a13      	ldr	r3, [r2, #32]
-    31b6:	f423 7380 	bic.w	r3, r3, #256	; 0x100
-    31ba:	6213      	str	r3, [r2, #32]
+    31bc:	4a06      	ldr	r2, [pc, #24]	; (31d8 <TV_OUT_handler+0xd0>)
+    31be:	6a13      	ldr	r3, [r2, #32]
+    31c0:	f423 7380 	bic.w	r3, r3, #256	; 0x100
+    31c4:	6213      	str	r3, [r2, #32]
     TMR1->SR&=~TMR_SR_CC2IF;
-    31bc:	f502 3294 	add.w	r2, r2, #75776	; 0x12800
-    31c0:	6913      	ldr	r3, [r2, #16]
-    31c2:	f023 0304 	bic.w	r3, r3, #4
-    31c6:	6113      	str	r3, [r2, #16]
+    31c6:	f502 3294 	add.w	r2, r2, #75776	; 0x12800
+    31ca:	6913      	ldr	r3, [r2, #16]
+    31cc:	f023 0304 	bic.w	r3, r3, #4
+    31d0:	6113      	str	r3, [r2, #16]
 }
-    31c8:	bc31      	pop	{r0, r4, r5}
-    31ca:	4685      	mov	sp, r0
-    31cc:	4770      	bx	lr
-    31ce:	bf00      	nop
-    31d0:	40000400 	.word	0x40000400
-    31d4:	40012c00 	.word	0x40012c00
-    31d8:	200006bc 	.word	0x200006bc
-    31dc:	20000224 	.word	0x20000224
-    31e0:	20002730 	.word	0x20002730
-    31e4:	40012c24 	.word	0x40012c24
-    31e8:	4001080c 	.word	0x4001080c
-    31ec:	40010800 	.word	0x40010800
+    31d2:	bc31      	pop	{r0, r4, r5}
+    31d4:	4685      	mov	sp, r0
+    31d6:	4770      	bx	lr
+    31d8:	40000400 	.word	0x40000400
+    31dc:	40012c00 	.word	0x40012c00
+    31e0:	200006bc 	.word	0x200006bc
+    31e4:	20000224 	.word	0x20000224
+    31e8:	20002730 	.word	0x20002730
+    31ec:	40012c24 	.word	0x40012c24
+    31f0:	4001080c 	.word	0x4001080c
+    31f4:	40010800 	.word	0x40010800
 
-000031f0 <TV_SYNC_handler>:
+000031f8 <TV_SYNC_handler>:
 
 void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
-    31f0:	4668      	mov	r0, sp
-    31f2:	f020 0107 	bic.w	r1, r0, #7
-    31f6:	468d      	mov	sp, r1
-    31f8:	b501      	push	{r0, lr}
+    31f8:	4668      	mov	r0, sp
+    31fa:	f020 0107 	bic.w	r1, r0, #7
+    31fe:	468d      	mov	sp, r1
+    3200:	b501      	push	{r0, lr}
 #define next_task(n)  ({slice++; if (slice==n){slice=0;task++;}})
     scan_line++;
-    31fa:	4a71      	ldr	r2, [pc, #452]	; (33c0 <TV_SYNC_handler+0x1d0>)
-    31fc:	8853      	ldrh	r3, [r2, #2]
-    31fe:	3301      	adds	r3, #1
-    3200:	b21b      	sxth	r3, r3
-    3202:	8053      	strh	r3, [r2, #2]
+    3202:	4a6f      	ldr	r2, [pc, #444]	; (33c0 <TV_SYNC_handler+0x1c8>)
+    3204:	8853      	ldrh	r3, [r2, #2]
+    3206:	3301      	adds	r3, #1
+    3208:	b21b      	sxth	r3, r3
+    320a:	8053      	strh	r3, [r2, #2]
     ntsc_ticks++;
-    3204:	496f      	ldr	r1, [pc, #444]	; (33c4 <TV_SYNC_handler+0x1d4>)
-    3206:	680b      	ldr	r3, [r1, #0]
-    3208:	3301      	adds	r3, #1
-    320a:	600b      	str	r3, [r1, #0]
+    320c:	496d      	ldr	r1, [pc, #436]	; (33c4 <TV_SYNC_handler+0x1cc>)
+    320e:	680b      	ldr	r3, [r1, #0]
+    3210:	3301      	adds	r3, #1
+    3212:	600b      	str	r3, [r1, #0]
     switch (task){
-    320c:	88d3      	ldrh	r3, [r2, #6]
-    320e:	b29b      	uxth	r3, r3
-    3210:	2b06      	cmp	r3, #6
-    3212:	d849      	bhi.n	32a8 <TV_SYNC_handler+0xb8>
-    3214:	e8df f013 	tbh	[pc, r3, lsl #1]
-    3218:	00410007 	.word	0x00410007
-    321c:	00660051 	.word	0x00660051
-    3220:	00920075 	.word	0x00920075
-    3224:	00ae      	.short	0x00ae
+    3214:	88d3      	ldrh	r3, [r2, #6]
+    3216:	b29b      	uxth	r3, r3
+    3218:	2b06      	cmp	r3, #6
+    321a:	d84e      	bhi.n	32ba <TV_SYNC_handler+0xc2>
+    321c:	e8df f003 	tbb	[pc, r3]
+    3220:	6b564604 	.word	0x6b564604
+    3224:	8e7a      	.short	0x8e7a
+    3226:	a5          	.byte	0xa5
+    3227:	00          	.byte	0x00
     case VSYNC:
         switch(scan_line){
-    3226:	4b66      	ldr	r3, [pc, #408]	; (33c0 <TV_SYNC_handler+0x1d0>)
-    3228:	885b      	ldrh	r3, [r3, #2]
-    322a:	b21b      	sxth	r3, r3
-    322c:	3b01      	subs	r3, #1
-    322e:	2b12      	cmp	r3, #18
-    3230:	d83a      	bhi.n	32a8 <TV_SYNC_handler+0xb8>
-    3232:	e8df f003 	tbb	[pc, r3]
-    3236:	390a      	.short	0x390a
-    3238:	39393939 	.word	0x39393939
-    323c:	39393911 	.word	0x39393911
-    3240:	39163939 	.word	0x39163939
-    3244:	1a393939 	.word	0x1a393939
-    3248:	1f          	.byte	0x1f
-    3249:	00          	.byte	0x00
+    3228:	4b65      	ldr	r3, [pc, #404]	; (33c0 <TV_SYNC_handler+0x1c8>)
+    322a:	885b      	ldrh	r3, [r3, #2]
+    322c:	b21b      	sxth	r3, r3
+    322e:	3b01      	subs	r3, #1
+    3230:	2b12      	cmp	r3, #18
+    3232:	d842      	bhi.n	32ba <TV_SYNC_handler+0xc2>
+    3234:	e8df f003 	tbb	[pc, r3]
+    3238:	4141410a 	.word	0x4141410a
+    323c:	41114141 	.word	0x41114141
+    3240:	41414141 	.word	0x41414141
+    3244:	41414116 	.word	0x41414116
+    3248:	1a41      	.short	0x1a41
+    324a:	1f          	.byte	0x1f
+    324b:	00          	.byte	0x00
         case 1:
             // set pre-sync pulse
             TMR1->ARR=SYNC_LINE;
-    324a:	4b5f      	ldr	r3, [pc, #380]	; (33c8 <TV_SYNC_handler+0x1d8>)
-    324c:	f640 02e2 	movw	r2, #2274	; 0x8e2
-    3250:	62da      	str	r2, [r3, #44]	; 0x2c
+    324c:	4b5e      	ldr	r3, [pc, #376]	; (33c8 <TV_SYNC_handler+0x1d0>)
+    324e:	f640 02e2 	movw	r2, #2274	; 0x8e2
+    3252:	62da      	str	r2, [r3, #44]	; 0x2c
             TMR1->CCR1=SERRATION;
-    3252:	22a4      	movs	r2, #164	; 0xa4
-    3254:	635a      	str	r2, [r3, #52]	; 0x34
+    3254:	22a4      	movs	r2, #164	; 0xa4
+    3256:	635a      	str	r2, [r3, #52]	; 0x34
             break;
-    3256:	e027      	b.n	32a8 <TV_SYNC_handler+0xb8>
+    3258:	e02f      	b.n	32ba <TV_SYNC_handler+0xc2>
         case 7:
             // set vsync pulse
             TMR1->CCR1=SYNC_PULSE;
-    3258:	f240 7294 	movw	r2, #1940	; 0x794
-    325c:	4b5a      	ldr	r3, [pc, #360]	; (33c8 <TV_SYNC_handler+0x1d8>)
-    325e:	635a      	str	r2, [r3, #52]	; 0x34
+    325a:	f240 7294 	movw	r2, #1940	; 0x794
+    325e:	4b5a      	ldr	r3, [pc, #360]	; (33c8 <TV_SYNC_handler+0x1d0>)
+    3260:	635a      	str	r2, [r3, #52]	; 0x34
             break;
-    3260:	e022      	b.n	32a8 <TV_SYNC_handler+0xb8>
+    3262:	e02a      	b.n	32ba <TV_SYNC_handler+0xc2>
         case 13:
             // set post-sync pulse    
             TMR1->CCR1=SERRATION;
-    3262:	22a4      	movs	r2, #164	; 0xa4
-    3264:	4b58      	ldr	r3, [pc, #352]	; (33c8 <TV_SYNC_handler+0x1d8>)
-    3266:	635a      	str	r2, [r3, #52]	; 0x34
+    3264:	22a4      	movs	r2, #164	; 0xa4
+    3266:	4b58      	ldr	r3, [pc, #352]	; (33c8 <TV_SYNC_handler+0x1d0>)
+    3268:	635a      	str	r2, [r3, #52]	; 0x34
             break;
-    3268:	e01e      	b.n	32a8 <TV_SYNC_handler+0xb8>
+    326a:	e026      	b.n	32ba <TV_SYNC_handler+0xc2>
         case 18:
             if (!(flags&F_EVEN)){
-    326a:	4b55      	ldr	r3, [pc, #340]	; (33c0 <TV_SYNC_handler+0x1d0>)
-    326c:	881b      	ldrh	r3, [r3, #0]
-    326e:	f013 0f01 	tst.w	r3, #1
-    3272:	d119      	bne.n	32a8 <TV_SYNC_handler+0xb8>
+    326c:	4b54      	ldr	r3, [pc, #336]	; (33c0 <TV_SYNC_handler+0x1c8>)
+    326e:	881b      	ldrh	r3, [r3, #0]
+    3270:	f013 0f01 	tst.w	r3, #1
+    3274:	d121      	bne.n	32ba <TV_SYNC_handler+0xc2>
 sync_end:                
                 TMR1->ARR=HPERIOD;
-    3274:	4b54      	ldr	r3, [pc, #336]	; (33c8 <TV_SYNC_handler+0x1d8>)
-    3276:	f241 12c5 	movw	r2, #4549	; 0x11c5
-    327a:	62da      	str	r2, [r3, #44]	; 0x2c
+    3276:	4a54      	ldr	r2, [pc, #336]	; (33c8 <TV_SYNC_handler+0x1d0>)
+    3278:	f241 13c5 	movw	r3, #4549	; 0x11c5
+    327c:	62d3      	str	r3, [r2, #44]	; 0x2c
                 TMR1->CCR1=HPULSE;
-    327c:	f44f 72a8 	mov.w	r2, #336	; 0x150
-    3280:	635a      	str	r2, [r3, #52]	; 0x34
+    327e:	f44f 73a8 	mov.w	r3, #336	; 0x150
+    3282:	6353      	str	r3, [r2, #52]	; 0x34
                 flags&=~F_VSYNC;
-    3282:	4a4f      	ldr	r2, [pc, #316]	; (33c0 <TV_SYNC_handler+0x1d0>)
-    3284:	8813      	ldrh	r3, [r2, #0]
-    3286:	f023 0302 	bic.w	r3, r3, #2
-    328a:	041b      	lsls	r3, r3, #16
-    328c:	0c1b      	lsrs	r3, r3, #16
-    328e:	8013      	strh	r3, [r2, #0]
+    3284:	494e      	ldr	r1, [pc, #312]	; (33c0 <TV_SYNC_handler+0x1c8>)
+    3286:	880b      	ldrh	r3, [r1, #0]
+    3288:	f023 0302 	bic.w	r3, r3, #2
+    328c:	041b      	lsls	r3, r3, #16
+    328e:	0c1b      	lsrs	r3, r3, #16
+    3290:	800b      	strh	r3, [r1, #0]
+                TMR1->SR&=~TMR_SR_CC2IF;
+    3292:	6913      	ldr	r3, [r2, #16]
+    3294:	f023 0304 	bic.w	r3, r3, #4
+    3298:	6113      	str	r3, [r2, #16]
+                TMR1->DIER|=TMR_DIER_CC2IE;
+    329a:	68d3      	ldr	r3, [r2, #12]
+    329c:	f043 0304 	orr.w	r3, r3, #4
+    32a0:	60d3      	str	r3, [r2, #12]
                 task++;
-    3290:	88d3      	ldrh	r3, [r2, #6]
-    3292:	3301      	adds	r3, #1
-    3294:	b29b      	uxth	r3, r3
-    3296:	80d3      	strh	r3, [r2, #6]
-    3298:	e006      	b.n	32a8 <TV_SYNC_handler+0xb8>
+    32a2:	88cb      	ldrh	r3, [r1, #6]
+    32a4:	3301      	adds	r3, #1
+    32a6:	b29b      	uxth	r3, r3
+    32a8:	80cb      	strh	r3, [r1, #6]
+    32aa:	e006      	b.n	32ba <TV_SYNC_handler+0xc2>
             goto sync_end;
             break;
         }//switch(scan_line)
         break;
     case READ_PAD:
         read_gamepad();
-    329a:	f7fd ff51 	bl	1140 <read_gamepad>
+    32ac:	f7fd ff48 	bl	1140 <read_gamepad>
         task++;
-    329e:	4a48      	ldr	r2, [pc, #288]	; (33c0 <TV_SYNC_handler+0x1d0>)
-    32a0:	88d3      	ldrh	r3, [r2, #6]
-    32a2:	3301      	adds	r3, #1
-    32a4:	b29b      	uxth	r3, r3
-    32a6:	80d3      	strh	r3, [r2, #6]
-                scan_line=0;
+    32b0:	4a43      	ldr	r2, [pc, #268]	; (33c0 <TV_SYNC_handler+0x1c8>)
+    32b2:	88d3      	ldrh	r3, [r2, #6]
+    32b4:	3301      	adds	r3, #1
+    32b6:	b29b      	uxth	r3, r3
+    32b8:	80d3      	strh	r3, [r2, #6]
+                TMR1->DIER&=~TMR_DIER_CC2IE;
             }
         }
         break;
     }//switch task
     TMR1->SR&=~TMR_SR_UIF;
-    32a8:	4a47      	ldr	r2, [pc, #284]	; (33c8 <TV_SYNC_handler+0x1d8>)
-    32aa:	6913      	ldr	r3, [r2, #16]
-    32ac:	f023 0301 	bic.w	r3, r3, #1
-    32b0:	6113      	str	r3, [r2, #16]
+    32ba:	4a43      	ldr	r2, [pc, #268]	; (33c8 <TV_SYNC_handler+0x1d0>)
+    32bc:	6913      	ldr	r3, [r2, #16]
+    32be:	f023 0301 	bic.w	r3, r3, #1
+    32c2:	6113      	str	r3, [r2, #16]
 }
-    32b2:	e8bd 4001 	ldmia.w	sp!, {r0, lr}
-    32b6:	4685      	mov	sp, r0
-    32b8:	4770      	bx	lr
+    32c4:	e8bd 4001 	ldmia.w	sp!, {r0, lr}
+    32c8:	4685      	mov	sp, r0
+    32ca:	4770      	bx	lr
         if (sound_timer){
-    32ba:	4b44      	ldr	r3, [pc, #272]	; (33cc <TV_SYNC_handler+0x1dc>)
-    32bc:	881b      	ldrh	r3, [r3, #0]
-    32be:	b29b      	uxth	r3, r3
-    32c0:	b13b      	cbz	r3, 32d2 <TV_SYNC_handler+0xe2>
+    32cc:	4b3f      	ldr	r3, [pc, #252]	; (33cc <TV_SYNC_handler+0x1d4>)
+    32ce:	881b      	ldrh	r3, [r3, #0]
+    32d0:	b29b      	uxth	r3, r3
+    32d2:	b13b      	cbz	r3, 32e4 <TV_SYNC_handler+0xec>
             sound_timer--;
-    32c2:	4a42      	ldr	r2, [pc, #264]	; (33cc <TV_SYNC_handler+0x1dc>)
-    32c4:	8813      	ldrh	r3, [r2, #0]
-    32c6:	3b01      	subs	r3, #1
-    32c8:	b29b      	uxth	r3, r3
-    32ca:	8013      	strh	r3, [r2, #0]
+    32d4:	4a3d      	ldr	r2, [pc, #244]	; (33cc <TV_SYNC_handler+0x1d4>)
+    32d6:	8813      	ldrh	r3, [r2, #0]
+    32d8:	3b01      	subs	r3, #1
+    32da:	b29b      	uxth	r3, r3
+    32dc:	8013      	strh	r3, [r2, #0]
             if (!sound_timer){
-    32cc:	8813      	ldrh	r3, [r2, #0]
-    32ce:	b29b      	uxth	r3, r3
-    32d0:	b12b      	cbz	r3, 32de <TV_SYNC_handler+0xee>
+    32de:	8813      	ldrh	r3, [r2, #0]
+    32e0:	b29b      	uxth	r3, r3
+    32e2:	b12b      	cbz	r3, 32f0 <TV_SYNC_handler+0xf8>
         task++;
-    32d2:	4a3b      	ldr	r2, [pc, #236]	; (33c0 <TV_SYNC_handler+0x1d0>)
-    32d4:	88d3      	ldrh	r3, [r2, #6]
-    32d6:	3301      	adds	r3, #1
-    32d8:	b29b      	uxth	r3, r3
-    32da:	80d3      	strh	r3, [r2, #6]
+    32e4:	4a36      	ldr	r2, [pc, #216]	; (33c0 <TV_SYNC_handler+0x1c8>)
+    32e6:	88d3      	ldrh	r3, [r2, #6]
+    32e8:	3301      	adds	r3, #1
+    32ea:	b29b      	uxth	r3, r3
+    32ec:	80d3      	strh	r3, [r2, #6]
         break;    
-    32dc:	e7e4      	b.n	32a8 <TV_SYNC_handler+0xb8>
+    32ee:	e7e4      	b.n	32ba <TV_SYNC_handler+0xc2>
                 sound_stop();
-    32de:	f7ff fb3e 	bl	295e <sound_stop>
-    32e2:	e7f6      	b.n	32d2 <TV_SYNC_handler+0xe2>
+    32f0:	f7ff fb35 	bl	295e <sound_stop>
+    32f4:	e7f6      	b.n	32e4 <TV_SYNC_handler+0xec>
         if (game_timer){
-    32e4:	4b3a      	ldr	r3, [pc, #232]	; (33d0 <TV_SYNC_handler+0x1e0>)
-    32e6:	881b      	ldrh	r3, [r3, #0]
-    32e8:	b29b      	uxth	r3, r3
-    32ea:	b123      	cbz	r3, 32f6 <TV_SYNC_handler+0x106>
+    32f6:	4b36      	ldr	r3, [pc, #216]	; (33d0 <TV_SYNC_handler+0x1d8>)
+    32f8:	881b      	ldrh	r3, [r3, #0]
+    32fa:	b29b      	uxth	r3, r3
+    32fc:	b123      	cbz	r3, 3308 <TV_SYNC_handler+0x110>
             game_timer--;
-    32ec:	4a38      	ldr	r2, [pc, #224]	; (33d0 <TV_SYNC_handler+0x1e0>)
-    32ee:	8813      	ldrh	r3, [r2, #0]
-    32f0:	3b01      	subs	r3, #1
-    32f2:	b29b      	uxth	r3, r3
-    32f4:	8013      	strh	r3, [r2, #0]
+    32fe:	4a34      	ldr	r2, [pc, #208]	; (33d0 <TV_SYNC_handler+0x1d8>)
+    3300:	8813      	ldrh	r3, [r2, #0]
+    3302:	3b01      	subs	r3, #1
+    3304:	b29b      	uxth	r3, r3
+    3306:	8013      	strh	r3, [r2, #0]
         task++;
-    32f6:	4a32      	ldr	r2, [pc, #200]	; (33c0 <TV_SYNC_handler+0x1d0>)
-    32f8:	88d3      	ldrh	r3, [r2, #6]
-    32fa:	3301      	adds	r3, #1
-    32fc:	b29b      	uxth	r3, r3
-    32fe:	80d3      	strh	r3, [r2, #6]
+    3308:	4a2d      	ldr	r2, [pc, #180]	; (33c0 <TV_SYNC_handler+0x1c8>)
+    330a:	88d3      	ldrh	r3, [r2, #6]
+    330c:	3301      	adds	r3, #1
+    330e:	b29b      	uxth	r3, r3
+    3310:	80d3      	strh	r3, [r2, #6]
         break;
-    3300:	e7d2      	b.n	32a8 <TV_SYNC_handler+0xb8>
+    3312:	e7d2      	b.n	32ba <TV_SYNC_handler+0xc2>
         if (scan_line==video_start){
-    3302:	4b2f      	ldr	r3, [pc, #188]	; (33c0 <TV_SYNC_handler+0x1d0>)
-    3304:	885b      	ldrh	r3, [r3, #2]
-    3306:	b21b      	sxth	r3, r3
-    3308:	4a32      	ldr	r2, [pc, #200]	; (33d4 <TV_SYNC_handler+0x1e4>)
-    330a:	88d2      	ldrh	r2, [r2, #6]
-    330c:	4293      	cmp	r3, r2
-    330e:	d1cb      	bne.n	32a8 <TV_SYNC_handler+0xb8>
-            TMR1->SR&=~TMR_SR_CC2IF;
-    3310:	4b2d      	ldr	r3, [pc, #180]	; (33c8 <TV_SYNC_handler+0x1d8>)
-    3312:	691a      	ldr	r2, [r3, #16]
-    3314:	f022 0204 	bic.w	r2, r2, #4
-    3318:	611a      	str	r2, [r3, #16]
-            TMR1->DIER|=TMR_DIER_CC2IE;
-    331a:	68da      	ldr	r2, [r3, #12]
-    331c:	f042 0204 	orr.w	r2, r2, #4
-    3320:	60da      	str	r2, [r3, #12]
+    3314:	4b2a      	ldr	r3, [pc, #168]	; (33c0 <TV_SYNC_handler+0x1c8>)
+    3316:	885b      	ldrh	r3, [r3, #2]
+    3318:	b21b      	sxth	r3, r3
+    331a:	4a2e      	ldr	r2, [pc, #184]	; (33d4 <TV_SYNC_handler+0x1dc>)
+    331c:	88d2      	ldrh	r2, [r2, #6]
+    331e:	4293      	cmp	r3, r2
+    3320:	d1cb      	bne.n	32ba <TV_SYNC_handler+0xc2>
             flags |= F_VIDEO;
-    3322:	4b27      	ldr	r3, [pc, #156]	; (33c0 <TV_SYNC_handler+0x1d0>)
+    3322:	4b27      	ldr	r3, [pc, #156]	; (33c0 <TV_SYNC_handler+0x1c8>)
     3324:	881a      	ldrh	r2, [r3, #0]
     3326:	b292      	uxth	r2, r2
     3328:	f042 0204 	orr.w	r2, r2, #4
@@ -7457,9 +7461,9 @@ sync_end:
             slice=0;
     3336:	2200      	movs	r2, #0
     3338:	809a      	strh	r2, [r3, #4]
-    333a:	e7b5      	b.n	32a8 <TV_SYNC_handler+0xb8>
+    333a:	e7be      	b.n	32ba <TV_SYNC_handler+0xc2>
         slice++;
-    333c:	4a20      	ldr	r2, [pc, #128]	; (33c0 <TV_SYNC_handler+0x1d0>)
+    333c:	4a20      	ldr	r2, [pc, #128]	; (33c0 <TV_SYNC_handler+0x1c8>)
     333e:	8893      	ldrh	r3, [r2, #4]
     3340:	3301      	adds	r3, #1
     3342:	b29b      	uxth	r3, r3
@@ -7467,68 +7471,68 @@ sync_end:
         if (scan_line==video_end){
     3346:	8853      	ldrh	r3, [r2, #2]
     3348:	b21b      	sxth	r3, r3
-    334a:	4a22      	ldr	r2, [pc, #136]	; (33d4 <TV_SYNC_handler+0x1e4>)
+    334a:	4a22      	ldr	r2, [pc, #136]	; (33d4 <TV_SYNC_handler+0x1dc>)
     334c:	8912      	ldrh	r2, [r2, #8]
     334e:	4293      	cmp	r3, r2
-    3350:	d1aa      	bne.n	32a8 <TV_SYNC_handler+0xb8>
-            TMR1->DIER&=~TMR_DIER_CC2IE;
-    3352:	4a1d      	ldr	r2, [pc, #116]	; (33c8 <TV_SYNC_handler+0x1d8>)
-    3354:	68d3      	ldr	r3, [r2, #12]
-    3356:	f023 0304 	bic.w	r3, r3, #4
-    335a:	60d3      	str	r3, [r2, #12]
+    3350:	d1b3      	bne.n	32ba <TV_SYNC_handler+0xc2>
             flags &=~F_VIDEO;
-    335c:	4a18      	ldr	r2, [pc, #96]	; (33c0 <TV_SYNC_handler+0x1d0>)
-    335e:	8813      	ldrh	r3, [r2, #0]
-    3360:	f023 0304 	bic.w	r3, r3, #4
-    3364:	041b      	lsls	r3, r3, #16
-    3366:	0c1b      	lsrs	r3, r3, #16
-    3368:	8013      	strh	r3, [r2, #0]
+    3352:	4a1b      	ldr	r2, [pc, #108]	; (33c0 <TV_SYNC_handler+0x1c8>)
+    3354:	8813      	ldrh	r3, [r2, #0]
+    3356:	f023 0304 	bic.w	r3, r3, #4
+    335a:	041b      	lsls	r3, r3, #16
+    335c:	0c1b      	lsrs	r3, r3, #16
+    335e:	8013      	strh	r3, [r2, #0]
             task++;
-    336a:	88d3      	ldrh	r3, [r2, #6]
-    336c:	3301      	adds	r3, #1
-    336e:	b29b      	uxth	r3, r3
-    3370:	80d3      	strh	r3, [r2, #6]
-    3372:	e799      	b.n	32a8 <TV_SYNC_handler+0xb8>
+    3360:	88d3      	ldrh	r3, [r2, #6]
+    3362:	3301      	adds	r3, #1
+    3364:	b29b      	uxth	r3, r3
+    3366:	80d3      	strh	r3, [r2, #6]
+    3368:	e7a7      	b.n	32ba <TV_SYNC_handler+0xc2>
         if (scan_line==271 && !(flags&F_EVEN)){
-    3374:	4b12      	ldr	r3, [pc, #72]	; (33c0 <TV_SYNC_handler+0x1d0>)
-    3376:	885b      	ldrh	r3, [r3, #2]
-    3378:	b21b      	sxth	r3, r3
-    337a:	f240 120f 	movw	r2, #271	; 0x10f
-    337e:	4293      	cmp	r3, r2
-    3380:	d018      	beq.n	33b4 <TV_SYNC_handler+0x1c4>
+    336a:	4b15      	ldr	r3, [pc, #84]	; (33c0 <TV_SYNC_handler+0x1c8>)
+    336c:	885b      	ldrh	r3, [r3, #2]
+    336e:	b21b      	sxth	r3, r3
+    3370:	f240 120f 	movw	r2, #271	; 0x10f
+    3374:	4293      	cmp	r3, r2
+    3376:	d01d      	beq.n	33b4 <TV_SYNC_handler+0x1bc>
             if (scan_line==272){
-    3382:	4b0f      	ldr	r3, [pc, #60]	; (33c0 <TV_SYNC_handler+0x1d0>)
-    3384:	885b      	ldrh	r3, [r3, #2]
-    3386:	b21b      	sxth	r3, r3
-    3388:	f5b3 7f88 	cmp.w	r3, #272	; 0x110
-    338c:	d18c      	bne.n	32a8 <TV_SYNC_handler+0xb8>
+    3378:	4b11      	ldr	r3, [pc, #68]	; (33c0 <TV_SYNC_handler+0x1c8>)
+    337a:	885b      	ldrh	r3, [r3, #2]
+    337c:	b21b      	sxth	r3, r3
+    337e:	f5b3 7f88 	cmp.w	r3, #272	; 0x110
+    3382:	d19a      	bne.n	32ba <TV_SYNC_handler+0xc2>
                 TMR1->ARR=SYNC_LINE;
-    338e:	f640 02e2 	movw	r2, #2274	; 0x8e2
-    3392:	4b0d      	ldr	r3, [pc, #52]	; (33c8 <TV_SYNC_handler+0x1d8>)
-    3394:	62da      	str	r2, [r3, #44]	; 0x2c
+    3384:	f640 02e2 	movw	r2, #2274	; 0x8e2
+    3388:	4b0f      	ldr	r3, [pc, #60]	; (33c8 <TV_SYNC_handler+0x1d0>)
+    338a:	62da      	str	r2, [r3, #44]	; 0x2c
                 flags^=F_EVEN;
-    3396:	4b0a      	ldr	r3, [pc, #40]	; (33c0 <TV_SYNC_handler+0x1d0>)
+    338c:	4b0c      	ldr	r3, [pc, #48]	; (33c0 <TV_SYNC_handler+0x1c8>)
+    338e:	881a      	ldrh	r2, [r3, #0]
+    3390:	b292      	uxth	r2, r2
+    3392:	f082 0201 	eor.w	r2, r2, #1
+    3396:	801a      	strh	r2, [r3, #0]
+                flags|=F_VSYNC;
     3398:	881a      	ldrh	r2, [r3, #0]
     339a:	b292      	uxth	r2, r2
-    339c:	f082 0201 	eor.w	r2, r2, #1
+    339c:	f042 0202 	orr.w	r2, r2, #2
     33a0:	801a      	strh	r2, [r3, #0]
-                flags|=F_VSYNC;
-    33a2:	881a      	ldrh	r2, [r3, #0]
-    33a4:	b292      	uxth	r2, r2
-    33a6:	f042 0202 	orr.w	r2, r2, #2
-    33aa:	801a      	strh	r2, [r3, #0]
                 task=VSYNC;
-    33ac:	2200      	movs	r2, #0
-    33ae:	80da      	strh	r2, [r3, #6]
+    33a2:	2200      	movs	r2, #0
+    33a4:	80da      	strh	r2, [r3, #6]
                 scan_line=0;
-    33b0:	805a      	strh	r2, [r3, #2]
-    33b2:	e779      	b.n	32a8 <TV_SYNC_handler+0xb8>
+    33a6:	805a      	strh	r2, [r3, #2]
+                TMR1->DIER&=~TMR_DIER_CC2IE;
+    33a8:	4a07      	ldr	r2, [pc, #28]	; (33c8 <TV_SYNC_handler+0x1d0>)
+    33aa:	68d3      	ldr	r3, [r2, #12]
+    33ac:	f023 0304 	bic.w	r3, r3, #4
+    33b0:	60d3      	str	r3, [r2, #12]
+    33b2:	e782      	b.n	32ba <TV_SYNC_handler+0xc2>
         if (scan_line==271 && !(flags&F_EVEN)){
-    33b4:	4b02      	ldr	r3, [pc, #8]	; (33c0 <TV_SYNC_handler+0x1d0>)
+    33b4:	4b02      	ldr	r3, [pc, #8]	; (33c0 <TV_SYNC_handler+0x1c8>)
     33b6:	881b      	ldrh	r3, [r3, #0]
     33b8:	f013 0f01 	tst.w	r3, #1
-    33bc:	d0eb      	beq.n	3396 <TV_SYNC_handler+0x1a6>
-    33be:	e7e0      	b.n	3382 <TV_SYNC_handler+0x192>
+    33bc:	d0e6      	beq.n	338c <TV_SYNC_handler+0x194>
+    33be:	e7db      	b.n	3378 <TV_SYNC_handler+0x180>
     33c0:	200006bc 	.word	0x200006bc
     33c4:	20004e94 	.word	0x20004e94
     33c8:	40012c00 	.word	0x40012c00

@@ -80,6 +80,7 @@ next_set:
 ; dessine LEM et affiche le niveau carburant
 	call drw_lem
 	call prt_fuel_level
+	;call display_vspeed 
 ;boucle principale
 main:
 	sne fuel,0 
@@ -96,7 +97,7 @@ main:
 	jp up_jet
 	jp move_lem
 right_jet:
-	call prt_fuel_level 
+	call prt_fuel_level
 	add hspeed,-1  
 	add fuel,-1  
 	jp update_fuel
@@ -118,6 +119,7 @@ update_fuel:
 	call prt_fuel_level
 ; déplacement LEM
 move_lem:
+	;call display_vspeed
 	call prt_fuel_level ; efface niveau de carburant
 	call drw_lem ; efface LEM
 ; mise à jour position LEM
@@ -143,6 +145,7 @@ move_vertical:
 	jp collision
 ; affiche le niveau de carburant
 	call prt_fuel_level
+	;call display_vspeed
 	sne fuel, 0
 	jp fuel_empty
 ; délais
@@ -252,6 +255,8 @@ display_score:
 ;	v3 index dans le tableau bcd
 ;	w contient le digit à afficher
 display_bcd:
+	push v3
+	push w
 	ld v3, 0
 	ld i, bcd
 	add i, v3
@@ -262,6 +267,8 @@ display_bcd:
 	add v3,1
 	se v3,3
 	jp .-8
+	pop w 
+	pop v3
 	ret
 
 ;dessine la surface de la lune
@@ -325,7 +332,7 @@ put_pixel:
 ; variables locales:
 ;	v1  position x (incrémenté de 8 après chaque caractère)
 ;	v2	position y
-;   w  chiffre � afficher
+;   w  chiffre à afficher
 ;   v3  index dans le tableau bcd (incrément; de 1 après chaque caractère)
 prt_fuel_level:
 	ld v1,0
@@ -343,6 +350,42 @@ prt_fuel_loop:
 	add v3,1
 	se v3,3
 	jp prt_fuel_loop
+	ret
+
+	; v1 display position x
+	; v2 display position y
+display_vspeed:
+	push w
+	push v1
+	push v2
+	ld v1,160
+	ld v2,0
+	btsc vspeed,7
+	jp vup
+vdown: 
+	add v2,2
+	pixi v1,v2
+	add v1,1
+	pixi v1,v2
+	add v1,1
+	pixi v1,v2
+	add v1,1
+	pixi v1,v2
+	add v1,1
+	ld v2,0
+	ld b,vspeed
+	jp dspd
+vup:
+	ld w,-1
+	sub w,vspeed
+	add w,1	
+	ld b,w
+	add v1,4 
+dspd:
+	call display_bcd
+	pop v2
+	pop v1
+	pop w
 	ret
 
 show_credit:
