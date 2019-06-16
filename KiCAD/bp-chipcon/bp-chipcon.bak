@@ -424,9 +424,9 @@ F 3 "" H 7875 1350 50  0001 C CNN
 	1    7875 1350
 	1    0    0    -1  
 $EndComp
-Text Label 4825 4000 0    50   ~ 0
+Text Label 4825 3200 0    50   ~ 0
 UART1_TX
-Text Label 4825 3900 0    50   ~ 0
+Text Label 4825 3100 0    50   ~ 0
 UART1_RX
 $Comp
 L device:Q_NPN_BCE Q1

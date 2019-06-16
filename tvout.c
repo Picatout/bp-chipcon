@@ -80,7 +80,7 @@ enum TASK_ENUM{
     SOUND_TMR,
     GAME_TMR,
     WAIT_FIRST_VIDEO,
-    WAIT_VIDEO_END,
+    VIDEO_OUTPUT,
     WAIT_FIELD_END,
 };
 
@@ -118,12 +118,11 @@ static uint8_t vres=BP_VRES;
 uint8_t video_buffer[VIDEO_BUFFER_SIZE];
 
 // use TIMER1 CH1  to generate video synchronization
-// use TIMER1 CH2 for video_out delay
-// use TIMER2 CH1 for chroma reference signal
-// output PORT A8.
+// use TIMER3 CH3 for chroma reference signal
+// sync output PORT A8.
+//  video  PORT A0-A3
 void tvout_init(){
-    *GPIOA_CNF_CRL=0x88883333; // video bits 0-3, 4-7 input pullup (buttons)
-    *GPIOA_CNF_CRH=0x84484444; // 12,15  input pullup (buttons)
+    *GPIOA_CNF_CRL=0x44443333; // video bits 0-3
     config_pin(SYNC_PORT,SYNC_PIN,OUTPUT_ALT_PP_SLOW);
     PORTA->ODR=0;
     RCC->APB2ENR|=RCC_APB2ENR_TIM1EN;
@@ -132,15 +131,12 @@ void tvout_init(){
     TMR1->CR1=TMR_CR1_ARPE|TMR_CR1_URS;
     TMR1->ARR=HPERIOD;
     TMR1->CCR1=HPULSE;
-    TMR1->CCR2=BURST_START;
     TMR1->EGR|=TMR_EGR_UG;
     TMR1->BDTR=TMR_BDTR_MOE;
     TMR1->SR=0;
-    TMR1->DIER|=TMR_DIER_UIE;
-    set_int_priority(IRQ_TIM1_UP,0);
     set_int_priority(IRQ_TIM1_CC,0);
-    enable_interrupt(IRQ_TIM1_UP);
     enable_interrupt(IRQ_TIM1_CC);
+    TMR1->DIER|=TMR_DIER_CC1IE;
     TMR1->CR1|=TMR_CR1_CEN; 
     // chroma signal generation
     config_pin(PORTB,0,OUTPUT_ALT_PP_SLOW); // TIMER3 CH3
@@ -153,11 +149,12 @@ void tvout_init(){
     TMR3->EGR|=TMR_EGR_UG;
     TMR3->SR=0;
     TMR3->CR1|=TMR_CR1_CEN;
-    flags|=F_EVEN;
-    scan_line=0; 
+    flags|=F_EVEN|F_VSYNC;
+    scan_line=0;
+    task=VSYNC; 
 }
 
-void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
+
 #define _jitter_cancel()  asm volatile ("mov r2,%0\n\t"\
                                        "ldr r2,[r2,#0]\n\t"\
                                        "and r2,#7\n\t"\
@@ -174,36 +171,19 @@ void __attribute__((__interrupt__,optimize("O1")))TV_OUT_handler(){
                               "bne.n 1b\n\t"\
                               ::"r" (dly):"r2")
 
+#define next_task(n)  ({slice++; if (slice==n){slice=0;task++;}})
+
+void __attribute__((__interrupt__,optimize("O1"))) TIM1_CC_handler(){
     register uint8_t *video_data;
     register uint16_t *video_port;
     register uint32_t i;
-    TMR3->CCER|=CHROMA_CFG;
-    while(TMR1->CNT<BURST_END); //(uint16_t)(8.0e-6*(float)FCLK));
-    TMR3->CCER&=~CHROMA_CFG;
-    if (flags & F_VIDEO){
-        video_port=(uint16_t*)&PORTA->ODR;
-        video_data=&video_buffer[slice/lines_repeat*byte_per_row];
-        while(TMR1->CNT<left_margin);
-        _jitter_cancel();
-        TMR3->CCER|=CHROMA_CFG;
-        for (i=0;i<byte_per_row;i++){
-            _pixel_delay(pixel_delay);
-            *video_port=(*video_data)>>4;
-            _pixel_delay(pixel_delay);
-            //__asm__ volatile("nop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\t");
-            *video_port=(*video_data++)&0xf;
-            //__asm__ volatile("nop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\tnop\n\t");
-        }
-        PORTA->ODR=0;
-    }
-    TMR3->CCER&=~(TMR_CCER_CC3E);
-    TMR1->SR&=~TMR_SR_CC2IF;
-}
-
-void __attribute__((__interrupt__,optimize("O1"))) TV_SYNC_handler(){
-#define next_task(n)  ({slice++; if (slice==n){slice=0;task++;}})
     scan_line++;
     ntsc_ticks++;
+    if (!(flags & F_VSYNC)){
+        TMR3->CCER|=CHROMA_CFG;
+        while(TMR1->CNT<BURST_END); //(uint16_t)(8.0e-6*(float)FCLK));
+        TMR3->CCER&=~CHROMA_CFG;
+    }
     switch (task){
     case VSYNC:
         switch(scan_line){
@@ -226,8 +206,6 @@ sync_end:
                 TMR1->ARR=HPERIOD;
                 TMR1->CCR1=HPULSE;
                 flags&=~F_VSYNC;
-                TMR1->SR&=~TMR_SR_CC2IF;
-                TMR1->DIER|=TMR_DIER_CC2IE;
                 task++;
             }
             break;
@@ -262,13 +240,26 @@ sync_end:
             slice=0;
         }
         break;
-    case WAIT_VIDEO_END:
-        slice++;
+    case VIDEO_OUTPUT:
+        video_port=(uint16_t*)&PORTA->ODR;
+        video_data=&video_buffer[slice/lines_repeat*byte_per_row];
+        while(TMR1->CNT<left_margin);
+        _jitter_cancel();
+        TMR3->CCER|=CHROMA_CFG;
+        for (i=0;i<byte_per_row;i++){
+            _pixel_delay(pixel_delay);
+            *video_port=(*video_data)>>4;
+            _pixel_delay(pixel_delay);
+            *video_port=(*video_data++)&0xf;
+        }
+        PORTA->ODR=0;
         if (scan_line==video_end){
             flags &=~F_VIDEO;
             task++;
         }
-        break;  
+        TMR3->CCER&=~(TMR_CCER_CC3E);
+        slice++;
+        break;
     case WAIT_FIELD_END:
         if (scan_line==271 && !(flags&F_EVEN)){
             goto frame_end;
@@ -280,12 +271,11 @@ frame_end:
                 flags|=F_VSYNC;
                 task=VSYNC;
                 scan_line=0;
-                TMR1->DIER&=~TMR_DIER_CC2IE;
             }
         }
         break;
     }//switch task
-    TMR1->SR&=~TMR_SR_UIF;
+    TMR1->SR&=~TMR_SR_CC1IF;
 }
 
 void frame_sync(){

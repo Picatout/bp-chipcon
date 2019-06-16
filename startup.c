@@ -43,8 +43,8 @@ extern unsigned int _DATA_RAM_END;
 
 void startup();
 void main();
-void __attribute__((__interrupt__)) TV_SYNC_handler();
-void __attribute__((__interrupt__)) TV_OUT_handler();
+//void __attribute__((__interrupt__)) TV_SYNC_handler();
+//void __attribute__((__interrupt__)) TV_OUT_handler();
 void __attribute__((__interrupt__)) sound_handler();
 
 // réinitialise le µC
@@ -125,6 +125,7 @@ _default_handler(DMA1CH1_handler) // 11
 _default_handler(DMA1CH2_handler) // 12
 _default_handler(DMA1CH5_handler) // 12
 _default_handler(EXTI9_5_handler) // 23
+_default_handler(TIM1_UP_handler) // 25
 _default_handler(TIM1_CC_handler) // 27
 _default_handler(TIM2_handler) // 28
 _default_handler(TIM3_handler) // 29
@@ -184,9 +185,9 @@ __attribute__ ((section("vectors")))= {
     (unsigned int *)  reset_mcu, // 22 CAN_SCE
     (unsigned int *)  EXTI9_5_handler, // 23 EXTI9_5
     (unsigned int *)  reset_mcu, // 24 TIM1_BRK
-    (unsigned int *)  TV_SYNC_handler, // 25 TIM1_UP
+    (unsigned int *)  TIM1_UP_handler, // 25 TIM1_UP
     (unsigned int *)  reset_mcu, // 26 TIM1_TRG_COM
-    (unsigned int *)  TV_OUT_handler, // 27 TIM1_CC
+    (unsigned int *)  TIM1_CC_handler, // 27 TIM1_CC
     (unsigned int *)  sound_handler, // 28 TIM2
     (unsigned int *)  TIM3_handler, // 29 TIM3
     (unsigned int *)  TIM4_handler, // 30 TIM4

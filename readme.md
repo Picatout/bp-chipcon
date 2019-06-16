@@ -142,4 +142,7 @@ NOTES
 1. **2019-06-13** À ce moment çi j'ai complété le montage d'un prototype de la console et j'ai inclus 13 jeux SCHIP dans le menu jeux. Le premier item **test** n'est qu'un test pour vérifier le bon fonctionnement des fonctions du mode **BPCHIP**. **lem** est un jeu que j'ai importé de mon projet [chipcon v2](https://github.com/picatout/chipcon_v2) mais qui doit-être modifié pour fonctionner correctement dans le monde **BPCHIP**. 
 
 
+2019-06-15
+-
+Ajout d'un vidéo de démonstration sur [youtube](https://youtu.be/HhF0_eT6UJY)
 

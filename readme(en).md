@@ -150,3 +150,7 @@ The only support to debug a game is trhough VT100 virtual console running on the
 
 This far from ideal as one has to recompile the console firmware each time a game bug is corrected.
 
+2019-06-15
+-
+Added a demonstration video on [youtube](https://youtu.be/HhF0_eT6UJY)
+
