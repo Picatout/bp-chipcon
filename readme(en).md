@@ -147,6 +147,8 @@ Debugging games
 BP-CHIPCON as no PC emulator yet, although I may eventually adpapt the one I created for [chipcon v2](https://github.com/Picatout/chipcon_v2) project which is a C# project.
 
 The only support to debug a game is trhough VT100 virtual console running on the PC and connected to the console via its serial port. There is no flow control and the setting is **115200 8N1**. 
+![session de débogage vt100](vt100-debug-session.png)</br>
+Capture of a debugging session in single step mode.
 
 This far from ideal as one has to recompile the console firmware each time a game bug is corrected.
 

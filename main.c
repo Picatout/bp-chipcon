@@ -278,38 +278,48 @@ static void sound_test(){
 	uint8_t key=255;
 	uint16_t freq;
 	gfx_cls();
-	print("press buttons\n");
+	print("press buttons for scale tone.\n");
 	while (key!=KEY_B){
 		key=btn_any_down();
+		print("button ");
 		switch(key){
 		case KEY_UP:
+			print("UP (A4)\n");
 			freq=440;
 			break;
 		case KEY_DOWN:
+			print("DOWN (A4#)\n");
 			freq=466;
 			break;
 		case KEY_LEFT:
-			freq=493;
+			print("LEFT (B4)\n");
+			freq=494;
 			break;
 		case KEY_RIGHT:
+			print("RIGHT (C5)\n");
 			freq=523;
 			break;
 		case KEY_A:
+			print("A (C5#)\n");
 			freq=554;
 			break;
 		case KEY_B:
+			print("B (D5)\n");
 			freq=587;
 			break;
 		case KEY_C:
+			print("C (D5#)\n");
 			freq=622;
 			break;
 		case KEY_D:
+			print("D (E5)\n");
 			freq=659;
 			break;
 		}//swtich
 		tone(freq,3);
 	}
 	btn_wait_up(key);
+	print("white noise\n");
 	noise(30);
 	while(sound_timer);
 }
