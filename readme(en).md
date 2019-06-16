@@ -131,6 +131,7 @@ For the game to be accessible through the games list another step is required th
 
 ![games.c file](games.png)
 
+[video showing game embedding procedure](https://youtu.be/whA2gxEH0Xo)
 
 BPCHIP games
 =

@@ -153,6 +153,8 @@ Pour include un jeu SCHIP dont vous avez téléchargé le binaire d'internet la 
 1. Recontruire et flasher le projet.<br/>
 &gt; **cd .. && make build_O1 && make flash** 
 
+[video montrant l'incorporation d'un jeu au projet](https://youtu.be/whA2gxEH0Xo)
+
 key map
 -
 Les jeux CHIP8 et SCHIP sur HP-48 n'ayant aucun standard quand à utilisation des touches, pour chaque jeu incorporé à la console il faut trouver et configurer les bonnes valeurs de touches dans le fichier **C** généré par **cvt-chip**. Dans notre exemple de BLINKY les valeurs sont les suivantes:

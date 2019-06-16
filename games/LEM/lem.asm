@@ -183,7 +183,7 @@ delay:
 ;   vitesse inférieure à 3
 collision:
 	call prt_fuel_level
-	ld w,2
+	ld w,3
 	sub w, vspeed
 	se C, 1
 	jp crash  ; vitesse verticale trop grande
